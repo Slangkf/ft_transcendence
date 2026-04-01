@@ -7,4 +7,8 @@ export default defineConfig({
     tailwindcss(),
     sveltekit(),
   ],
+  server: {
+    host: true,
+    port: 5500,
+  }
 });
