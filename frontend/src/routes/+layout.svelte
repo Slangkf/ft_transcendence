@@ -3,7 +3,7 @@
   import "../app.css";
   import { page } from '$app/state';
 
-  let connected = true;
+  let connected = false;
 
   // Dynamic links
   let headerLinks = [
