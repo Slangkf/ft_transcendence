@@ -1,5 +1,4 @@
-# Every time a pull-request to the main branch is made, 
-# or a push to any branch modifies files in the frontend directory,
+# Every time a push or a pull-request to the main branch is made, 
 # GitHub Actions will run the "frontend" job in its runner:
 # 1. Checkout the repository code
 # 2. Set up Node.js
@@ -12,7 +11,7 @@ run-name: ${{ github.actor }} is testing out GitHub Actions
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "main" ]
     paths:
       - "frontend/**"
   pull_request:
