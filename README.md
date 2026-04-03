@@ -11,6 +11,17 @@
 
 *Before starting, please ensure that .. is installed.*
 
+1. ### **Run the website:**
+   - Go to the frontend directory.
+   - Build the Docker image: `docker build -t frontend:custom .`.
+   - Run the container: `docker run -it -p 5500:5500 frontend:custom`.
+   - Click on http://localhost:5500/ to open the website in your browser.
+
+#### Note:  
+  `docker run -it -p 5500:5500 -v /home/tclouet/Documents/42Cursus/ft_transcendence/frontend:/app frontend:custom` binds your local repository to the /app directory in the container. This allows you to edit your local files and see the changes in real time on the website.
+
+  
+
 
 # Resources
 
