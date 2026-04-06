@@ -1,11 +1,8 @@
 @import "tailwindcss";
 
-.background {
-    @apply flex flex-col min-h-screen;
-    @apply bg-[url(/images/background.jpg)];
-    @apply bg-cover bg-center bg-fixed;
-}
+.template {
+  @apply flex flex-col min-h-screen;
+  @apply bg-[url(/images/background.png)];
+  @apply bg-cover bg-center bg-fixed;
 
-body {
-  font-family: 'Inter', "Times New Roman", serif;
 }
