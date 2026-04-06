@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto px-4 py-6 leading-relaxed bg-white/30 backdrop-blur-xs rounded">
+<div class="max-w-3xl mx-auto px-4 py-6 leading-relaxed font-serif text-blue-200 bg-white/10 backdrop-blur-xs rounded">
   <h1 class="text-xl sm:text-2x md:text-3xl font-bold text-center mb-6">TERMS OF SERVICE</h1>
 
   <section>

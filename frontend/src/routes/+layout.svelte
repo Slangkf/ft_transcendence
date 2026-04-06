@@ -1,73 +1,45 @@
 <script>
   let { children } = $props();
   import "../app.css";
-  import { page } from '$app/state';
-
-  let connected = false;
-
-  // Dynamic links
-  let headerLinks = [
-    { href: "/login", text: "LOGIN" },
-    { href: "/logout", text: "LOGOUT" },
-    { href: "/", text: "HOME" },
-    { href: "/game", text: "GAME" },
-    { href: "/profile", text: "PROFILE" }
-  ];
 </script>
 
-<!-- Template -->
-<div class="background">
-  <header class="h-16 sm:h-20 md:h-24 w-full flex items-center">
-
+<!-- Basic page structure -->
+<div class="template">
+  <!-- Header -->
+  <header class="flex h-24 w-full items-center p-4">
     <!-- Logo -->
-    <div class="flex flex-1 justify-start">
-      <a href='/'>
-        <img src="/images/logo.png" alt="logo" class="h-12 sm:h-16 md:h-20 lg:h-24 w-auto"/>
+    <div class="flex-1">
+      <a href='/' class="inline-block">
+        <img src="/images/logo.png" alt="logo" class="h-24 w-auto drop-shadow-[0_0_20px_blue]"/>
       </a>
     </div>
-
-    <!-- Dynamic links -->
-    <nav class="flex flex-1 justify-center gap-8 text-xs sm:text-sm md:text-base">
-    {#if !connected}
-      {#if page.url.pathname === '/'}
-        <a href="/login">LOGIN</a>
-      {:else if page.url.pathname == '/game'}
-        <a href="/login">LOGIN</a>
-        <a href="/">HOME</a>
-      {:else}
-        <a href="/">HOME</a>
-      {/if}
-    {:else if connected}
-      {#if page.url.pathname === '/'}
-        <a href="/game">GAME</a>
-        <a href="/profile">PROFILE</a>
-        <a href="/logout">LOGOUT</a>
-      {:else if page.url.pathname === '/profile'}
-        <a href="/">HOME</a>
-        <a href="/game">GAME</a>
-        <a href="/logout">LOGOUT</a>
-      {:else if page.url.pathname === '/game'}
-        <a href="/">HOME</a>
-        <a href="/profile">PROFILE</a>
-        <a href="/logout">LOGOUT</a>
-      {:else}
-          <a href="/">HOME</a>
-      {/if}
-    {/if}
-    </nav>
-
-    <!-- Empty space to balance -->
-    <div class="flex-1"></div>
+    <!-- Title -->
+    <div class="flex-1 text-center text-4xl font-bold text-pink-500 drop-shadow-[0_0_20px_blue]">
+		<a href='/'>42Brain</a>
+    </div>
+    <!-- Drop-down menu -->
+	<div class="flex flex-1 justify-end">
+		<div class="inline-block group relative">
+			<button class="cursor-pointer font-bold text-3xl text-pink-500 hover:text-blue-500">
+				&Xi;
+			</button>
+			<div class="absolute right-0 top-full hidden group-hover:block w-auto bg-black rounded">
+				<a class="block text-center font-bold text-pink-500 hover:text-blue-500" href='/login'>LOGIN</a>
+				<a class="block text-center font-bold text-pink-500 hover:text-blue-500" href='/logout'>LOGOUT</a>
+				<a class="block text-center font-bold text-pink-500 hover:text-blue-500" href='/'>EXIT</a>
+			</div>
+		</div>
+	</div>
   </header>
   
   <!-- Content -->
-  <main class="grow">
+  <main class="grow p-4">
     {@render children()}
   </main>
   
-  <!-- Bottom buttons -->
-  <footer class="flex justify-center gap-8 mt-auto p-4 text-xs text-white">
-    <a href="/terms_of_service" class="hover:text-gray-300">TERMS OF SERVICE</a>
-    <a href="/privacy_policy" class="hover:text-gray-300">PRIVACY POLICY</a>
+  <!-- Footer -->
+  <footer class="flex justify-center gap-8 mt-auto text-xs text-pink-500">
+    <a href="/terms_of_service" class="hover:text-blue-500">TERMS OF SERVICE</a>
+    <a href="/privacy_policy" class="hover:text-blue-500">PRIVACY POLICY</a>
   </footer>
 </div>
