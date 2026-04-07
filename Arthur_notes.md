@@ -8,8 +8,7 @@
 - Regarder le fonctionnement de async/await (En C/C++, tu raisonnes souvent en exécution assez linéaire tandis que 
 En Node/TypeScript backend, beaucoup d’opérations ne rendent pas le résultat immédiatement.)
 
-## Workflow Backend 
-
+## TypeScript 
 Typescript/js sont des langages utilisant fortement la poo, possibilite dinstancie un objet sans que ce dernier n'appaartienne a une class.
 
 Types de base :
@@ -27,6 +26,12 @@ Objets :
 
 - Union de types : une variable peut avoir plusieurs types possibles définis à l’avance 
 type GameStatus = "waiting" | "running" | "finished";
+
+
+## Workflow Backend 
+
+Jianxin a commence la partie back du jeu en implementant la gestion des questions,
+une partie "router" de
 
 ### etape A — creation d’une partie
 Le front envoie :
