@@ -1,7 +1,12 @@
 <script>
-  let { children } = $props();
-  import "../app.css";
+	import "../app.css";
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+
+	let { children } = $props();
+	let connected = true; // for preliminary testing.
 </script>
+
 
 <!-- Basic page structure -->
 <div class="template">
@@ -18,24 +23,61 @@
 		<a href='/'>42Brain</a>
     </div>
     <!-- Drop-down menu -->
-	<div class="flex flex-1 justify-end">
-		<div class="inline-block group relative">
-			<button class="cursor-pointer font-bold text-3xl text-pink-500 hover:text-blue-500">
-				&Xi;
-			</button>
-			<div class="absolute right-0 top-full hidden group-hover:block w-auto bg-black rounded">
-				<a class="block text-center font-bold text-pink-500 hover:text-blue-500" href='/login'>LOGIN</a>
-				<a class="block text-center font-bold text-pink-500 hover:text-blue-500" href='/logout'>LOGOUT</a>
-				<a class="block text-center font-bold text-pink-500 hover:text-blue-500" href='/'>EXIT</a>
+	<el-dropdown class="flex flex-1 justify-end">
+		<button class="cursor-pointer inline-flex gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold text-pink-500 inset-ring-1 inset-ring-white/5 drop-shadow-[10px_10px_5px_blue] hover:text-blue-500 hover:drop-shadow-[10px_10px_15px_#FF1D8D]">
+			Menu
+			<svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="-mr-1 size-5 text-gray-400">
+			<path d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+			</svg>
+		</button>
+		<el-menu anchor="bottom end" popover class="w-56 origin-top-right rounded-md bg-black outline-1 -outline-offset-1 outline-white/10 transition transition-discrete [--anchor-gap:--spacing(2)] data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in">
+			<div class="py-1">
+				{#if !connected}
+					{#if page.url.pathname === '/'}
+						<a href="/login" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Login</a>
+					{:else if page.url.pathname === '/login'}
+						<a href="/" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Home</a>
+					{:else}
+						<a href="/" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Home</a>
+						<a href="/login" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Login</a>
+					{/if}
+				{:else}
+					{#if page.url.pathname === '/'}
+						<a href="/game" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<a href="/profile" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<form action="/" method="POST">
+							<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						</form>
+					{:else if page.url.pathname === '/game'}
+						<a href="/" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Home</a>
+						<a href="/profile" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<form action="/" method="POST">
+							<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						</form>
+					{:else if page.url.pathname === '/profile'}
+						<a href="/" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Home</a>
+						<a href="/game" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<form action="/" method="POST">
+							<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						</form>
+					{:else}
+						<a href="/" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Home</a>
+						<a href="/game" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<a href="/profile" class="block px-4 py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<form action="/" method="POST">
+							<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						</form>
+					{/if}
+				{/if}
 			</div>
-		</div>
-	</div>
+		</el-menu>
+	</el-dropdown>
   </header>
   
   <!-- Content -->
-  <main class="grow p-4">
-    {@render children()}
-  </main>
+<main class="grow p-4">
+  {@render children()}
+</main>
   
   <!-- Footer -->
   <footer class="flex justify-center gap-8 mt-auto text-xs text-pink-500">

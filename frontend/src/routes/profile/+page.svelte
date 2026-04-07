@@ -1,3 +1,3 @@
-<h1 class="text-2xl font-bold text-white text-center mb-6">
-  PROFILE PAGE
-</h1>
+<div class="text-center text-4xl text-white">
+	PROFILE PAGE
+</div>
