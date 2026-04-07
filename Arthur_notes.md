@@ -4,11 +4,29 @@
 - Store tournament scores on the Blockchain (2 points)
 
 ## Current questions
-- Quel framework utiliser (express plus libre mais demande plus de communication et travail sur l'archi genreal par rapport a NestJS)
 - Processus du focntionnement du jeu cote back (structure claire et utilisable de tous comme une class en cpp?)
-- 
+- Regarder le fonctionnement de async/await (En C/C++, tu raisonnes souvent en exécution assez linéaire tandis que 
+En Node/TypeScript backend, beaucoup d’opérations ne rendent pas le résultat immédiatement.)
 
 ## Workflow Backend 
+
+Typescript/js sont des langages utilisant fortement la poo, possibilite dinstancie un objet sans que ce dernier n'appaartienne a une class.
+
+Types de base :
+- let name: string = "Arthur";
+- let score: number = 0;
+- let isReady: boolean = false;
+tableaux :
+- let players: string[] = ["Arthur", "Igor"];
+Objets :
+- const player = {
+  id: "u1",
+  username: "Arthur",
+  score: 0
+};
+
+- Union de types : une variable peut avoir plusieurs types possibles définis à l’avance 
+type GameStatus = "waiting" | "running" | "finished";
 
 ### etape A — creation d’une partie
 Le front envoie :
