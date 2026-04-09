@@ -1,4 +1,4 @@
-import {UserRepository} from '../User/user.repositery.js';
+import {UserRepository} from '../User/user.repositery';
 import type { LoginInput, RegisterInput, UserOutput  } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';

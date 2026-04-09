@@ -65,18 +65,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY package*.json .
+COPY backend/package*.json .
 RUN npm install
 
-COPY .   .
+COPY backend/ .
+COPY shared/ ./shared/
 RUN npx prisma generate --schema=./prisma/schema.prisma
-
-# 创建空的 seed 文件避免错误（临时方案）
-RUN mkdir -p database && touch database/seed.ts
-
-# 编译 TypeScript（重要！）
-RUN npm run build || echo "Build failed, creating fallback..."
-RUN mkdir -p dist && echo 'console.log("Server starting..."); require("../src/index");' > dist/index.js
 
 #RUN npm run build
 RUN chmod +x entrypoint.sh
@@ -84,6 +78,7 @@ RUN chmod +x entrypoint.sh
 EXPOSE 3000
 
 ENTRYPOINT ["./entrypoint.sh"]
+CMD ["npm", "start"]
 
 
 

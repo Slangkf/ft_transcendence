@@ -1,4 +1,4 @@
-import { AuthService } from "./aud.service.js";
+import { AuthService } from "./auth.service";
 import type { Request, Response } from "express";
 import  { Register_Input, Login_Input  } from "@shared/user.schema";
 
