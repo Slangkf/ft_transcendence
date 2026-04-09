@@ -4,11 +4,23 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "ts-node --transpile-only src/index.ts",
+    
+    "dev": "ts-node --transpile-only src/index.ts",
+    "dev:check": "cross-env NODE_ENV=development ts-node src/index.ts",
+    
+    "type-check": "tsc --noEmit",
+
     "build": "tsc",
-    "db:migrate": "prisma db push --schema=./database/schema.prisma",
+    "build:prod": "npm run type-check && tsc",
+
+    "db:migrate": "prisma db push --schema=./prisma/schema.prisma",
     "db:seed": "ts-node prisma/seed.ts",
-    "db:studio": "prisma studio --schema=./database/schema.prisma"
+    "db:studio": "prisma studio --schema=./prisma/schema.prisma"
+  },
+    "prisma": {
+    "schema": "prisma/schema.prisma",
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
