@@ -1,0 +1,71 @@
+{
+  "title": "Les bases de la programmation",
+  "category": "Programmation",
+  "questions": [
+    {
+      "text": "Que signifie l'acronyme HTML ?",
+      "options": [
+        "HyperText Markup Language",
+        "High Technical Modern Language",
+        "HyperTool Multi Language",
+        "HyperText Main Language"
+      ],
+      "answer": "HyperText Markup Language"
+    },
+    {
+      "text": "Quel langage est principalement utilisé pour le développement d'applications Android natives ?",
+      "options": ["Swift", "Kotlin", "C#", "PHP"],
+      "answer": "Kotlin"
+    },
+    {
+      "text": "En JavaScript, quelle méthode permet d'ajouter un élément à la fin d'un tableau ?",
+      "options": ["pop()", "shift()", "push()", "join()"],
+      "answer": "push()"
+    },
+    {
+      "text": "Lequel de ces langages est un langage de bas niveau ?",
+      "options": ["Python", "JavaScript", "Assembleur", "Ruby"],
+      "answer": "Assembleur"
+    },
+    {
+      "text": "Quel symbole est généralement utilisé pour les commentaires sur une seule ligne en C ou Java ?",
+      "options": ["#", "//", "/*", "--"],
+      "answer": "//"
+    },
+    {
+      "text": "Quelle est la fonction principale d'un compilateur ?",
+      "options": [
+        "Exécuter le code ligne par ligne",
+        "Traduire le code source en code machine",
+        "Stocker des données dans une base",
+        "Créer une interface graphique"
+      ],
+      "answer": "Traduire le code source en code machine"
+    },
+    {
+      "text": "En SQL, quelle commande est utilisée pour récupérer des données ?",
+      "options": ["UPDATE", "INSERT", "SELECT", "DELETE"],
+      "answer": "SELECT"
+    },
+    {
+      "text": "Lequel de ces choix n'est PAS un type de boucle en programmation ?",
+      "options": ["for", "while", "do while", "repeat if"],
+      "answer": "repeat if"
+    },
+    {
+      "text": "Qui est considéré comme l'un des créateurs du langage C ?",
+      "options": [
+        "Dennis Ritchie",
+        "Guido van Rossum",
+        "Brendan Eich",
+        "James Gosling"
+      ],
+      "answer": "Dennis Ritchie"
+    },
+    {
+      "text": "Quel est le résultat de l'expression (5 == '5') en JavaScript ?",
+      "options": ["true", "false", "null", "undefined"],
+      "answer": "true"
+    }
+  ]
+}

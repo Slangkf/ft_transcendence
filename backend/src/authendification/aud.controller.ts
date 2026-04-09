@@ -1,6 +1,6 @@
 import { AuthService } from "./aud.service.js";
 import type { Request, Response } from "express";
-import  { Register_Input, Login_Input  } from "../../../shared/user.schema.js";
+import  { Register_Input, Login_Input  } from "@shared/user.schema";
 
 export  class AuthController{
     private authservice: AuthService

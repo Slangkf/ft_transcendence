@@ -1,6 +1,5 @@
 import {UserRepository} from '../User/user.repositery.js';
-import type { LoginInput, RegisterInput, UserOutput  } from '../../shared_zod/user.schema.js';
-import {prisma} from '';
+import type { LoginInput, RegisterInput, UserOutput  } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 

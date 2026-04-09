@@ -1,5 +1,5 @@
-import type { UserDB, RegisterInput, UserOutput } from "../../../shared/user.schema.js";
-import {prisma} from '../database/';
+import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
+import {prisma} from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 export class UserRepository{
