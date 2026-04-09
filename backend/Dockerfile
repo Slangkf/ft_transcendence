@@ -65,16 +65,13 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY backend/package*.json ./
+COPY package*.json .
 RUN npm install
 
-COPY backend/   ./backend
-COPY shared/    ./shared
-COPY    backend/database    ./prisma
-RUN npx prisma generate --schema=./prisma/schema.prisma
+COPY .   .
+RUN npx prisma generate --schema=./database/schema.prisma
 
 #RUN npm run build
-COPY    backend/entrypoint.sh   .
 RUN chmod +x entrypoint.sh
 
 EXPOSE 3000
