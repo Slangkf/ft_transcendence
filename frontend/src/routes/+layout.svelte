@@ -34,7 +34,8 @@
 			<div class="py-1">
 				{#if !connected}
 					{#if page.url.pathname === '/'}
-						<a href="/login" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Login</a>
+						<a href="/register" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Sign Up</a>
+						<a href="/login" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Sign In</a>
 					{:else if page.url.pathname === '/login'}
 						<a href="/" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Home</a>
 					{:else}
