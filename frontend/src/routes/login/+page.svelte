@@ -1,3 +1,27 @@
+<!-- Handle form submit: prevent reload and send POST request to backend -->
+<script lang="ts">
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const email = (form.email as HTMLInputElement).value;
+		const password = (form.password as HTMLInputElement).value;
+
+		try {
+			const response = await fetch('/api/login', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password})
+			});
+
+			const result = await response.json();
+			console.log(result);
+		}
+		catch (error){
+			console.error('Error login: ', error);
+		}
+	}
+</script>
+
 <div class="flex justify-center pt-27">
 	<div class="flex flex-col justify-center w-full max-w-80 rounded-xl px-6 py-8 border border-slate-700 bg-slate-900/90 backdrop-blur-xs text-white text-sm">
 		<h2 class="text-2xl font-semibold text-pink-500 text-center">Login</h2>
@@ -17,27 +41,3 @@
 		</form>
 	</div>
 </div>
-
-<!-- Handle form submit: prevent reload and send POST request to backend -->
-<script lang="ts">
-	async function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		const form = event.target as HTMLFormElement;
-		const email = (form.email as HTMLInputElement).value;
-		const password = (form.password as HTMLInputElement).value;
-
-		try {
-			const response = await fetch('http://backend:3000/login', {
-				method: 'POST',
-				headers: {'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, password})
-			});
-
-			const result = await response.json();
-			console.log(result);
-		}
-		catch (error){
-			console.error('Error login: ', error);
-		}
-	}
-</script>
