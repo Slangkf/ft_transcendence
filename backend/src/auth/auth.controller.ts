@@ -17,7 +17,7 @@ export  class AuthController{
 
         try{
             const result = await this.authservice.register(parsed.data);
-            res.status(201).json({result})
+            res.status(201).json(result)
         }catch(error){
             const err = error as Error;
             res.status(400).json({message: err.message})

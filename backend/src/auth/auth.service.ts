@@ -3,8 +3,8 @@ import type { LoginInput, RegisterInput, UserOutput  } from '@shared/user.schema
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET!
 
+console.log("jwt secret in env: ", process.env.JWT_SECRET);
 export  class AuthService{
     private userrepository: UserRepository;
 
@@ -22,6 +22,8 @@ export  class AuthService{
     }
 
     const newuser = await this.userrepository.create(input)
+    console.log("authen with jwt secret");
+    const JWT_SECRET = process.env.JWT_SECRET;
     const token = jwt.sign(
         {id: newuser.id},
         JWT_SECRET,
