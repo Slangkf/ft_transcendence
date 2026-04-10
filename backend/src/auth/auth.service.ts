@@ -36,7 +36,7 @@ export  class AuthService{
 
     async login(input: LoginInput): Promise<UserOutput>{
         //1. find the user bye mail or username
-        const user = await this.userrepository.find_by_identifiant(input.identifiant);
+        const user = await this.userrepository.find_by_identifiant(input.email);
         if (!user){
             throw new Error('user not existe')
         }

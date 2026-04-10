@@ -1,4 +1,4 @@
-import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
+import type { UserDB, RegisterInput, UserOutput} from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
 
@@ -23,13 +23,8 @@ export class UserRepository{
 
     //find a user by email or username, prepare for authendification 
     async find_by_identifiant(identifiant: string): Promise<UserDB|null>{
-        const user = await prisma.user.findFirst({
-            where: {
-                OR:[
-                    {email:identifiant},
-                    {username: identifiant}
-                ]
-            }
+        const user = await prisma.user.findUnique({
+            where: {email: identifiant}
         })
         if (!user)  return null 
         return user

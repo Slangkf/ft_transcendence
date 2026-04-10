@@ -5,7 +5,7 @@ export const User_DB = z.object({
     id: z.string().uuid(),
     username: z.string().min(3).max(20),
     email: z.string().email(),
-    hashed_password: z.string(),
+    password: z.string(),
     createdAt: z.date()
 })
 export type UserDB = z.infer<typeof User_DB>;
@@ -20,7 +20,7 @@ export type RegisterInput = z.infer<typeof Register_Input>;
 
 //type for login
 export const Login_Input = z.object({
-    identifiant: z.string().min(3), // username or email
+    email: z.string().email(), 
     password: z.string().min(8)
 })
 export type LoginInput = z.infer<typeof Login_Input>;

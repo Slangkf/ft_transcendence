@@ -17,7 +17,7 @@ RUN		mkdir -p /etc/nginx/ssl	&& \
 COPY	./conf/nginx.conf /etc/nginx/nginx.conf
 
 # Exposes HTTPS port.
-EXPOSE	443
+EXPOSE	8888
 
 # Starts the NGINX server in the foreground.
 CMD	["nginx", "-g", "daemon off;"]

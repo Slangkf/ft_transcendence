@@ -47,6 +47,7 @@ services:
     networks: ["transcendence_network"]
     # volumes: ["wordpress_volume:/var/www/html"]
     ports: ["8888:8888"]
+    
     restart: always
 
 volumes:
