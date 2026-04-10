@@ -1,5 +1,5 @@
 // export async function load() {
-// 	const response = await fetch('http://backend:3000/profile');
+// 	const response = await fetch('/api/profile');
 // 	const user = await response.json();
 
 // 	return {
