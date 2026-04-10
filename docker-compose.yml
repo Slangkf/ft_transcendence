@@ -28,6 +28,30 @@ services:
       DATABASE_URL: ${DATABASE_URL_DOCKER}
     depends_on:
       - db
-  
+      
+  frontend:
+    build: ./frontend
+    image: frontend:custom
+    container_name: frontend
+    networks: ["transcendence_network"]
+    ports: "5500:5500"
+    restart: always
+
+  nginx:
+    # depends_on:
+    #   backend:
+    #     condition: service_healthy
+    build: ./nginx
+    image: nginx:custom
+    container_name: nginx
+    networks: ["transcendence_network"]
+    # volumes: ["wordpress_volume:/var/www/html"]
+    ports: ["8888:8888"]
+    restart: always
+
 volumes:
   postgres_data:
+  
+networks:
+  transcendence_network:
+    name: transcendence_network
