@@ -2,9 +2,9 @@ import {UserRepository} from '../User/user.repositery';
 import type { LoginInput, RegisterInput, UserOutput  } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { AppError } from 'src/error/apperror';
 
 
-console.log("jwt secret in env: ", process.env.JWT_SECRET);
 export  class AuthService{
     private userrepository: UserRepository;
 
@@ -18,11 +18,10 @@ export  class AuthService{
     //3. generate jwt token update in useroutput and return 
     const exist_already = await this.userrepository.find_by_identifiant(input.email)
     if (exist_already){
-        throw new Error('email already existe in user')
+        throw new AppError('email already existe in user',409)
     }
 
     const newuser = await this.userrepository.create(input)
-    console.log("authen with jwt secret");
     const JWT_SECRET = process.env.JWT_SECRET;
     const token = jwt.sign(
         {id: newuser.id},
@@ -40,13 +39,13 @@ export  class AuthService{
         //1. find the user bye mail or username
         const user = await this.userrepository.find_by_identifiant(input.email);
         if (!user){
-            throw new Error('user not existe')
+            throw new AppError('user not existe', 409)
         }
 
         //2. if exite check the password 
         const valide_password = await this.userrepository.verify_password(input.password, user.hashed_password);
         if (!valide_password){
-            throw new Error ("Password is not correct")
+            throw new AppError ("Password is not correct", 401)
         }
         //3. get a jwt token 
         const token = jwt.sign(
