@@ -25,11 +25,17 @@ export const Login_Input = z.object({
 })
 export type LoginInput = z.infer<typeof Login_Input>;
 
-//type output for front， without password, but with jasonwebtoken 
+//type output for front， without password
 export const User_Output = z.object({
     id: z.string().uuid(),
     username: z.string().min(3).max(20),
-    email: z.string().email(),
-    token: z.string()
+    email: z.string().email()
 })
 export type UserOutput = z.infer<typeof User_Output>;
+
+//typpe to authendification
+export const Auth_result = z.object({
+    token: z.string(),
+    user: User_Output
+})
+export type AuthResult = z.inder<typeof Auth_result>;

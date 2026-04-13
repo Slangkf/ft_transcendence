@@ -1,5 +1,7 @@
 <!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
+
+	import { goto } from '$app/navigation';	
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.target as HTMLFormElement;
@@ -7,7 +9,7 @@
 		const password = (form.password as HTMLInputElement).value;
 
 		try {
-			const response = await fetch('/api/login', {
+			const response = await fetch('/api/auth/login', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password})
@@ -15,6 +17,7 @@
 
 			const result = await response.json();
 			console.log(result);
+			await goto('/api/user/me'); // redirection to profil
 		}
 		catch (error){
 			console.error('Error login: ', error);
