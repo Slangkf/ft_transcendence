@@ -6,7 +6,7 @@
 /*   By: ikayiban <ikayiban@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 18:30:48 by ikayiban          #+#    #+#             */
-/*   Updated: 2026/04/11 14:24:22 by ikayiban         ###   ########.fr       */
+/*   Updated: 2026/04/13 15:52:54 by ikayiban         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ async function main(): Promise<void> {
                     }
                 }
             });
-            console.log(`good : ${folder}/${file}`);
+            // console.log(`good : ${folder}/${file}`);
         }
     }
 }
