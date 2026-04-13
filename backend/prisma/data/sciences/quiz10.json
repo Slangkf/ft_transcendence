@@ -1,0 +1,57 @@
+{
+  "title": "Sciences - Quiz 10",
+  "category": "Sciences",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Quel composant informatique est considéré comme le 'cerveau' de la machine ?",
+      "options": ["CPU", "GPU", "RAM", "HDD"],
+      "answer": "CPU"
+    },
+    {
+      "text": "Quel est le système d'exploitation le plus populaire pour les téléphones mobiles ?",
+      "options": ["Android", "iOS", "Windows Phone", "BlackBerry OS"],
+      "answer": "Android"
+    },
+    {
+      "text": "Quel est le symbole chimique de l'Argent ?",
+      "options": ["Ag", "Si", "Au", "Sl"],
+      "answer": "Ag"
+    },
+    {
+      "text": "Quel instrument est utilisé pour observer les objets lointains dans l'espace ?",
+      "options": ["Télescope", "Microscope", "Périscope", "Stéthoscope"],
+      "answer": "Télescope"
+    },
+    {
+      "text": "Quelle est la valeur de 2 à la puissance 5 ?",
+      "options": ["32", "10", "16", "64"],
+      "answer": "32"
+    },
+    {
+      "text": "La vitesse du son est plus rapide que la vitesse de la lumière.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Comment appelle-t-on un polygone à 4 côtés égaux et des angles à 90 degrés ?",
+      "options": ["Carré", "Rectangle", "Losange", "Trapèze"],
+      "answer": "Carré"
+    },
+    {
+      "text": "Comment appelle-t-on l'étude des organismes vivants ?",
+      "options": ["Biologie", "Chimie", "Physique", "Géologie"],
+      "answer": "Biologie"
+    },
+    {
+      "text": "Quel gaz est utilisé par les plantes pour la photosynthèse ?",
+      "options": ["Dioxyde de carbone", "Oxygène", "Azote", "Hélium"],
+      "answer": "Dioxyde de carbone"
+    },
+    {
+      "text": "L'eau se dilate lorsqu'elle gèle.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    }
+  ]
+}

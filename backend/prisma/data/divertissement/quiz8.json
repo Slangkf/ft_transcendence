@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 8",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Bob Ross était un pilote de l'armée de l'air américaine.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Lequel de ces clubs de football anglais est basé à Liverpool ?",
+      "options": ["Everton", "West Ham United", "Crystal Palace", "Arsenal"],
+      "answer": "Everton"
+    },
+    {
+      "text": "Michael Jackson a écrit la chanson des Simpsons 'Do the Bartman'.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quel lutteur professionnel a fait une chute mortelle depuis les chevrons lors d'un événement en direct en 1999 ?",
+      "options": ["Owen Hart", "Chris Benoit", "Lex Luger", "Al Snow"],
+      "answer": "Owen Hart"
+    },
+    {
+      "text": "Quelle équipe de football a remporté la Copa América Centenario 2016 ?",
+      "options": ["Chili", "Argentine", "Brésil", "Colombie"],
+      "answer": "Chili"
+    },
+    {
+      "text": "Le tout premier épisode de Family Guy a été diffusé le 1er janvier 2002.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quel joueur détient le record de la LNH avec 2 857 points ?",
+      "options": ["Wayne Gretzky", "Mario Lemieux", "Sidney Crosby", "Gordie Howe"],
+      "answer": "Wayne Gretzky"
+    },
+    {
+      "text": "Quel constructeur automobile a remporté les 24 Heures du Mans 2016 ?",
+      "options": ["Porsche", "Toyota", "Audi", "Ferrari"],
+      "answer": "Porsche"
+    },
+    {
+      "text": "De quel pays le Kabaddi, un sport de contact impliquant des plaquages, est-il originaire ?",
+      "options": ["Inde", "Australie", "Turquie", "Cambodge"],
+      "answer": "Inde"
+    },
+    {
+      "text": "De quelle ville l'ancienne équipe de la LNH 'Les Nordiques' était-elle originaire ?",
+      "options": ["Québec", "Houston", "Montréal", "New York"],
+      "answer": "Québec"
+    }
+  ]
+}

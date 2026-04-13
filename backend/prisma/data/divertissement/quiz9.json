@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 9",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Qui est le meilleur buteur de l'histoire de Manchester United en Premier League ?",
+      "options": ["Wayne Rooney", "Sir Bobby Charlton", "Ryan Giggs", "David Beckham"],
+      "answer": "Wayne Rooney"
+    },
+    {
+      "text": "Qui a remporté la Ligue des champions de l'UEFA en 2017 ?",
+      "options": ["Real Madrid C.F.", "Atletico Madrid", "AS Monaco FC", "Juventus F.C."],
+      "answer": "Real Madrid C.F."
+    },
+    {
+      "text": "Qui a été le premier footballeur à marquer 200 buts en Premier League anglaise ?",
+      "options": ["Alan Shearer", "Wayne Rooney", "Robbie Fowler", "Thierry Henry"],
+      "answer": "Alan Shearer"
+    },
+    {
+      "text": "Le protagoniste de 'Humanity Has Declined' est simplement désigné par 'Je'.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans 'To Love-Ru: Darkness', Yami révèle que son vrai nom est Eve.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Au football canadien, marquer un 'rouge' vaut combien de points ?",
+      "options": ["1", "2", "3", "4"],
+      "answer": "1"
+    },
+    {
+      "text": "Quelle ville présente tous les maillots de ses équipes sportives professionnelles avec le même code couleur ?",
+      "options": ["Pittsburgh", "New York", "Seattle", "Tampa Bay"],
+      "answer": "Pittsburgh"
+    },
+    {
+      "text": "Quel a été le score final du match Allemagne vs Brésil lors de la Coupe du monde de la FIFA 2014 ?",
+      "options": ["7 - 1", "0 - 1", "3 - 4", "16 - 0"],
+      "answer": "7 - 1"
+    },
+    {
+      "text": "Combien y a-t-il de joueurs dans une équipe de football ?",
+      "options": ["11", "10", "9", "8"],
+      "answer": "11"
+    },
+    {
+      "text": "Dans la série télévisée Red Dwarf, le nom complet de Kryten est Kryten 2X4B-523P.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    }
+  ]
+}

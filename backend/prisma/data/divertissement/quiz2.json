@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 2",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Tupac Shakur est décédé des suites de complications après avoir été poignardé en 1996.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Le livre 1984 a été publié en 1949.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Laquelle de ces personnes ne fait PAS partie du groupe de comédie Internet Mega64 ?",
+      "options": ["Jon Jafari", "Rocco Botte", "Derrick Acosta", "Shawn Chatfield"],
+      "answer": "Jon Jafari"
+    },
+    {
+      "text": "Lequel de ces livres Charlie ne lit-il PAS dans 'Le Monde de Charlie' ?",
+      "options": ["Les Raisins de la colère", "Hamlet", "Gatsby le Magnifique", "Peter Pan"],
+      "answer": "Les Raisins de la colère"
+    },
+    {
+      "text": "Qu'utilise Solid Snake pour se cacher ?",
+      "options": ["Boîte en carton", "Dispositif de camouflage", "Caisse métallique", "Silhouette en carton"],
+      "answer": "Boîte en carton"
+    },
+    {
+      "text": "Quel est le nom de l'arme de Ruby Rose dans RWBY ?",
+      "options": ["Crescent Rose", "Thorned Rosebud", "Magnhild", "Crooked Scythe"],
+      "answer": "Crescent Rose"
+    },
+    {
+      "text": "Quels animaux mutants font office de monstres dans le film 'Night of the Lepus' ?",
+      "options": ["Lapins", "Chiens", "Rats", "Chauves-souris"],
+      "answer": "Lapins"
+    },
+    {
+      "text": "Lequel des films suivants n'a PAS été réalisé par Hayao Miyazaki ?",
+      "options": ["Les Enfants Loups, Ame et Yuki", "Princesse Mononoké", "Le Voyage de Chihiro", "Kiki la petite sorcière"],
+      "answer": "Les Enfants Loups, Ame et Yuki"
+    },
+    {
+      "text": "Dans Game of Thrones, quel continent se trouve de l'autre côté de la mer Étroite par rapport à Westeros ?",
+      "options": ["Essos", "Easteros", "Westereast", "Esuntos"],
+      "answer": "Essos"
+    },
+    {
+      "text": "Le court de tennis des Jeux Olympiques est un écran vert géant.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    }
+  ]
+}

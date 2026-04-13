@@ -1,0 +1,57 @@
+{
+  "title": "Culture Générale - Quiz 1",
+  "category": "Culture Generale",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "En quelle année le site web Reddit a-t-il été fondé ?",
+      "options": ["2005", "2008", "2004", "2006"],
+      "answer": "2005"
+    },
+    {
+      "text": "Dans quel jeu Waluigi a-t-il fait sa première apparition ?",
+      "options": ["Mario Tennis 64 (N64)", "Wario Land: Super Mario Land 3", "Mario Party (N64)", "Super Smash Bros. Ultimate"],
+      "answer": "Mario Tennis 64 (N64)"
+    },
+    {
+      "text": "Le Gumbo est un ragoût originaire de Louisiane.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Quel pays conduit du côté gauche de la route ?",
+      "options": ["Japon", "Allemagne", "Russie", "Chine"],
+      "answer": "Japon"
+    },
+    {
+      "text": "Dans les bandes dessinées DC, où vit Green Arrow (Oliver Queen) ?",
+      "options": ["Star City", "Central City", "Gotham City", "Metropolis"],
+      "answer": "Star City"
+    },
+    {
+      "text": "Quel est le vrai nom du célèbre mème Internet 'Grumpy Cat' ?",
+      "options": ["Tardar Sauce", "Lil Bub", "Maru", "Colonel Meow"],
+      "answer": "Tardar Sauce"
+    },
+    {
+      "text": "Quel produit la société de télécommunications Nokia vendait-elle à l'origine ?",
+      "options": ["Papier", "Téléphones", "Ordinateurs", "Processeurs"],
+      "answer": "Papier"
+    },
+    {
+      "text": "En quelle année Walt Disney est-il né ?",
+      "options": ["1901", "1902", "1899", "1905"],
+      "answer": "1901"
+    },
+    {
+      "text": "Quelle est la capitale de l'Islande ?",
+      "options": ["Reykjavík", "Copenhague", "Oslo", "Helsinki"],
+      "answer": "Reykjavík"
+    },
+    {
+      "text": "Quelle boisson est connue comme 'le champagne des thés' ?",
+      "options": ["Darjeeling", "Earl Grey", "Matcha", "Oolong"],
+      "answer": "Darjeeling"
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:15-bookworm
     container_name: postgres_db
     restart: always
+    networks: ["transcendence_network"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -11,7 +12,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./entrypoint.sh:/docker-entrypoint-initdb.d/entrypoint.sh
 
   backend:
     build: 
@@ -20,7 +20,8 @@ services:
     volumes:
         - ./backend:/app/backend
         - ./shared:/app/shared
-    container_name: express
+    container_name: backend
+    networks: ["transcendence_network"]
     restart: always
     ports:
       - "3000:3000"
@@ -37,12 +38,12 @@ services:
     image: frontend:custom
     container_name: frontend
     networks: ["transcendence_network"]
-    ports: "5500:5500"
+    ports: ["5500:5500"]
     restart: always
 
   nginx:
-    # depends_on:
-    #   backend:
+    depends_on:
+      - backend
     #     condition: service_healthy
     build: ./nginx
     image: nginx:custom

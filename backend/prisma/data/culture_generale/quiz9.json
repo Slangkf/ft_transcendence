@@ -1,0 +1,57 @@
+{
+  "title": "Culture Générale - Quiz 9",
+  "category": "Culture Generale",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Que fabrique et vend un chapelier ?",
+      "options": ["Des chapeaux", "Des chaussures", "Des ceintures", "Des chemises"],
+      "answer": "Des chapeaux"
+    },
+    {
+      "text": "Dans quel pays la Hyundai Motor Company a-t-elle été fondée ?",
+      "options": ["Corée du Sud", "Russie", "Japon", "Chine"],
+      "answer": "Corée du Sud"
+    },
+    {
+      "text": "Dans quel État américain se trouve la Zone 51 ?",
+      "options": ["Nevada", "Arizona", "Nouveau-Mexique", "Utah"],
+      "answer": "Nevada"
+    },
+    {
+      "text": "Laquelle de ces entreprises ne fabrique PAS d'automobiles ?",
+      "options": ["Ducati", "Nissan", "GMC", "Fiat"],
+      "answer": "Ducati"
+    },
+    {
+      "text": "Un escargot peut dormir pendant trois ans.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Le cœur d'une crevette est situé dans sa tête.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "En quelle année le robot jouet RoboSapien est-il sorti ?",
+      "options": ["2004", "2000", "2001", "2006"],
+      "answer": "2004"
+    },
+    {
+      "text": "Comment décrire au mieux le Quadrangularis Reversum ?",
+      "options": ["Un instrument de percussion", "Un bâtiment de l'Université d'Oxford", "Un coup d'échecs", "Un théorème géométrique"],
+      "answer": "Un instrument de percussion"
+    },
+    {
+      "text": "Dans un calendrier grégorien standard, combien de mois commencent par la lettre 'J' ?",
+      "options": ["3", "2", "4", "1"],
+      "answer": "3"
+    },
+    {
+      "text": "Quelle est la capitale de l'Allemagne ?",
+      "options": ["Berlin", "Munich", "Hambourg", "Francfort"],
+      "answer": "Berlin"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "title": "Histoire & Géo - Quiz 9",
+  "category": "Histoire & Geographie",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Quelle chaîne de montagnes longe la côte ouest de l'Amérique du Sud ?",
+      "options": ["Andes", "Rocheuses", "Appalaches", "Atlas"],
+      "answer": "Andes"
+    },
+    {
+      "text": "Quel pays abrite la ville de Tombouctou ?",
+      "options": ["Mali", "Niger", "Tchad", "Mauritanie"],
+      "answer": "Mali"
+    },
+    {
+      "text": "Quelle est la capitale de l'Égypte ?",
+      "options": ["Le Caire", "Alexandrie", "Gizeh", "Suez"],
+      "answer": "Le Caire"
+    },
+    {
+      "text": "Quelle île est partagée par Haïti et la République dominicaine ?",
+      "options": ["Hispaniola", "Cuba", "Jamaïque", "Porto Rico"],
+      "answer": "Hispaniola"
+    },
+    {
+      "text": "La guerre de Corée s'est terminée en 1953 sans aucun cessez-le-feu.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quelle est la capitale de la Finlande ?",
+      "options": ["Helsinki", "Espoo", "Tampere", "Vantaa"],
+      "answer": "Helsinki"
+    },
+    {
+      "text": "La guerre de Cent Ans a duré plus de 100 ans.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "La Magna Carta a été signée par quel roi ?",
+      "options": ["Jean sans Terre", "Richard Cœur de Lion", "Henri II", "Édouard Ier"],
+      "answer": "Jean sans Terre"
+    },
+    {
+      "text": "Qui a dirigé l'armée française pendant la guerre de Cent Ans et est devenue une sainte ?",
+      "options": ["Jeanne d'Arc", "Napoléon Bonaparte", "Marie-Antoinette", "Catherine de Médicis"],
+      "answer": "Jeanne d'Arc"
+    },
+    {
+      "text": "Quel monument célèbre se trouve à Agra, en Inde ?",
+      "options": ["Taj Mahal", "Angkor Wat", "Petra", "Le Colisée"],
+      "answer": "Taj Mahal"
+    }
+  ]
+}

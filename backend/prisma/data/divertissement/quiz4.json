@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 4",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Quelle actrice a épousé Michael Douglas en 2000 ?",
+      "options": ["Catherine Zeta-Jones", "Ruth Jones", "Pam Ferris", "Sara Sugarman"],
+      "answer": "Catherine Zeta-Jones"
+    },
+    {
+      "text": "Dans 'Les Quatre Filles du docteur March', laquelle des sœurs March a épousé Laurie ?",
+      "options": ["Amy", "Beth", "Jo", "Meg"],
+      "answer": "Amy"
+    },
+    {
+      "text": "Dans la série de jeux 'The Legend of Zelda', quel a été le premier jeu en 3D ?",
+      "options": ["Ocarina of Time", "Majora's Mask", "A Link to the Past", "The Wind Waker"],
+      "answer": "Ocarina of Time"
+    },
+    {
+      "text": "Le film 'L'Étrange Noël de monsieur Jack' a été entièrement réalisé avec des objets physiques.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Nickelodeon appartient à quelle société mère ?",
+      "options": ["Viacom", "CBS", "FOX", "ABC"],
+      "answer": "Viacom"
+    },
+    {
+      "text": "Dans le film 'Harry Potter et l'Ordre du Phénix', pourquoi le cri de Harry Potter après la mort de Sirius Black a-t-il été coupé ?",
+      "options": ["Trop déchirant", "Trop fort", "Trop dur", "Trop violent"],
+      "answer": "Trop déchirant"
+    },
+    {
+      "text": "Shaquille O’Neal n'a réussi qu'un seul panier à trois points dans sa carrière.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans 'One Piece', qui confirme l'existence du trésor légendaire, le One Piece ?",
+      "options": ["Edward 'Barbe Blanche' Newgate", "L'ancien amiral en chef Sengoku", "Le Roi des Pirates Gol D Roger", "Silvers Rayleigh"],
+      "answer": "Edward 'Barbe Blanche' Newgate"
+    },
+    {
+      "text": "Dans Resident Evil 4, le Chicago Typewriter a des munitions infinies.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Quel est le nom de famille du personnage de Daryl dans la série d'AMC 'The Walking Dead' ?",
+      "options": ["Dixon", "Grimes", "Dickinson", "Dicketson"],
+      "answer": "Dixon"
+    }
+  ]
+}

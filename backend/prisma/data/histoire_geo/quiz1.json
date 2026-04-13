@@ -1,0 +1,57 @@
+{
+  "title": "Histoire & Géo - Quiz 1",
+  "category": "Histoire & Geographie",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Lequel de ces anciens États yougoslaves est enclavé (sans accès à la mer) ?",
+      "options": ["Serbie", "Bosnie-Herzégovine", "Monténégro", "Croatie"],
+      "answer": "Serbie"
+    },
+    {
+      "text": "Lequel de ces noms de pays n'est pas écrit dans sa langue maternelle ?",
+      "options": ["Slovaško", "Suomi", "Schweiz", "Elláda"],
+      "answer": "Slovaško"
+    },
+    {
+      "text": "Laquelle de ces familles de langues est la plus controversée parmi les linguistes modernes ?",
+      "options": ["Altaïque", "Sino-tibétaine", "Dravidienne", "Indo-européenne"],
+      "answer": "Altaïque"
+    },
+    {
+      "text": "L'Érythrée, devenue le 182ème membre de l'ONU en 1993, se trouve sur quel continent ?",
+      "options": ["Afrique", "Europe", "Asie", "Amérique du Sud"],
+      "answer": "Afrique"
+    },
+    {
+      "text": "L'archipel du Svalbard est une dépendance de quel pays ?",
+      "options": ["Norvège", "Danemark", "Islande", "Russie"],
+      "answer": "Norvège"
+    },
+    {
+      "text": "En 1939, la Grande-Bretagne et la France ont déclaré la guerre à l'Allemagne après l'invasion de quel pays ?",
+      "options": ["Pologne", "Tchécoslovaquie", "Autriche", "Hongrie"],
+      "answer": "Pologne"
+    },
+    {
+      "text": "La guerre froide s'est terminée avec la mort de Joseph Staline.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "À quelle date la Déclaration d'indépendance des États-Unis a-t-elle été approuvée par le Second Congrès continental ?",
+      "options": ["4 juillet 1776", "4 juillet 1775", "4 juillet 1777", "4 juillet 1778"],
+      "answer": "4 juillet 1776"
+    },
+    {
+      "text": "La bataille de Trafalgar a eu lieu le 23 octobre 1805.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quel explorateur a mené la première expédition à faire le tour du monde ?",
+      "options": ["Fernand de Magellan", "Christophe Colomb", "Vasco de Gama", "James Cook"],
+      "answer": "Fernand de Magellan"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "title": "Sciences - Quiz 8",
+  "category": "Sciences",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Quelle est l'unité standard de puissance ?",
+      "options": ["Watt", "Joule", "Volt", "Ampère"],
+      "answer": "Watt"
+    },
+    {
+      "text": "Quel est le nom du premier ordinateur électronique d'usage général ?",
+      "options": ["ENIAC", "UNIVAC", "EDVAC", "Z3"],
+      "answer": "ENIAC"
+    },
+    {
+      "text": "Quel est le symbole chimique du Fer ?",
+      "options": ["Fe", "Ir", "In", "I"],
+      "answer": "Fe"
+    },
+    {
+      "text": "Quel est le plus grand mammifère au monde ?",
+      "options": ["Baleine bleue", "Éléphant", "Girafe", "Hippopotame"],
+      "answer": "Baleine bleue"
+    },
+    {
+      "text": "Quelle est la valeur de 3 au cube ?",
+      "options": ["27", "9", "12", "18"],
+      "answer": "27"
+    },
+    {
+      "text": "Le Soleil est une étoile.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Un 'kilo-octet' (kilobyte) fait exactement 1000 octets.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Combien de millimètres y a-t-il dans un centimètre ?",
+      "options": ["10", "100", "1", "1000"],
+      "answer": "10"
+    },
+    {
+      "text": "Quelle planète est célèbre pour ses anneaux ?",
+      "options": ["Saturne", "Jupiter", "Uranus", "Neptune"],
+      "answer": "Saturne"
+    },
+    {
+      "text": "Comment s'appelle le centre d'un atome ?",
+      "options": ["Noyau", "Proton", "Neutron", "Électron"],
+      "answer": "Noyau"
+    }
+  ]
+}

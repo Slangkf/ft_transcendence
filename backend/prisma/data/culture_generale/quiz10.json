@@ -1,0 +1,57 @@
+{
+  "title": "Culture Générale - Quiz 10",
+  "category": "Culture Generale",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Stagecoach possédait 'South West Trains' avant de perdre les droits au profit de FirstGroup et MTR en mars 2017.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans Half-Life, quel est le nom de l'extraterrestre qui s'attache aux têtes ?",
+      "options": ["Crabe de tête (Headcrab)", "Bullsquid", "Vortigaunt", "Facehugger"],
+      "answer": "Crabe de tête (Headcrab)"
+    },
+    {
+      "text": "Le Soleil est une étoile.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Que signifie le 'G' dans 'G-Man' ?",
+      "options": ["Gouvernement", "Going", "Ghost", "Geronimo"],
+      "answer": "Gouvernement"
+    },
+    {
+      "text": "Quel fruit est un ingrédient traditionnel de la Forêt-Noire ?",
+      "options": ["Cerises", "Abricots", "Raisins", "Pommes"],
+      "answer": "Cerises"
+    },
+    {
+      "text": "Quel constructeur automobile italien a pris le contrôle majoritaire de Chrysler en 2011 ?",
+      "options": ["Fiat", "Maserati", "Alfa Romeo", "Ferrari"],
+      "answer": "Fiat"
+    },
+    {
+      "text": "Quel est le nom du groupe antagoniste dans 'Danganronpa Another Episode: Ultra Despair Girls' ?",
+      "options": ["Guerriers de l'Espoir", "Les Monokubs", "Guerriers du Désespoir", "L'Ultime Désespoir"],
+      "answer": "Guerriers de l'Espoir"
+    },
+    {
+      "text": "La capitale des États-Unis est New York.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quelle est la deuxième langue maternelle la plus parlée en Espagne en nombre de locuteurs ?",
+      "options": ["Catalan", "Portugais", "Espagnol", "Français"],
+      "answer": "Catalan"
+    },
+    {
+      "text": "Quel sophisme consiste à attaquer le caractère de son adversaire plutôt que ses arguments ?",
+      "options": ["Ad Hominem", "Pente glissante", "Homme de paille", "Faux dilemme"],
+      "answer": "Ad Hominem"
+    }
+  ]
+}
