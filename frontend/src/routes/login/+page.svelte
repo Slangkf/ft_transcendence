@@ -2,6 +2,7 @@
 <script lang="ts">
 
 	import { goto } from '$app/navigation';	
+
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.target as HTMLFormElement;

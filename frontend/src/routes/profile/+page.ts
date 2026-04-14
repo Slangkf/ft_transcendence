@@ -30,3 +30,4 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
   const user = await response.json();
   return { user };
 };
+
