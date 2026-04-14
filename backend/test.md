@@ -1,5 +1,5 @@
 ----- register: 
-curl -i -c cookies.txt -X POST http://localhost:3000/api/auth/register   -H "Content-Type: application/json"   -d '{
+curl -i -c cookies.txt -k -X POST https://localhost:8888/api/auth/register   -H "Content-Type: application/json"   -d '{
     "username": "testuser",
     "email": "test@gmail.com",
     "password": "12345678900"
@@ -7,7 +7,7 @@ curl -i -c cookies.txt -X POST http://localhost:3000/api/auth/register   -H "Con
 
 
 ----- login :
-curl -i -c cookies.txt -X POST http://localhost:3000/api/auth/login \
+curl -i -c cookies.txt -k -X POST https://localhost:8888/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@gmail.com",
@@ -15,10 +15,10 @@ curl -i -c cookies.txt -X POST http://localhost:3000/api/auth/login \
   }'
 
 ----- profil: 
-curl -i -b cookies.txt http://localhost:3000/api/user/me
+curl -i -b cookies.txt -k https://localhost:8888/api/user/me
 
 ----- changepassword: 
-curl -i -b cookies.txt -X POST http://localhost:5500/api/me/changepassword \
+curl -i -b cookies.txt -k -X POST https://localhost:8888/api/user/me/changepassword \
   -H "Content-Type: application/json" \
   -d '{
     "oldpassword": "12345678900",

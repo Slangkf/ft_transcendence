@@ -1,5 +1,5 @@
 1. register: need regirection to "/profil" 
-    fetch ("/api/register", {
+    fetch ("/api/auth/register", {
         method: "POST",
         headers: {
         "Content-Type": "application/json"
@@ -18,7 +18,7 @@
         UserOutput in json 
 
 2. login: need redirection to "/profil"
-    fetch ("/api/login", {
+    fetch ("/api/auth/login", {
         method: "POST",
         credentials: "include",
         headers: {

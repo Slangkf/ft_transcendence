@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "game/main.ts",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register --transpile-only game/main.ts",
+    "start": "ts-node -r tsconfig-paths/register --transpile-only src/index.ts",
     
-    "dev": "ts-node -r tsconfig-paths/register --transpile-only game/main.ts",
-    "dev:check": "cross-env NODE_ENV=development ts-node game/main.ts",
+    "dev": "ts-node -r tsconfig-paths/register --transpile-only src/index.ts",
+    "dev:check": "cross-env NODE_ENV=development ts-node src/index.ts",
      
     "type-check": "tsc --noEmit",
 
