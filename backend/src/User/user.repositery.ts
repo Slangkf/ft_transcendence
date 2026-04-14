@@ -1,6 +1,7 @@
 import type { UserDB, RegisterInput, UserOutput, UserProfil} from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
+import { AppError } from "src/error/apperror";
 
 export class UserRepository{
     //1. creation a compte
@@ -37,22 +38,26 @@ export class UserRepository{
         return user
     }
 
-    //verify the password 
-    async verify_password(password: string, hashed_password: string): Promise<boolean>{
-        return await bcrypt.compare(password, hashed_password)
+    //update password 
+    async update_password(userid: string, new_pd: string){
+        return await prisma.user.update({
+            where: {id: userid},
+            data: {
+                password: new_pd
+            }
+        })
     }
-
 }
 
 
 /**
  *  UserRepository:
  *      1. create a user, createdAt and id will get automatique
- *      2. verify password
- *      3. update password (only update in database, check verifie realise in service level)
- *      4. find a user by email or username
- *      5. 
- * 
+ *      2.
+ *      3. update password （only update, level service do the check)
+ *      4. find a user by email
+ *      5. find a user by id(use for get profil of a user)
+ *      6. 
  * 
  * 
  */

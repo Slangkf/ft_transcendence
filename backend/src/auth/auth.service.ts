@@ -30,21 +30,20 @@ export  class AuthService{
     )
     return {
         token,
-        ...newuser
-    }
+        user: newuser}
     }
 
     async login(input: LoginInput): Promise<AuthResult>{
         //1. find the user bye mail or username
         const user = await this.userrepository.find_by_identifiant(input.email);
         if (!user){
-            throw new AppError('user not existe', 409)
+            throw new AppError('Invalid credentials', 401)
         }
 
         //2. if exite check the password 
-        const valide_password = await this.userrepository.verify_password(input.password, user.hashed_password);
+        const valide_password = await bcrypt.compare(input.password, user.password);
         if (!valide_password){
-            throw new AppError ("Password is not correct", 401)
+            throw new AppError ("Invalid credentials", 401)
         }
         //3. get a jwt token 
         const token = jwt.sign(
