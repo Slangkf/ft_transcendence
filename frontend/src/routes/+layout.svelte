@@ -59,7 +59,7 @@
 						<a href="/register" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Sign Up</a>
 						<a href="/login" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Sign In</a>
 					{/if}
-				{:else}
+				{:else} // si url avec /game -> passe par ce ficehier et detecte puis -> redir vers bonne page avec href src/routes/game/+page.svelte
 					{#if page.url.pathname === '/'}
 						<a href="/game" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>

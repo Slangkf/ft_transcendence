@@ -45,7 +45,7 @@ export class GameController
             return;
         }
 
-        const rawAnswer = req.body.selectedAnswerIndex ?? req.query.selectedAnswerIndex;
+        const rawAnswer = req.body?.selectedAnswerIndex ?? req.query.selectedAnswerIndex;
         const selectedAnswerIndex = Number(rawAnswer);
     
         if (!Number.isInteger(selectedAnswerIndex))

@@ -26,8 +26,10 @@
     } | null;
   };
 
+// $state permet -> une variable change = la page met à jour automatiquement le contenu affiché qui dépend de cette variable
+// doc officiel -> "The $state rune allows you to create reactive state, which means that your UI reacts when it changes"
   let gameId = $state<string | null>(null);
-  let currentQuestion = $state<PublicQuestion | null>(null);
+  let currentQuestion = $state<PublicQuestion | null>(null); 
   let score = $state(0);
   let isFinished = $state(false);
   let feedback = $state('');
@@ -96,7 +98,8 @@
       score = result.data.score;
       isFinished = result.data.isFinished;
       currentQuestion = result.data.nextQuestion;
-    } catch (err) {
+    } 
+    catch (err) {
       console.error('submitAnswer error:', err);
       error = 'Erreur réseau pendant la réponse.';
     } finally {

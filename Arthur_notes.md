@@ -6,9 +6,11 @@
 
 ## Workflow Backend 
 
-- creer une strucure coherente aux deux parties 
-- plug une pseudo DB pour tester le back
-- merge 2 parties (Jianxin/Arthur)
+Connexion avec DB + utilisation ORM :
+1.garder le gameplay actuel fonctionnel
+2.ajouter un modèle GameSession dans Prisma
+3.créer un PrismaGameRepository
+4.remplacer progressivement le repository mémoire
 
 ## Current questions
 - Processus du focntionnement du jeu cote back (structure claire et utilisable de tous comme une class en cpp?)
