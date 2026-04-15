@@ -3,7 +3,7 @@ import type { LoginInput, RegisterInput, UserOutput, AuthResult } from '@shared/
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AppError } from 'src/error/apperror';
-
+import {crypto} from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -26,7 +26,10 @@ export  class AuthService{
     const newuser = await this.userrepository.create(input)
     const JWT_SECRET = process.env.JWT_SECRET;
     const token = jwt.sign(
-        {id: newuser.id},
+        {
+            id: newuser.id,
+            jti: crypto.randomUUID()
+        },
         JWT_SECRET,
         {expiresIn: '7d'}
     )
@@ -49,7 +52,10 @@ export  class AuthService{
         }
         //3. get a jwt token 
         const token = jwt.sign(
-            {id: user.id},
+            {
+                id: user.id,
+                jti: crypto.randomUUID()
+            },
             JWT_SECRET,
             {expiresIn: '7d'}
         )

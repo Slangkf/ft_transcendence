@@ -56,7 +56,7 @@ export class AuthController{
     private cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict' as const,
+        sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000
     };
 
@@ -88,7 +88,13 @@ export class AuthController{
     }
     
     logout = async(req: Request, res: Response) => {
-        res.clearCookie('auth_token', this.cookieOptions);
+        res.clearCookie('auth_token');
+        await redis.set(
+            `blacklist: ${jti}`,
+            "1",
+            "EX",
+            7 * 24 * 60 * 60
+        )
         res.json({message: "Logged out"})
     }
 }
