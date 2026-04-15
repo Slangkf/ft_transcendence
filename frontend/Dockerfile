@@ -5,7 +5,9 @@ FROM    node:24-bookworm
 WORKDIR /app
 
 # Copy the local directory into the /app container directory.
-COPY    ./ /app
+COPY    frontend/package*.json ./
+COPY    ./frontend  .
+COPY    ./shared    ./src/lib
 
 # Install all listed dependencies from package.json
 RUN     npm install

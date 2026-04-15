@@ -49,7 +49,7 @@
         UserOutput in json 
 
 4. changepassword: 
-    fetch ("/api/me/changepassword", {
+    fetch ("/api/user/me/changepassword", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -69,3 +69,14 @@
     response:
         200
         
+5. logout: 
+    fetch ("/api/user/logout", {
+        method: "GET",
+        credentials: "include",
+        "Content-Type": "application/json"
+      }
+    })
+    response: 
+        200
+        message logged out in json
+6.  

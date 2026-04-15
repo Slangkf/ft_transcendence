@@ -1,14 +1,31 @@
 <!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { Login_Input } from '$lib/user.schema';
 
-	import { goto } from '$app/navigation';	
+	let error: string = "";
+	let success: string = "";
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
+
 		const form = event.target as HTMLFormElement;
+
 		const email = (form.email as HTMLInputElement).value;
 		const password = (form.password as HTMLInputElement).value;
 
+		// ✅ ZOD VALIDATION
+		const validation = Login_Input.safeParse({ email, password });
+
+		console.log("ZOD RESULT:", validation); 
+
+		if (!validation.success) {
+			error = validation.error.errors[0].message;
+			success = "";
+			return;
+		}
+
+		error = "";
 		try {
 			const response = await fetch('/api/auth/login', {
 				method: 'POST',

@@ -35,7 +35,13 @@ services:
       - .env
 
   frontend:
-    build: ./frontend
+    build: 
+      context: .
+      dockerfile: frontend/Dockerfile
+    volumes:
+      - ./frontend:/app
+      - ./shared:/app/src/lib
+      - /app/node_modules
     image: frontend:custom
     container_name: frontend
     networks: ["transcendence_network"]
