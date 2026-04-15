@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import questionsData from './questions.json';
+import { Question as PrismaQuestion } from '@prisma/client';
+import prisma from '../lib/prisma';
 import {
   AnswerResult,
   GameState,
@@ -11,12 +12,10 @@ import { GameRepository } from './game.repository';
 
 export class GameService
 {
-    private readonly questions: Question[];
+    // questions stored per game so each game can have a different quiz
+    private readonly gameQuestions = new Map<string, Question[]>();
 
-    constructor(private readonly gameRepository: GameRepository)
-    {
-        this.questions = questionsData as Question[];
-    }
+    constructor(private readonly gameRepository: GameRepository) {}
 
     private toPublicQuestion(question: Question): PublicQuestion
     {
@@ -27,13 +26,32 @@ export class GameService
         };
     }
 
-    public startGame(): StartGameResult | null
+    public async startGame(): Promise<StartGameResult | null>
     {
-        const firstQuestion = this.questions[0];
-    
+        const count = await prisma.quiz.count();
+        if (count === 0)
+            return null;
+
+        const skip = Math.floor(Math.random() * count);
+        const quiz = await prisma.quiz.findFirst({
+            skip,
+            include: { questions: true },
+        });
+
+        if (!quiz || quiz.questions.length === 0)
+            return null;
+
+        const questions: Question[] = quiz.questions.map((q: PrismaQuestion) => ({
+            id: q.id,
+            question: q.text,
+            options: q.options,
+            correctAnswerIndex: q.options.indexOf(q.answer),
+        }));
+
+        const firstQuestion = questions[0];
         if (!firstQuestion)
             return null;
-    
+
         const gameId = randomUUID();
         const gameState: GameState = {
             id: gameId,
@@ -41,9 +59,10 @@ export class GameService
             score: 0,
             isFinished: false,
         };
-    
+
         this.gameRepository.create(gameState);
-    
+        this.gameQuestions.set(gameId, questions);
+
         return {
             gameId,
             question: this.toPublicQuestion(firstQuestion),
@@ -57,8 +76,12 @@ export class GameService
         if (!gameState)
             return null;
 
+        const questions = this.gameQuestions.get(gameId) ?? [];
+
         if (gameState.isFinished)
         {
+            this.gameQuestions.delete(gameId);
+            this.gameRepository.delete(gameId);
             return {
                 isCorrect: false,
                 correctAnswer: '',
@@ -68,12 +91,14 @@ export class GameService
             };
         }
 
-        const currentQuestion = this.questions[gameState.currentQuestionIndex] ?? null;
+        const currentQuestion = questions[gameState.currentQuestionIndex] ?? null;
 
         if (!currentQuestion)
         {
             gameState.isFinished = true;
             this.gameRepository.update(gameState);
+            this.gameQuestions.delete(gameId);
+            this.gameRepository.delete(gameId);
 
             return {
                 isCorrect: false,
@@ -93,10 +118,12 @@ export class GameService
 
         gameState.currentQuestionIndex += 1;
 
-        if (gameState.currentQuestionIndex >= this.questions.length)
+        if (gameState.currentQuestionIndex >= questions.length)
         {
             gameState.isFinished = true;
             this.gameRepository.update(gameState);
+            this.gameQuestions.delete(gameId);
+            this.gameRepository.delete(gameId);
 
             return {
                 isCorrect,
@@ -107,13 +134,15 @@ export class GameService
             };
         }
 
-        const nextQuestion = this.questions[gameState.currentQuestionIndex];
+        const nextQuestion = questions[gameState.currentQuestionIndex];
 
         if (!nextQuestion)
         {
             gameState.isFinished = true;
             this.gameRepository.update(gameState);
-        
+            this.gameQuestions.delete(gameId);
+            this.gameRepository.delete(gameId);
+
             return {
                 isCorrect,
                 correctAnswer,
@@ -122,9 +151,9 @@ export class GameService
                 isFinished: true,
             };
         }
-        
+
         this.gameRepository.update(gameState);
-        
+
         return {
             isCorrect,
             correctAnswer,

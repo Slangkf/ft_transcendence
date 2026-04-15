@@ -7,9 +7,9 @@ const gameService = new GameService(gameRepository);
 
 export class GameController
 {
-    public static start(req: Request, res: Response): void
+    public static async start(req: Request, res: Response): Promise<void>
     {
-        const game = gameService.startGame();
+        const game = await gameService.startGame();
 
         if (!game)
         {
