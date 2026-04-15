@@ -1,4 +1,4 @@
-import {UserRepository} from '../User/user.repositery';
+import {UserRepository} from '../User/user.repository';
 import type { LoginInput, RegisterInput, UserOutput, AuthResult } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';

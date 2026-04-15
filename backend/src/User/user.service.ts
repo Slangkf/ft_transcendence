@@ -1,4 +1,4 @@
-import { UserRepository } from './user.repositery'
+import { UserRepository } from './user.repository'
 import type {UserOutput, ChangePdInput, AuthResult} from '@shared/user.schema'
 import { AppError } from 'src/error/apperror';
 import bcrypt from 'bcrypt';

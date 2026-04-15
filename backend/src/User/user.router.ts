@@ -5,7 +5,8 @@ import { UserController } from "./user.controller";
 const router = Router();
 const usercontroller = new UserController();
 
-router.get('/me', verifyToken, usercontroller.GetProfil)
-router.post('/me/changepassword', verifyToken, usercontroller.ChangePassword)
+router.use(verifyToken);
+router.get('/me', usercontroller.GetProfil)
+router.post('/me/changepassword', usercontroller.ChangePassword)
 
 export const UserRouter = router;
