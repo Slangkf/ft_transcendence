@@ -30,3 +30,8 @@ export type AnswerResult = {
   score: number;
   isFinished: boolean;
 };
+
+export interface IModeService {
+  startGame(): Promise<StartGameResult | null>;
+  submitAnswer(gameId: string, selectedAnswerIndex: number): AnswerResult | null;
+}

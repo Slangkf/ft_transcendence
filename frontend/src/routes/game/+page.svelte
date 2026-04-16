@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { page } from '$app/state';
+
+  const mode = $derived(page.url.searchParams.get('mode') ?? 'solo');
+
   type PublicQuestion = {
     id: number;
     question: string;
@@ -47,7 +51,7 @@
     gameId = null;
 
     try {
-      const response = await fetch('http://localhost:3000/game/start', {
+      const response = await fetch(`http://localhost:3000/game/${mode}/start`, {
         method: 'GET'
       });
 
@@ -77,7 +81,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3000/game/${gameId}/answer?selectedAnswerIndex=${selectedAnswerIndex}`,
+        `http://localhost:3000/game/${mode}/${gameId}/answer?selectedAnswerIndex=${selectedAnswerIndex}`,
         {
           method: 'GET'
         }

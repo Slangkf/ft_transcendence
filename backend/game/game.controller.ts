@@ -1,15 +1,40 @@
 import { Request, Response } from 'express';
+import { IModeService } from './game.types';
 import { GameRepository } from './game.repository';
-import { GameService } from './game.service';
+import { SoloService } from './solo';
+// import { MultiplayerService } from './multiplayer'; // uncomment when ready
+// import { IAService } from './ia';                   // uncomment when ready
 
-const gameRepository = new GameRepository();
-const gameService = new GameService(gameRepository);
+const repo = new GameRepository();
+
+const modeInstances: Record<string, IModeService> = {
+    solo: new SoloService(repo),
+    // multiplayer: new MultiplayerService(repo),
+    // ia: new IAService(repo),
+};
+
+function getModeService(mode: string): IModeService | null
+{
+    return modeInstances[mode] ?? null;
+}
 
 export class GameController
 {
     public static async start(req: Request, res: Response): Promise<void>
     {
-        const game = await gameService.startGame();
+        const service = getModeService(req.params.mode);
+
+        if (!service)
+        {
+            res.status(400).json({
+                success: false,
+                message: `Unknown game mode: ${req.params.mode}`,
+                data: null,
+            });
+            return;
+        }
+
+        const game = await service.startGame();
 
         if (!game)
         {
@@ -30,11 +55,20 @@ export class GameController
 
     public static answer(req: Request, res: Response): void
     {
+        const service = getModeService(req.params.mode);
+
+        if (!service)
+        {
+            res.status(400).json({
+                success: false,
+                message: `Unknown game mode: ${req.params.mode}`,
+                data: null,
+            });
+            return;
+        }
+
         const gameId = req.params.gameId;
-    
-// res = la réponse HTTP envoyée au client
-// status(200) = code HTTP
-// json(...) = convertit l’objet JavaScript en JSON et l’envoie au front
+
         if (!gameId)
         {
             res.status(400).json({
@@ -47,7 +81,7 @@ export class GameController
 
         const rawAnswer = req.body?.selectedAnswerIndex ?? req.query.selectedAnswerIndex;
         const selectedAnswerIndex = Number(rawAnswer);
-    
+
         if (!Number.isInteger(selectedAnswerIndex))
         {
             res.status(400).json({
@@ -57,9 +91,9 @@ export class GameController
             });
             return;
         }
-    
-        const result = gameService.submitAnswer(gameId, selectedAnswerIndex);
-    
+
+        const result = service.submitAnswer(gameId, selectedAnswerIndex);
+
         if (!result)
         {
             res.status(404).json({
@@ -69,7 +103,7 @@ export class GameController
             });
             return;
         }
-    
+
         res.status(200).json({
             success: true,
             message: result.isFinished ? 'Game finished.' : 'Answer submitted.',
