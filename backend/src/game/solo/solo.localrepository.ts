@@ -13,7 +13,7 @@ export class LocalGameRepository implements IGameRepository
 
     public async create(game: GameState): Promise<void>
     {
-        this.games.set(game.id, structuredClone(game));
+        this.games.set(game.gameId, structuredClone(game));
     }
 
     public async findById(gameId: string): Promise<GameState | null>
@@ -23,7 +23,7 @@ export class LocalGameRepository implements IGameRepository
 
     public async update(game: GameState): Promise<void>
     {
-        this.games.set(game.id, structuredClone(game));
+        this.games.set(game.gameId, structuredClone(game));
     }
 
     public async delete(gameId: string): Promise<void>

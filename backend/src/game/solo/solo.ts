@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { GameInfo, GameState, IModeService, StartGameResult } from "../game.types"
+import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult } from "../game.types"
 import { GameBaseService } from '../game.base';
 
 export class SoloService extends GameBaseService implements IModeService
@@ -13,12 +13,11 @@ export class SoloService extends GameBaseService implements IModeService
         const questions = await this.questionService.fetchQuizQuestions(quizId);
         if (!questions || questions.length === 0)
             return null;
-        const publicquestions = questions.map(toPublicQuestion);
         
         const gameId = randomUUID();
         const gameState: GameState = {
-            id: gameId,
-            questions: publicquestions,
+            gameId: gameId,
+            questions: questions,
             players: {
                 [userId]: {
                     id: userId,
@@ -45,16 +44,22 @@ export class SoloService extends GameBaseService implements IModeService
         if (!gameState)
             return null;
 
+        const toPublicState = (state: GameState): PublicGameState =>({
+            gameId: state.gameId,
+            players: state.players,
+            currentQuestionIndex: state.currentQuestionIndex,
+            isFinished: state.isFinished,
+            totalQuestions: state.questions.length,
+        })
         if (gameState.isFinished)
         {
             return {
-                gameresult:gameState,
+                gameresult: toPublicState(gameState),
                 correctAnswer: '',
                 nextQuestion: null,
             };
         }
-        const questions = gameState.questions;
-        const currentQuestion = questions[gameState.currentQuestionIndex] ?? null;
+        const currentQuestion = gameState.questions[gameState.currentQuestionIndex] ?? null;
 
         if (!currentQuestion)
         {
@@ -62,7 +67,7 @@ export class SoloService extends GameBaseService implements IModeService
             await this.gameRepository.update(gameState);
 
             return {
-                gameresult:gameState,
+                gameresult:toPublicState(gameState),
                 correctAnswer: '',
                 nextQuestion: null,
             };
@@ -88,39 +93,31 @@ export class SoloService extends GameBaseService implements IModeService
 
         gameState.currentQuestionIndex += 1;
 
-        if (gameState.currentQuestionIndex >= questions.length)
+        if (gameState.currentQuestionIndex >= gameState.questions.length)
         {
             gameState.isFinished = true;
             await this.gameRepository.update(gameState);
 
             return {
-                gameresult:gameState,
+                gameresult:toPublicState(gameState),
                 correctAnswer,
                 nextQuestion: null,
             };
         }
 
-        const nextQuestion = questions[gameState.currentQuestionIndex];
+        const nextQuestion = gameState.questions[gameState.currentQuestionIndex];
 
         if (!nextQuestion)
         {
             gameState.isFinished = true;
-            await this.gameRepository.update(gameState);
-
-            return {
-                gameresult:gameState,
-                correctAnswer,
-                nextQuestion: null,
-            };
         }
 
         await this.gameRepository.update(gameState);
 
         return {
-            gameresult:gameState,
+            gameresult:toPublicState(gameState),
             correctAnswer,
-            nextQuestion: this.questionService.toPublicQuestion(nextQuestion),
-            isFinished: false,
+            nextQuestion: nextQuestion? this.questionService.toPublicQuestion(nextQuestion) : null,
         };
     }
 }

@@ -2,7 +2,7 @@ import { QuestionRepository } from "src/question/question.repository";
 import { SoloService } from "./solo/solo"
 import {LocalGameRepository} from "./solo/solo.localrepository"
 import { QuestionService } from "src/question/question.service";
-
+import { IModeService } from "./game.types";
 const repo = new LocalGameRepository();
 const questionService = new QuestionService(new QuestionRepository());
 type Mode = "solo";

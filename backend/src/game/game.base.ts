@@ -1,5 +1,5 @@
 import { QuestionService } from "src/question/question.service";
-import { IGameRepository } from "./game.repository";
+import { IGameRepository } from "./game.types";
 
 export class GameBaseService 
 {

@@ -34,14 +34,22 @@ export type StartGameResult = {
 export type GameState = {
     gameId: string;
     questions: Question[];
-    players: Player[];
+    players: Record<string, Player>;
     currentQuestionIndex: number;
     isFinished: boolean;
+}
+//type for front 
+export type PublicGameState = {
+  gameId: string;
+  players: Record<string, Player>;
+  currentQuestionIndex: number;
+  isFinished: boolean;
+  totalQuestions: number;
 }
 
 //give all info to front with the correct answer
 export type GameInfo = {
-    gameresult: GameState,
+    gameresult: PublicGameState,
     correctAnswer: string,
     nextQuestion: PublicQuestion | null,
 }
@@ -52,7 +60,8 @@ export interface IGameRepository {
     update(game: GameState): Promise<void>;
     delete(gameId: string): Promise<void>;
 }
+
 export interface IModeService {
   startGame(userId: string): Promise<StartGameResult | null>;
-  submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): AnswerResult | null;
+  submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>;
 }

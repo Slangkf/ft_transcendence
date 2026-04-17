@@ -107,7 +107,7 @@ export class GameController
 
         res.status(200).json({
             success: true,
-            message: result.isFinished ? 'Game finished.' : 'Answer submitted.',
+            message: result.gameresult.isFinished ? 'Game finished.' : 'Answer submitted.',
             data: result,
         });
     }
