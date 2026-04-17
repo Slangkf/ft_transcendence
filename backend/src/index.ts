@@ -6,7 +6,7 @@ import {Request, Response } from 'express'
 import {AuthRouter} from './auth/auth.router'; 
 import {UserRouter} from './User/user.router';
 import cookieParser from 'cookie-parser';
-import gameRouter from '../game/game.router';
+import { gameRouter } from './game/game.router';
 import cors from 'cors';
 
 const app = express();
