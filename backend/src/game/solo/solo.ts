@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult } from "../game.types"
+import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult,
+    Player,PublicPlayer} from "../game.types"
 import { GameBaseService } from '../game.base';
 import { AppError } from 'src/error/apperror';
 
@@ -18,6 +19,7 @@ export class SoloService extends GameBaseService implements IModeService
         const gameId = randomUUID();
         const gameState: GameState = {
             gameId: gameId,
+            mode: 'solo',
             questions: questions,
             players: {
                 [userId]: {
@@ -45,9 +47,21 @@ export class SoloService extends GameBaseService implements IModeService
         if (!gameState)
             throw new AppError('Gamestate not find', 404);
 
+        const toPublicPlayer = (players: Record<string, Player>): Record<string, PublicPlayer> => ({
+            return Object.fromEntries(
+                Object.entries(players).map(([id, player]) => [
+                    id,
+                    {
+                        id: player.id,
+                        score: player.score,
+                        isAI: player.isAI,
+                    }
+                ])
+            );
+        };
         const toPublicState = (state: GameState): PublicGameState =>({
             gameId: state.gameId,
-            players: state.players,
+            players: toPublicPlayer(state.players),
             currentQuestionIndex: state.currentQuestionIndex,
             isFinished: state.isFinished,
             totalQuestions: state.questions.length,

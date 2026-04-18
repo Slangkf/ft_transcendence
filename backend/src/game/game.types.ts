@@ -24,8 +24,16 @@ export type Player = {
     id: string; //playerid
     score: number;
     answers: PlayerAnswer[];
+
+    isAI?: boolean;
+    status?: "online" | "offline" | "playing" | 'answered';
 }
 
+export type PublicPlayer = {
+    id: string; //playerid
+    score: number;
+    isAI?: boolean;
+}
 export type StartGameResult = {
   gameId: string;
   question: PublicQuestion;
@@ -33,15 +41,22 @@ export type StartGameResult = {
 
 export type GameState = {
     gameId: string;
+    mode: 'solo' | 'IA' | 'multiplayer';
     questions: Question[];
     players: Record<string, Player>;
     currentQuestionIndex: number;
     isFinished: boolean;
+
+    //for multiplayer
+    roomId?: string;
+    hostId?: string;
+    startedAt: Date;
+
 }
 //type for front 
 export type PublicGameState = {
   gameId: string;
-  players: Record<string, Player>;
+  players: Record<string, PublicPlayer>;
   currentQuestionIndex: number;
   isFinished: boolean;
   totalQuestions: number;
