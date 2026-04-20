@@ -1,4 +1,3 @@
-import cors from 'cors';
 import { createClient } from 'redis';
 import dotenv from 'dotenv';
 dotenv.config();
