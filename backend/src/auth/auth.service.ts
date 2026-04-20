@@ -2,10 +2,14 @@ import {UserRepository} from '../User/user.repository';
 import type { LoginInput, RegisterInput, UserOutput, AuthResult } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AppError } from 'src/error/apperror';
+import { AppError, ErrorCode } from 'src/error/apperror';
 import {randomUUID} from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+}
 
 export  class AuthService{
     private userrepository: UserRepository;
@@ -20,42 +24,50 @@ export  class AuthService{
     //3. generate jwt token update in useroutput and return 
     const exist_already = await this.userrepository.find_by_identifiant(input.email)
     if (exist_already){
-        throw new AppError('email already existe in user',409)
+        throw new AppError(
+            'email already registed in user', 
+            ErrorCode.AUTH_MAIL_ALREADY_EXIST,
+            409,
+            {email: input.email})
     }
 
     const newuser = await this.userrepository.create(input)
-    const JWT_SECRET = process.env.JWT_SECRET;
     const token = jwt.sign(
         {
             id: newuser.id,
-            jti: randomUUID()
+            jti: randomUUID(),
         },
         JWT_SECRET,
         {expiresIn: '7d'}
     )
-    console.log("in service, user: ",newuser);
     return {
         token,
-        user: newuser}
+        user: newuser,}
     }
 
     async login(input: LoginInput): Promise<AuthResult>{
         //1. find the user bye mail or username
         const user = await this.userrepository.find_by_identifiant(input.email);
         if (!user){
-            throw new AppError('Invalid credentials', 401)
+            throw new AppError(
+                'Invalid credentials', 
+                ErrorCode.AUTH_INVALID_CREDENTIALS,
+                401)
         }
 
         //2. if exite check the password 
         const valide_password = await bcrypt.compare(input.password, user.password);
         if (!valide_password){
-            throw new AppError ("Invalid credentials", 401)
+            throw new AppError (
+                'Invalid credentials', 
+                ErrorCode.AUTH_INVALID_CREDENTIALS,
+                401)
         }
         //3. get a jwt token 
         const token = jwt.sign(
             {
                 id: user.id,
-                jti: crypto.randomUUID()
+                jti: randomUUID(),
             },
             JWT_SECRET,
             {expiresIn: '7d'}
@@ -63,7 +75,10 @@ export  class AuthService{
         //return data with token
         return {
             token,
-            user: {id: user.id, username: user.username, email: user.email}
+            user: {
+                id: user.id, 
+                username: user.username, 
+                email: user.email,}
         }
     }
 }

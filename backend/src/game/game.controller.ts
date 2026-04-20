@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { GameServiceFactory } from './game.factory';
 import { AppError } from 'src/error/apperror';
+import { Apiresponse } from 'src/lib/api_response';
 
 export class GameController
 {
@@ -11,43 +12,28 @@ export class GameController
 
         if (!service)
         {
-           return res.status(400).json({
-                success: false,
-                error: {
-                    code : "UNKOWN GAME MODE",
-                    message: `Unknown game mode: ${req.params.mode}`,
-                },
-                data: null,
-            });
+           return res.status(400).json(
+                Apiresponse.error(
+                    "UNKNOWN_GAME_MODE",
+                     `Unknown game mode: ${req.params.mode}`)
+                );
         }
 
         try{
             const game = await service.startGame(userId);
-            res.status(201).json({
-                success: true,
-                message: 'Game started.',
-                data: game,
-            });
+            res.status(201).json(
+                Apiresponse.success(game, "Game started")
+            );
         }catch(error){
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({
-                    error:{
-                        code: error.code,
-                        message: error.message,
-                    },
-                });
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                );
             }
-            console.error(error);
-            return res.status(500).json({
-                error: {
-                    code: "INTERNAL",
-                    message: "Internal start solo game",
-                }
-            })
-
-        }
-        
-        
+            return res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal start solo game")
+            )
+        } 
     }
 
     public static async answer(req: Request, res: Response): Promise<void>
@@ -57,28 +43,18 @@ export class GameController
 
         if (!service)
         {
-            return res.status(400).json({
-                success: false,
-                error: {
-                    code: "UNKOWN_GAME_MODE",
-                    message: `Unknown game mode: ${req.params.mode}`, 
-                },
-                data: null,
-            });
+            return res.status(400).json(
+                Apiresponse.error("UNKOWN_GAME_MODE", `Unknown game mode: ${req.params.mode}`)
+            );
         }
 
         const gameId = req.params.gameId;
 
         if (!gameId)
         {
-            return res.status(400).json({
-                success: false,
-                error:{
-                    code: "MISSING_GAME_ID",
-                    message: "gameid is required"
-                },
-                data: null,
-            });
+            return res.status(400).json(
+                Apiresponse.error("MISSING_GAME_ID", "Gameid is required")
+                );
         }
 
         const rawAnswer = req.body?.selectedAnswerIndex ?? req.query.selectedAnswerIndex;
@@ -86,14 +62,9 @@ export class GameController
 
         if (!Number.isInteger(selectedAnswerIndex))
         {
-            return res.status(400).json({
-                success: false,
-                error: {
-                    code: "INVALIDE_ANSWER_INDEX",
-                    mesage: 'selectedAnswerIndex must be an integer.',
-                },
-                data: null,
-            });
+            return res.status(400).json(
+                Apiresponse.error("INVALIDE_ANSWER_INDEX", 'selectedAnswerIndex must be an integer.')
+                );
         }
 
         try{
@@ -101,38 +72,24 @@ export class GameController
 
             if (!result)
             {
-                return res.status(404).json({
-                    success: false,
-                    error:{
-                        code: "GAME_NOT_FOUND",
-                        message: 'Game not found.',
-                    },
-                    data: null,
-                });
+                return res.status(404).json(
+                    Apiresponse.error("GAME_NOT_FOUND", "Game not found")
+                    );
             }
 
-            return res.status(200).json({
-                success: true,
-                message: result.gameresult.isFinished ? 'Game finished.' : 'Answer submitted.',
-                data: result,
-            });
+            return res.status(200).json(
+                Apiresponse.success(result, "result.gameresult.isFinished ? 'Game finished.' : 'Answer submitted.'")
+                );
         }catch (error){
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({
-                    error: {
-                        code: error.code,
-                        message: error.message,
-                    },
-                })
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            console.error(error);
             
-            return res.status(500).json({
-                error: {
-                    code: "INTERNAL",
-                    message: "Internal submitanswer in solo",
-                }
-            })
+            return res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal start solo game")
+            )
         }
     }
 }

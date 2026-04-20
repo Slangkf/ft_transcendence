@@ -3,48 +3,7 @@ import type { Request, Response } from "express";
 import  { Register_Input, Login_Input  } from "@shared/user.schema";
 import { AppError } from "src/error/apperror";
 import {valideRequest} from "../middleware/zod_check"
-
-//export  class AuthController{
-//    private authservice: AuthService
-//
-//    constructor(){
-//        this.authservice = new AuthService();
-//    }
-//
-//    register = async(req: Request, res: Response)=> {
-//        const parsed = Register_Input.safeParse(req.body);
-//        if (!parsed.success){
-//            return res.status(400).json({errors: parsed.error.flatten()})
-//        }
-//
-//        try{
-//            const result = await this.authservice.register(parsed.data);
-//            res.status(201).json(result)
-//        }catch(error){
-//            if (error instanceof AppError){
-//                return res.status(error.statusCode).json({message: error.message})
-//            }
-//            res.status(500).json({message: "Internal server error"})
-//        }
-//    }
-//
-//    login = async(req: Request, res: Response)=>{
-//        const parsed = Login_Input.safeParse(req.body);
-//        if (!parsed.success){
-//            return res.status(400).json({errors: parsed.error.flatten()})
-//        }
-//
-//        try{
-//            const result = await this.authservice.login(parsed.data);
-//            res.json(result)
-//        } catch(error){
-//            if (error instanceof AppError){
-//                return res.status(error.statusCode).json({message: error.message})
-//            }
-//            res.status(500).json({message: "Internal server error"})
-//        }
-//    }
-//}
+import { Apiresponse } from "src/lib/api_response";
 
 //version for middleware of zod, add token in cookie 
 export class AuthController{
@@ -64,13 +23,18 @@ export class AuthController{
         try{
             const {token, user} = await this.authservice.register(req.valideBody)
             res.cookie('auth_token', token, this.cookieOptions);
-            res.status(201).json(user);
+            res.status(201).json(
+                Apiresponse.success(user, "success to registe")
+                );
         }catch(error){
-            console.log("error in control: ", error);
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({message: error.message})
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            res.status(500).json({message: "Internal server error for register"})
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal register error")
+                )
         }
     }
 
@@ -82,20 +46,33 @@ export class AuthController{
             
         }catch(error) {
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({message: error.message})
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            res.status(500).json({message: "Internal Server error for login"})
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal login error")
+                )
         }
     }
     
     logout = async(req: Request, res: Response) => {
-        res.clearCookie('auth_token');
-        await redis.set(
-            `blacklist: ${jti}`,
-            "1",
-            "EX",
-            7 * 24 * 60 * 60
-        )
-        res.json({message: "Logged out"})
+        try{
+            res.clearCookie('auth_token');
+            //await redis.set(
+            //    `blacklist: ${jti}`,
+            //    "1",
+            //    "EX",
+            //    7 * 24 * 60 * 60
+            //)
+            return res.json(
+                Apiresponse.success(null, "Logged out")
+            )
+        }catch(error){
+            return res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Logout failed")
+            )
+        }
     }
+    //logout need check redis 
 }

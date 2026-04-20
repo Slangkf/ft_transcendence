@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult,
     Player,PublicPlayer} from "../game.types"
 import { GameBaseService } from '../game.base';
-import { AppError } from 'src/error/apperror';
+import { AppError, ErrorCode } from 'src/error/apperror';
 
 export class SoloService extends GameBaseService implements IModeService
 {
@@ -10,11 +10,17 @@ export class SoloService extends GameBaseService implements IModeService
     {
         const quizId = await this.questionService.pickNextQuizId();
         if (quizId === null)
-            return null;
+            throw new AppError(
+                "No quiz available",
+                ErrorCode.GAME_NOT_FOUND,
+                404);
 
         const questions = await this.questionService.fetchQuizQuestions(quizId);
         if (!questions || questions.length === 0)
-            throw new AppError('no questions', 404);
+            throw new AppError(
+                'no questions', 
+                ErrorCode.QUESTION_NOT_FOUND,
+                404);
         
         const gameId = randomUUID();
         const gameState: GameState = {
@@ -45,31 +51,16 @@ export class SoloService extends GameBaseService implements IModeService
         const gameState = await this.gameRepository.findById(gameId);
 
         if (!gameState)
-            throw new AppError('Gamestate not find', 404);
+            throw new AppError(
+                'Gamestate not find',
+                ErrorCode.GAME_NOT_FOUND,
+                404);
 
-        const toPublicPlayer = (players: Record<string, Player>): Record<string, PublicPlayer> => ({
-            return Object.fromEntries(
-                Object.entries(players).map(([id, player]) => [
-                    id,
-                    {
-                        id: player.id,
-                        score: player.score,
-                        isAI: player.isAI,
-                    }
-                ])
-            );
-        };
-        const toPublicState = (state: GameState): PublicGameState =>({
-            gameId: state.gameId,
-            players: toPublicPlayer(state.players),
-            currentQuestionIndex: state.currentQuestionIndex,
-            isFinished: state.isFinished,
-            totalQuestions: state.questions.length,
-        })
+        
         if (gameState.isFinished)
         {
             return {
-                gameresult: toPublicState(gameState),
+                gameresult: this.toPublicState(gameState),
                 correctAnswer: '',
                 nextQuestion: null,
             };
@@ -82,18 +73,24 @@ export class SoloService extends GameBaseService implements IModeService
             await this.gameRepository.update(gameState);
 
             return {
-                gameresult:toPublicState(gameState),
+                gameresult: this.toPublicState(gameState),
                 correctAnswer: '',
                 nextQuestion: null,
             };
         }
 
         const player = gameState.players[userId];
-        if (!player) throw new AppError('player not find', );
+        if (!player) throw new AppError(
+            'player not find',
+            ErrorCode.PLAYER_NOT_FOUND,
+            400);
 
         if (selectedAnswerIndex < 0 || selectedAnswerIndex >= currentQuestion.options.length){
-             throw new AppError('Index answer error', 400);
-        }
+            throw new AppError(
+                'Index answer error', 
+                ErrorCode.QUESTION_NOT_FOUND,
+                400);
+        }//will check by zod with the input of answer
         const isCorrect = selectedAnswerIndex === currentQuestion.correctAnswerIndex;
 
         if (isCorrect)
@@ -114,7 +111,7 @@ export class SoloService extends GameBaseService implements IModeService
             await this.gameRepository.update(gameState);
 
             return {
-                gameresult:toPublicState(gameState),
+                gameresult: this.toPublicState(gameState),
                 correctAnswer,
                 nextQuestion: null,
             };
@@ -130,7 +127,7 @@ export class SoloService extends GameBaseService implements IModeService
         await this.gameRepository.update(gameState);
 
         return {
-            gameresult:toPublicState(gameState),
+            gameresult: this.toPublicState(gameState),
             correctAnswer,
             nextQuestion: nextQuestion? this.questionService.toPublicQuestion(nextQuestion) : null,
         };

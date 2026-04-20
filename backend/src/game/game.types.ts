@@ -50,7 +50,7 @@ export type GameState = {
     //for multiplayer
     roomId?: string;
     hostId?: string;
-    startedAt: Date;
+    startedAt?: Date;
 
 }
 //type for front 
