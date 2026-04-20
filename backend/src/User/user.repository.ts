@@ -30,7 +30,15 @@ export class UserRepository{
         return user
     }
 
-    async find_by_id(userid: string): Promise<UserDB | null>{
+    async findByUsername(identifiant: string): Promise<UserDB|null>{
+        const user = await prisma.user.findUnique({
+            where: {username: identifiant}
+        })
+        if (!user)  return null 
+        return user
+    }
+
+    async find_by_id(userid: number): Promise<UserDB | null>{
         const user = await prisma.user.findUnique({
             where: {id: userid}
         })
@@ -39,7 +47,7 @@ export class UserRepository{
     }
 
     //update password 
-    async update_password(userid: string, new_pd: string){
+    async update_password(userid: number, new_pd: string){
         return await prisma.user.update({
             where: {id: userid},
             data: {

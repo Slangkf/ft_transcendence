@@ -12,7 +12,7 @@ export class UserService{
         this.userrepository = new UserRepository();
     }
 
-    async get_profile(input: string): Promise<UserOutput>{
+    async get_profile(input: number): Promise<UserOutput>{
         const user = await this.userrepository.find_by_id(input);
         if (!user){
             throw new AppError("user not exist", 401)
@@ -21,7 +21,7 @@ export class UserService{
         return profil_of_user
     }
 
-    async change_password(userid: string, input: ChangePdInput): Promise<Boolean>{
+    async change_password(userid: number, input: ChangePdInput): Promise<Boolean>{
         // verifie with the password will realise by middleware in level controller
         // 1. verifie if the old password from input is the same in database
         // 2. change password, hash 

@@ -47,7 +47,7 @@ export class SoloService extends GameBaseService implements IModeService
         if (!gameState)
             throw new AppError('Gamestate not find', 404);
 
-        const toPublicPlayer = (players: Record<string, Player>): Record<string, PublicPlayer> => ({
+        const toPublicPlayer = (players: Record<string, Player>): Record<string, PublicPlayer> => {
             return Object.fromEntries(
                 Object.entries(players).map(([id, player]) => [
                     id,

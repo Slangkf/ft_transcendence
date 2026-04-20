@@ -21,6 +21,7 @@
 			console.log(result);
 
 			await goto('/api/user/me'); // redirection to profil
+		}
 		catch (error){
 			console.error('Error login: ', error);
 		}

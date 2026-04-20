@@ -18,10 +18,14 @@ export  class AuthService{
     //1. check mail or username existe
     //2. create with repository 
     //3. generate jwt token update in useroutput and return 
-    const exist_already = await this.userrepository.find_by_identifiant(input.email)
-    if (exist_already){
-        throw new AppError('email already existe in user',409)
+    const existEmail = await this.userrepository.find_by_identifiant(input.email)
+    if (existEmail){
+        throw new AppError('email already exist in user',409)
     }
+
+    const existUsername = await this.userrepository.findByUsername(input.username)
+    if (existUsername)
+        throw new AppError('username already exist in user', 409)
 
     const newuser = await this.userrepository.create(input)
     const JWT_SECRET = process.env.JWT_SECRET;
