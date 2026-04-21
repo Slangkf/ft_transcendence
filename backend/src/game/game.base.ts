@@ -30,8 +30,9 @@ export class GameBaseService
 }
 
 /**
- * Game base: prepare questions
- * 
- * 
- * 
+ * Game base: 
+ * 1. prepare questions
+ * 2. use the different repository for different service, only redis now
+ * 3. need a step to save the result in database（ every service have to give back the result of the game)
+ * 4. 
  */

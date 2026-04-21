@@ -1,15 +1,24 @@
-/** calcule the score for multiplayer >= 2
- *      1. only 2 players now 
- *      2. score: correct: +10, not correct: -5, vitess: <= time +30 as bonus
- *      3. 
- */
+import { GameBaseService } from "../game.base";
+import { GameInfo, IModeService, StartGameResult } from "../game.types";
+import { AppError, ErrorCode } from "src/error/apperror";
 
-export const MultiRules = {
-    init() = {
-        return {totalsocre: 0}
+export class MultiPlayer extends GameBaseService implements IModeService{
+    
+    public async startGame(userId: string): Promise<StartGameResult | null> {
+        
     }
 
-    apply() = {
-        const correct = 
+    public async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null> {
+        
     }
 }
+
+
+/****
+ *  1. need timecalcule to find which player is faster
+ *  2. need room to join (how? ), cannot joint since the game start 
+ *  3. timeout????
+ *  4. room clare: in 5min no response, delete room
+ *  5. deconnecte： need a timer to connecte again, failed: the player in the room win 
+ * 
+ */

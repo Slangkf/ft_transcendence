@@ -18,6 +18,8 @@ export type PlayerAnswer = {
     questionId: number;
     selectedAnswerIndex: number; //remember the choice of player answer
     isCorrect: boolean;
+
+    answeredAt?: Date; // for multiplayer
 }
 
 export type Player = {
@@ -27,6 +29,9 @@ export type Player = {
 
     isAI?: boolean;
     status?: "online" | "offline" | "playing" | 'answered';
+    joinOrder?: number; // to get a host for the room 
+    lastActiveAt?: Date;
+
 }
 
 export type PublicPlayer = {
@@ -35,8 +40,8 @@ export type PublicPlayer = {
     isAI?: boolean;
 }
 export type StartGameResult = {
-  gameId: string;
-  question: PublicQuestion;
+    gameId: string;
+    question: PublicQuestion;
 };
 
 export type GameState = {
@@ -69,6 +74,14 @@ export type GameInfo = {
     nextQuestion: PublicQuestion | null,
 }
 
+//type result to save in database
+//export type Result = {
+//    gameId: string,
+//    mode: "solo" | "IA" | "multiplayer",
+//    players: Record<string, PublicPlayer>,
+//    
+//}
+
 export interface IGameRepository {
     create(game:GameState): Promise<void>;
     findById(gameId: string): Promise<GameState | null>;
@@ -79,4 +92,5 @@ export interface IGameRepository {
 export interface IModeService {
   startGame(userId: string): Promise<StartGameResult | null>;
   submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>;
+  //giveresult(gameId: string) : Promise<Result>;
 }
