@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult,
     Player,PublicPlayer} from "../game.types"
 import { GameBaseService } from '../game.base';
@@ -6,45 +5,16 @@ import { AppError, ErrorCode } from 'src/error/apperror';
 
 export class SoloService extends GameBaseService implements IModeService
 {
-    public async startGame(userId: string): Promise<StartGameResult | null>
+    async startGame(userId: string): Promise<StartGameResult | null>
     {
-        const quizId = await this.questionService.pickNextQuizId();
-        if (quizId === null)
-            throw new AppError(
-                "No quiz available",
-                ErrorCode.GAME_NOT_FOUND,
-                404);
+        const players = { [userId]: this.buildPlayer(userId) };
 
-        const questions = await this.questionService.fetchQuizQuestions(quizId);
-        if (!questions || questions.length === 0)
-            throw new AppError(
-                'no questions', 
-                ErrorCode.QUESTION_NOT_FOUND,
-                404);
-        
-        const gameId = randomUUID();
-        const gameState: GameState = {
-            gameId: gameId,
-            mode: 'solo',
-            questions: questions,
-            players: {
-                [userId]: {
-                    id: userId,
-                    score: 0,
-                    answers: []
-                }
-            },
-            currentQuestionIndex: 0,
-            isFinished: false,
-        };
-
-        await this.gameRepository.create(gameState);
-
-        return {
-            gameId,
-            question: this.questionService.toPublicQuestion(questions[0]),
-        };
-    }
+        const state = await this.prepareGame(players, "solo");
+        await this.gameRepository.create(state);
+        return {gameId: state.gameId,
+            question: this.questionService.toPublicQuestion(state.questions[0]),
+        }
+    } 
 
     public async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>
     {
@@ -53,10 +23,8 @@ export class SoloService extends GameBaseService implements IModeService
         if (!gameState)
             throw new AppError(
                 'Gamestate not find',
-                ErrorCode.GAME_NOT_FOUND,
-                404);
+                ErrorCode.GAME_NOT_FOUND);
 
-        
         if (gameState.isFinished)
         {
             return {
@@ -65,71 +33,22 @@ export class SoloService extends GameBaseService implements IModeService
                 nextQuestion: null,
             };
         }
-        const currentQuestion = gameState.questions[gameState.currentQuestionIndex] ?? null;
-
-        if (!currentQuestion)
-        {
-            gameState.isFinished = true;
-            await this.gameRepository.update(gameState);
-
-            return {
-                gameresult: this.toPublicState(gameState),
-                correctAnswer: '',
-                nextQuestion: null,
-            };
-        }
-
         const player = gameState.players[userId];
         if (!player) throw new AppError(
             'player not find',
-            ErrorCode.PLAYER_NOT_FOUND,
-            400);
-
-        if (selectedAnswerIndex < 0 || selectedAnswerIndex >= currentQuestion.options.length){
-            throw new AppError(
-                'Index answer error', 
-                ErrorCode.QUESTION_NOT_FOUND,
-                400);
-        }//will check by zod with the input of answer
-        const isCorrect = selectedAnswerIndex === currentQuestion.correctAnswerIndex;
-
-        if (isCorrect)
-            player.score += 1;
-
-        player.answers.push({
-            questionId: currentQuestion.id,
-            selectedAnswerIndex,
-            isCorrect,
-        })
-        const correctAnswer = currentQuestion.options[currentQuestion.correctAnswerIndex] ?? '';
-
-        gameState.currentQuestionIndex += 1;
-
-        if (gameState.currentQuestionIndex >= gameState.questions.length)
-        {
-            gameState.isFinished = true;
-            await this.gameRepository.update(gameState);
-
-            return {
-                gameresult: this.toPublicState(gameState),
-                correctAnswer,
-                nextQuestion: null,
-            };
-        }
-
-        const nextQuestion = gameState.questions[gameState.currentQuestionIndex];
-
-        if (!nextQuestion)
-        {
-            gameState.isFinished = true;
-        }
+            ErrorCode.PLAYER_NOT_FOUND);
+        if (player.status === 'answered') throw new AppError(
+            'already answered',
+            ErrorCode.ALREADY_ANSWERED
+        )
+        this.validateAnswer(gameState, selectedAnswerIndex, userId);
+        this.advance(gameState);
 
         await this.gameRepository.update(gameState);
+        if (gameState.isFinished){
+            await this.gameRepository.delete(gameState.gameId)
+        }
 
-        return {
-            gameresult: this.toPublicState(gameState),
-            correctAnswer,
-            nextQuestion: nextQuestion? this.questionService.toPublicQuestion(nextQuestion) : null,
-        };
+        return this.buildGameInfo(gameState);
     }
 }

@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
-import type { Room, RoomPlayer, CreateRoomParams, JoinRoomParams } from "./room.types";
+import type { RoomPlayer, Room, CreateRoomParams, JoinRoomParams } from "./room.types";
 import { RoomRepository } from './room.repository';
+import { AppError, ErrorCode } from 'src/error/apperror';
 
 
 export class RoomService{
@@ -26,20 +27,96 @@ export class RoomService{
             players: {
                 [params.hostId]: hostPlayer,
             },
-            maxPlayers: params.maxPlayers || 5,
+            minPlayers: 2, 
+            maxPlayers: params.maxPlayers || 4,
             status: 'waiting',
             createdAt: new Date(),
             gameId: '',
         }
         //save in redis
-        
+        // await this.roomrepository.
         return room
     }
 
     async jointRoom(params: JoinRoomParams): Promise<Room>{
         //1. check the status of the room
+        const room = this.roomrepository.getroom(params.roomId);
 
-        //2. 
+        if (!room)  throw new AppError(
+            "Room not exist", 
+            ErrorCode.ROOM_NOT_FOUND,
+        );
+        //2. check the status of a room, refuse when it is ingame or finished
+        if (room.status !== 'waiting') throw new AppError(
+            "Room status is not waiting",
+            ErrorCode.ROOM_NOT_AVAILABLE,
+        );
+        //3. when it starts, check nombre of players in the room, >= 2 && <4 ok 
+        if (Object.keys(room.players).length >= room.maxPlayers) throw new AppError(
+            "Room is full",
+            ErrorCode.ROOM_FULL,
+        )
+        if (room.players[params.playerId]) throw new AppError(
+            "Player already in room",
+            ErrorCode.ROOM_NOT_AVAILABLE,
+        )
+
+        const newplayer: RoomPlayer = {
+            id: params.playerId,
+            nickname: params.playerNickname,
+            isReady: false,
+            joinedAt: new Date(),
+        }
+        //save in redis
+        return {...room, players: {...room.players, [params.playerId]: newplayer}}
+    }
+
+    async leaveRoom(roomId: string, playerId: string): Promise<Room | null>{
+        const room = await this.roomrepository.getroom(roomId);
+        if (!room)  throw new AppError(
+            "Room not exist", 
+            ErrorCode.ROOM_NOT_AVAILABLE,
+        );
+        // redis delete player
+
+        // check the nombre of players in the room after, if ===0 delete
+        const remainPlayers = Object.keys(room.players).filter(id => id !== playerId);
+        if (remainPlayers.length === 0){
+            //redis delete the room
+            return null;
+        }
+        //if the player is the host: change the host of room
+        if (room.hostId === playerId){
+            const newhost = remainPlayers[0];
+            //update in redis
+        }
+        return await this.roomrepository.getroom(roomId);
+    }
+    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<void>{
+        //1. get the player in redis
+        const room = await this.roomrepository.getroom(roomId);
+        if (!room)  throw new AppError(
+            "Room not exist", 
+            ErrorCode.ROOM_NOT_AVAILABLE,
+        );
+        const player = room.players[playerId];
+        if (!player) throw new AppError(
+            "Player not found",
+            ErrorCode.PLAYER_NOT_FOUND,
+        )
+        //2. update the status of player
+        player.isReady = isReady;
+        //3. check if everyone is ready
+        const allPlayers =  // need to get from redis
+        const allready = allPlayers.every(p => p.isReady);
+        //4. check the condition to start a game, >= 2 players and everyone is ready 
+        if (allready && allPlayers.length >= 2){
+            //redis update the status of room to starting
+        }
+    }
+
+    async deleteRoom(roomId: string): Promise<void>{
+        //redis delete the information of the room 
     }
 }
 
@@ -50,5 +127,5 @@ export class RoomService{
  *      1. create a room
  *      2. join a room before the game start only (refuse the connection since the game start)
  *      3. leave a room (traitement of host in the room)
- *      4. 
+ *      4. change the status of player， and check if everyone is ready to start the game
  */

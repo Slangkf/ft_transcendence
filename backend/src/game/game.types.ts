@@ -19,16 +19,16 @@ export type PlayerAnswer = {
     selectedAnswerIndex: number; //remember the choice of player answer
     isCorrect: boolean;
 
-    answeredAt?: Date; // for multiplayer
+    answeredAt?: number; // for multiplayer
 }
 
 export type Player = {
     id: string; //playerid
     score: number;
     answers: PlayerAnswer[];
+    status: "online" | "offline" | "playing" | 'answered';
 
     isAI?: boolean;
-    status?: "online" | "offline" | "playing" | 'answered';
     joinOrder?: number; // to get a host for the room 
     lastActiveAt?: Date;
 
@@ -44,20 +44,26 @@ export type StartGameResult = {
     question: PublicQuestion;
 };
 
-export type GameState = {
+export type SoloGameState = {
     gameId: string;
-    mode: 'solo' | 'IA' | 'multiplayer';
+    mode: 'solo' | 'IA' 
     questions: Question[];
     players: Record<string, Player>;
     currentQuestionIndex: number;
     isFinished: boolean;
-
-    //for multiplayer
-    roomId?: string;
-    hostId?: string;
-    startedAt?: Date;
+    startedAt: Date;
 
 }
+
+export type MultiGameState = SoloGameState & {
+    mode: "multiplayer";
+    roomId: string;
+    hostId: string;
+    startedAt: Date;
+}
+export type GameState = SoloGameState | MultiGameState;
+
+
 //type for front 
 export type PublicGameState = {
   gameId: string;
@@ -90,7 +96,7 @@ export interface IGameRepository {
 }
 
 export interface IModeService {
-  startGame(userId: string): Promise<StartGameResult | null>;
+  startGame(userId: string, roomId?: string): Promise<StartGameResult | null>;
   submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>;
   //giveresult(gameId: string) : Promise<Result>;
 }

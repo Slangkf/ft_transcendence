@@ -3,7 +3,13 @@ import { redis } from "src/lib/redis";
 const ROOM_TTL = 60 * 60 *1;
 
 export class RoomRepository{
+    async getroom(roomId: string): Promise<Room>{
 
+    }
+
+    async getPlayer(roomId: string): {
+
+    }
 }
 
 /***
