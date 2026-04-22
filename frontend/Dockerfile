@@ -7,9 +7,6 @@ WORKDIR /app
 # Copy the local directory into the /app container directory.
 COPY    ./ /app
 
-# Copy the 'shared' directory into the /src/lib container directory.
-COPY    ./shared    ./src/lib
-
 # Install all listed dependencies from package.json
 RUN     npm install
 
