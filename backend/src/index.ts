@@ -14,10 +14,9 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors({
-  origin: 'http://localhost:5500',
+  origin: 'https://localhost:8888',
   credentials: true
 }));
-
 
 // ====== INIT FUNCTION ======
 const start = async () => {

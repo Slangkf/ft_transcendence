@@ -8,7 +8,8 @@ export class GameController
     public static async start(req: Request, res: Response): Promise<void>
     {
         const service = GameServiceFactory.get(req.params.mode);
-        const userId = req.user.id; // userid is in httponly cookie 
+        // const userId = req.user.id; // userid is in httponly cookie 
+        const userId = req.user?.id ?? 1;
 
         if (!service)
         {
@@ -39,7 +40,8 @@ export class GameController
     public static async answer(req: Request, res: Response): Promise<void>
     {
         const service = GameServiceFactory.get(req.params.mode);
-        const userId = req.user.id;
+        // const userId = req.user.id;
+        const userId = req.user?.id ?? 1;
 
         if (!service)
         {
