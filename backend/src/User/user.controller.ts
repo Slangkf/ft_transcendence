@@ -44,4 +44,16 @@ export class UserController{
             res.status(500).json({message: "Internal changepassword error"})
         }
     }
+
+    UpdateAvatar = async(req: Request, res: Response) => {
+        try{
+            const result = await this.userservice.update_avatar(req.user.id, req.file);
+            res.json(result);
+        }catch(error){
+            if (error instanceof AppError){
+                return res.status(error.statusCode).json({message: error.message})
+            }
+            res.status(500).json({message: "Internal avatar update error"})
+        }
+    }
 }

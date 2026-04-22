@@ -29,6 +29,7 @@ services:
     volumes:
         - ./backend:/app/backend
         - ./shared:/app/shared
+        - ./backend/uploads:/app/uploads
     container_name: backend
     networks: ["transcendence_network"]
     restart: always

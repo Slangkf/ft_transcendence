@@ -33,6 +33,8 @@ const start = async () => {
     app.use(express.json());
     app.use(cookieParser());
 
+    app.use('/uploads', express.static('uploads'));
+
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
     app.use('/game', gameRouter);

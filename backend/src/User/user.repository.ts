@@ -1,9 +1,20 @@
-import type { UserDB, RegisterInput, UserOutput, UserProfil} from "@shared/user.schema";
+import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
-import { AppError } from "src/error/apperror";
 
 export class UserRepository{
+    private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'wins' | 'losses' | 'friendsNb'>): UserOutput {
+        return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            url: user.url,
+            wins: user.wins,
+            losses: user.losses,
+            friendsNb: user.friendsNb
+        };
+    }
+
     //1. creation a compte
     async create(input: RegisterInput): Promise<UserOutput>{
         const hashed_password = await bcrypt.hash(input.password, 10);
@@ -12,13 +23,10 @@ export class UserRepository{
                 username: input.username,
                 email: input.email,
                 password: hashed_password,
+                url: "/uploads/avatars/default.jpg"
             }
         })
-        return {
-            id: newuser.id,
-            username: newuser.username,
-            email: newuser.email
-        }
+        return this.toUserOutput(newuser);
     }
 
     //find a user by email or username, prepare for authendification 
@@ -55,6 +63,16 @@ export class UserRepository{
             }
         })
     }
+
+    async update_avatar(userid: number, avatarUrl: string) {
+        const updatedUser = await prisma.user.update({
+            where: { id: userid },
+            data: { url: avatarUrl }
+        });
+
+        return this.toUserOutput(updatedUser);
+    }
+
 }
 
 

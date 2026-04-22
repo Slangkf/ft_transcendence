@@ -26,6 +26,10 @@ curl -i -b cookies.txt -k -X POST https://localhost:8888/api/user/me/changepassw
     "confirmpd": "newpass123"
   }'
 
+----- update avatar:
+curl -i -b cookies.txt -k -X POST https://localhost:8888/api/user/me/avatar \
+  -F "avatar=@/absolute/path/to/avatar.jpg"
+
 
 //////////////////////////////////////
 

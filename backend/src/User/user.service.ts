@@ -1,10 +1,9 @@
 import { UserRepository } from './user.repository'
-import type {UserOutput, ChangePdInput, AuthResult} from '@shared/user.schema'
+import type {UserOutput, ChangePdInput} from '@shared/user.schema'
 import { AppError } from 'src/error/apperror';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET;
+import fs from 'fs/promises';
+import path from 'path';
 
 export class UserService{
     private userrepository: UserRepository;
@@ -46,6 +45,46 @@ export class UserService{
      
         return true;
     }
+
+    async update_avatar(userid: number, file?: Express.Multer.File): Promise<UserOutput>{
+        if (!file) {
+            throw new AppError("avatar file is required", 400);
+        }
+
+        const user = await this.userrepository.find_by_id(userid);
+        if (!user){
+            throw new AppError("user not found", 404)
+        }
+
+        const previousAvatarUrl = user.url;
+        const avatarUrl = `/uploads/avatars/${file.filename}`;
+        const updatedUser = await this.userrepository.update_avatar(userid, avatarUrl);
+
+        await this.delete_previous_avatar(previousAvatarUrl);
+
+        return updatedUser;
+    }
+
+    private async delete_previous_avatar(avatarUrl?: string | null): Promise<void>{
+        if (!avatarUrl || avatarUrl === '/uploads/avatars/default.jpg'){
+            return;
+        }
+
+        if (!avatarUrl.startsWith('/uploads/avatars/')){
+            return;
+        }
+
+        const avatarPath = path.resolve(process.cwd(), avatarUrl.slice(1));
+
+        try{
+            await fs.unlink(avatarPath);
+        }catch(error: any){
+            if (error?.code !== 'ENOENT'){
+                console.log('failed to delete previous avatar:', error);
+            }
+        }
+    }
+
 }
 
 /****
