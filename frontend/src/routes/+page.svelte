@@ -19,7 +19,8 @@
 			const result = await response.json();
 			console.log(result);
 
-			await goto('/api/user/me'); // redirection to profil
+			if (response.ok)
+				await goto('/modes');
 		}
 		catch (error){
 			console.error('Error login: ', error);

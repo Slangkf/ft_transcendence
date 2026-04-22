@@ -46,8 +46,8 @@ services:
 
   frontend:
     build: 
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     volumes:
       - ./frontend:/app
       - ./shared:/app/src/lib
