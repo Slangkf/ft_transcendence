@@ -1,8 +1,0 @@
-@import "tailwindcss";
-
-.template {
-  @apply flex flex-col min-h-screen;
-  @apply bg-[url(/images/background.png)];
-  @apply bg-cover bg-center bg-fixed;
-
-}
