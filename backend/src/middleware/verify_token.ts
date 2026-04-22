@@ -4,11 +4,16 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { redis } from '../lib/redis';
+import { AppError, ErrorCode } from 'src/error/apperror';
 
 export const verifyToken = async(req: Request, res: Response, next: NextFunction)=>{
     const token = req.cookies?.auth_token;
     if (!token){
-        return res.status(401).json({message: "not login"})
+        return next(new AppError(
+            "Not authenticated",
+            ErrorCode.AUTH_UNAUTHORIZED,
+            401
+        ))
     }
 
     try{
@@ -16,13 +21,19 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
         
         const exist = await redis.get(`blacklist:${decoded.jti}`);
         if (exist){
-            return res.status(401).json({message: "token in blacklist of redis"})
-        }
+            return next(new AppError(
+            "Token in blacklist",
+            ErrorCode.AUTH_UNAUTHORIZED,
+            401
+        ))}
         req.user = decoded
         next()
     }catch(error){
-        console.log("error in verif: ", error);
-        res.status(401).json({message: "token is unvalide"})
+        return next(new AppError(
+            "Invalide token",
+            ErrorCode.AUTH_UNAUTHORIZED,
+            401
+        ))
     }
 }
 
