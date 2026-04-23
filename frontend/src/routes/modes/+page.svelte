@@ -6,21 +6,9 @@
 	let { children } = $props();
 	let connected = false; // for preliminary testing.
 
-	async function handleGameMode(mode: "solo" | "IA" | "tournament" | "multiplayer") {
-    	try {
-    		const response = await fetch('/api/modes', {	// Check if the road is recognized by the backend
-        		method: 'POST',
-				headers: {'Content-Type': 'application/json' },
-				body: JSON.stringify({ mode })
-      		});
-
-			const result = await response.json();
-			console.log(result);
-			await goto(`/modes/${ result.gameMode }`); // Check the backend's return
-		}
-		catch (error) {
-			console.error('Game mode error:', error);
-    	}
+	async function handleGameMode(mode: "solo" | "IA" | "tournament" | "multiplayer") 
+	{
+		await goto(`/game?mode=${mode}`);
   	}
 </script>
 
