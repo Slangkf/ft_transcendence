@@ -1,7 +1,7 @@
 <!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Login_Input } from '$lib/user.schema';
+	import { Login_Input } from '$lib/shared/user.schema';
 
 	let error: string = "";
 	let success: string = "";

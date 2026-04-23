@@ -35,7 +35,7 @@ const start = async () => {
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
-    app.use('/game', gameRouter);
+    app.use('/api/game', gameRouter);
 
     // 3. Start server
     app.listen(PORT, () => {
