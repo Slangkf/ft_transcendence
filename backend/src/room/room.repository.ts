@@ -1,14 +1,23 @@
 import { redis } from "src/lib/redis";
+import { Room } from "./room.types";
 
 const ROOM_TTL = 60 * 60 *1;
 
 export class RoomRepository{
-    async getroom(roomId: string): Promise<Room>{
-
+    private getKey(roomId: string){
+        return `room:${roomId}`
     }
 
-    async getPlayer(roomId: string): {
+    async getroom(roomId: string): Promise<Room | null>{
+        const data = await redis.get(this.getKey(roomId));
+        if (!data) return null;
+    
+        return JSON.parse(data);
+    }
 
+    async update(roomId: string): Promise<void>{
+        const data = await this.getroom(roomId);
+        
     }
 }
 

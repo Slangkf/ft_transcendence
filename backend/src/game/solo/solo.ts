@@ -23,7 +23,8 @@ export class SoloService extends GameBaseService implements IModeService
         if (!gameState)
             throw new AppError(
                 'Gamestate not find',
-                ErrorCode.GAME_NOT_FOUND);
+                ErrorCode.GAME_NOT_FOUND,
+                404);
 
         if (gameState.isFinished)
         {
@@ -39,16 +40,17 @@ export class SoloService extends GameBaseService implements IModeService
             ErrorCode.PLAYER_NOT_FOUND);
         if (player.status === 'answered') throw new AppError(
             'already answered',
-            ErrorCode.ALREADY_ANSWERED
+            ErrorCode.PLAYER_ALREADY_ANSWERED
         )
         this.validateAnswer(gameState, selectedAnswerIndex, userId);
         this.advance(gameState);
 
         await this.gameRepository.update(gameState);
         if (gameState.isFinished){
-            await this.gameRepository.delete(gameState.gameId)
+            await this.gameRepository.delete(gameState.gameId);
+            return this.buildfinishedGameInfo(gameState);
         }
 
-        return this.buildGameInfo(gameState);
+        return this.buildPlayingGameInfo(gameState);
     }
 }

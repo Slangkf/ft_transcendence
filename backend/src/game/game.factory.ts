@@ -1,19 +1,30 @@
-import { QuestionRepository } from "src/question/question.repository";
-import { SoloService } from "./solo/solo"
-import {RedisGameRepository} from "./game.redis.repository"
-import { QuestionService } from "src/question/question.service";
-import { IModeService } from "./game.types";
+import { AppError, ErrorCode } from "src/error/apperror";
+import { IModeService, StartGameParms, StartGameResult } from "./game.types";
+import { Multiplayer } from "./multiplayer/multiplayer";
+import { SoloService } from "./solo/solo";
+import { RoomManager } from "src/room/room.manager";
 
-const repo = new RedisGameRepository();
-const questionService = new QuestionService(new QuestionRepository());
-type Mode = "solo";
 
-export class GameServiceFactory{
-    private static services: Record<Mode, IModeService> = {
-        solo : new SoloService(repo, questionService),
-    };
+export class GameServiceFactory implements IModeService{
+    constructor(
+        private soloService: SoloService,
+        private multiplayer: Multiplayer
+    ){}
 
-    static get(mode: string){
-        return this.services[mode as Mode] ?? null; 
+    async startGame(params: StartGameParms): Promise<StartGameResult | null> {
+        const {mode, userId, nickname} = params;
+
+        switch(mode){
+            case "solo":
+                return this.soloService.startGame(userId);
+            case "multi":
+                return this.multiplayer.startMultiGame(mode, userId, nickname);
+            default:
+                throw new AppError(
+                    "Unkown game mode",
+                    ErrorCode.GAME_UNKOWN_MODE,
+                    400
+                )
+        }
     }
 }

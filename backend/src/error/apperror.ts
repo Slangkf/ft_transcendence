@@ -24,6 +24,9 @@ export enum ErrorCode {
     //Question
     QUESTION_NOT_FOUND = "QUESTION_NOT_FOUND", //404
     
+    // Match system
+    MATCH_PLAYERS_NOT_ENOUGH = "MATCH_PLAYERS_NOT_ENOUGH",
+    MATCH_PLAYER_EXIST = "MATCH_PLAYER_EXIST",
     //System
     INTERNAL_ERROR = "INTERNAL_ERROR", //500
     FORBIDDEN = "FORBIDDEN", //403

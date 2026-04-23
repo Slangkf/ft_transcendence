@@ -8,6 +8,7 @@ import cors from 'cors';
 import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
 import {gameRouter} from './game/game.router';
+import { RoomRouter } from './room/room.router';
 import { redis } from './lib/redis';
 
 const app = express();
@@ -30,12 +31,13 @@ const start = async () => {
     console.log(await redis.get("test"));
 
     // 2. Express setup
-    app.use(express.json());
     app.use(cookieParser());
+    app.use(express.json());
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
-    app.use('/game', gameRouter);
+    app.use('/api/game', gameRouter);
+    //app.use('/api/room', RoomRouter);
 
     // 3. Start server
     app.listen(PORT, () => {

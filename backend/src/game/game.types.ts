@@ -27,11 +27,11 @@ export type Player = {
     score: number;
     answers: PlayerAnswer[];
     status: "online" | "offline" | "playing" | 'answered';
+    Totaltime: number;
 
     isAI?: boolean;
     joinOrder?: number; // to get a host for the room 
-    lastActiveAt?: Date;
-
+    lastActiveAt?: number;
 }
 
 export type PublicPlayer = {
@@ -39,6 +39,13 @@ export type PublicPlayer = {
     score: number;
     isAI?: boolean;
 }
+//type input from front 
+export type StartGameParms = {
+   mode: "solo" | "multi";
+   userId: string;
+   nickname: string;
+}
+
 export type StartGameResult = {
     gameId: string;
     question: PublicQuestion;
@@ -51,18 +58,16 @@ export type SoloGameState = {
     players: Record<string, Player>;
     currentQuestionIndex: number;
     isFinished: boolean;
-    startedAt: Date;
-
+    startedAt: number;
 }
 
 export type MultiGameState = SoloGameState & {
     mode: "multiplayer";
     roomId: string;
     hostId: string;
-    startedAt: Date;
+    startedAt: number;
 }
 export type GameState = SoloGameState | MultiGameState;
-
 
 //type for front 
 export type PublicGameState = {
@@ -73,20 +78,25 @@ export type PublicGameState = {
   totalQuestions: number;
 }
 
+export type FinalScore = {
+    gameId: string;
+    players: Record<string, PublicPlayer>;
+    winner: string; //give the id of winner
+    finishedAt: number;
+}
 //give all info to front with the correct answer
-export type GameInfo = {
+export type PlayingGameInfo = {
     gameresult: PublicGameState,
     correctAnswer: string,
     nextQuestion: PublicQuestion | null,
 }
 
-//type result to save in database
-//export type Result = {
-//    gameId: string,
-//    mode: "solo" | "IA" | "multiplayer",
-//    players: Record<string, PublicPlayer>,
-//    
-//}
+export type FinishedGameInfo = {
+    gameresult: PublicGameState;
+    finalscore: FinalScore;
+}
+
+export type GameInfo = PlayingGameInfo | FinishedGameInfo; 
 
 export interface IGameRepository {
     create(game:GameState): Promise<void>;
@@ -96,7 +106,7 @@ export interface IGameRepository {
 }
 
 export interface IModeService {
-  startGame(userId: string, roomId?: string): Promise<StartGameResult | null>;
-  submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>;
+  startGame(params: StartGameParms): Promise<StartGameResult | null>;
+  //submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>;
   //giveresult(gameId: string) : Promise<Result>;
 }

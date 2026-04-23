@@ -1,43 +1,42 @@
-import { GameBaseService } from "../game.base";
-import { GameInfo, IModeService, StartGameResult } from "../game.types";
+import { MultiService } from "./multi";
+import  type {
+    StartGameResult
+}from "../game.types"; 
 import { AppError, ErrorCode } from "src/error/apperror";
+import { Room } from "src/room/room.types";
 import { RoomManager } from "src/room/room.manager";
-import { RedisGameRepository } from "../game.redis.repository";
-import type { Room, RoomPlayer } from "src/room/room.types";
+import { MatchService } from "src/game/multiplayer/match/match.service";
 
-export class MultiPlayer extends GameBaseService implements IModeService{
-    private roommanager: RoomManager;
-    constructor(){
-        this.roommanager = new RoomManager();
-    }
 
-    public async startGame(userId: string): Promise<StartGameResult | null> {
-        //1. give a room by roommanager(need to add the user in waiting list, and give him a room)
-        const room = this.roommanager.getroomByUser(userId);
-        if (!room)  throw new AppError(
-            "room not exist",
-            ErrorCode.ROOM_NOT_FOUND,
-        )
-        //check if the user is a host 
-        if (room.hostId )
-        //check if the status of the room is waiting(normal the roommanager check if all players are ready )
-        //2. prepare the questions 
-        //3. create a gamestate
-        //4. add gameid in room
+export class Multiplayer {
+    constructor(
+        private matchservice: MatchService,
+        private roommanager: RoomManager,
+        private multiservice: MultiService
+    ){}
 
-    }
-
-    public async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null> {
+    //mode, nickname from input user, userid in req.body
+    async startMultiGame(mode: string,userId: string, nickname: string): Promise<StartGameResult | null>{
+        const jointqueue = await this.matchservice.joinQueue({
+            mode: mode,
+            userId: userId,
+            nickname: nickname
+        })
+        const match = await this.matchservice.matchPlayers(mode);
+        const room = await this.roommanager.createRoom({
+            hostId: userId,
+            hostNickname: nickname
+        })
+        const result = await this.multiservice.startGame(room);
+        room.status = "in_game";
+        room.gameId = result?.gameId;
         
+        //save in database
+        await this.roommanager.updatestatus(room, "in_game");
+        return result;
     }
 }
-
-
 /****
- *  1. need timecalcule to find which player is faster
- *  2. need room to join (how? ), cannot joint since the game start 
- *  3. timeout????
- *  4. room clare: in 5min no response, delete room
- *  5. deconnecte： need a timer to connecte again, failed: the player in the room win 
- * 
+ * the layer to make multiplayer and room together(?? multiplayer entry by here or game? )
+ * need to add websocket service with it 
  */
