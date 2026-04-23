@@ -1,20 +1,10 @@
 import {z} from 'zod'
 
-//type user for database 
-export const User_DB = z.object({
-    id: z.string().uuid(),
-    username: z.string().min(3).max(20),
-    email: z.string().email(),
-    password: z.string(),
-    createdAt: z.date()
-})
-export type UserDB = z.infer<typeof User_DB>;
-
 //type data from front
 export const Register_Input = z.object({
-    username: z.string().min(3).max(20),
-    email: z.string().email(),
-    password: z.string().min(8).max(20)
+	email: z.string().email("Invalid format"),
+    username: z.string().min(3, "Must be at least 3 characters").max(20, "Must not exceed 20 characters"),
+    password: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters")
 })
 export type RegisterInput = z.infer<typeof Register_Input>;
 
@@ -33,7 +23,7 @@ export const User_Output = z.object({
 })
 export type UserOutput = z.infer<typeof User_Output>;
 
-//typpe to authendification
+//type to authendification
 export const Auth_result = z.object({
     token: z.string(),
     user: User_Output
