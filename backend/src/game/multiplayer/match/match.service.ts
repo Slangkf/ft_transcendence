@@ -2,7 +2,7 @@ import { AppError, ErrorCode } from "src/error/apperror";
 import { MatchRepository } from "./match.repository";
 import { JoinRoomParams } from "../../../room/room.types";
 import { JoinQueueParams, MatchResult, MathQueueResult } from "./match.types";
-
+import { randomUUID } from "crypto";
 
 export class    MatchService{
     constructor(private matchrepository: MatchRepository){}
@@ -16,7 +16,7 @@ export class    MatchService{
         )
         await this.matchrepository.enqueue(params.mode, {
             userId: params.userId,
-            nickname:params.userId,
+            nickname: params.nickname,
             jointedAt: Date.now(),
         })
         return {
@@ -25,16 +25,13 @@ export class    MatchService{
         }
     }
 
-    async matchPlayers(mode: string ): Promise<MatchResult>{
+    async matchPlayers(mode: string ): Promise<MatchResult | null>{
         const queue = await this.matchrepository.getqueue(mode);
         // recupere la queue dans repo
         if (queue.length < 2) //need a systeme to sleep and wait the next time? 
-            throw new AppError(
-                "Not enough to match",
-                ErrorCode.MATCH_PLAYERS_NOT_ENOUGH,
-        )
+            return null; // Not enough players
         const [p1, p2] = queue.slice(0, 2);
-        const matchId = this.generateMatchId();
+        const matchId = randomUUID();
 
         //delete in queue
             await this.matchrepository.dequeue(mode, [p1.userId, p2.userId])

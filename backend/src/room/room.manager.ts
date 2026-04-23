@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { ChatEntryStrategy } from "./ChatEntry.stratege";
 import { GameEntryStrategy } from "./GameEntry.stratege";
 import { RoomService } from "./room.service";
@@ -14,7 +15,7 @@ export class RoomManager{
         ])
     }
     async createRoom(params: CreateRoomParams): Promise<Room>{
-        const roomId = await randomUUID();
+        const roomId = randomUUID();
 
         const hostPlayer: RoomPlayer = {
             id: params.hostId,
@@ -23,12 +24,24 @@ export class RoomManager{
             joinedAt: Date.now(),
         }
 
+        const players = { [params.hostId]: hostPlayer };
+        if (params.players) {
+            params.players.forEach(p => {
+                if (p.userId !== params.hostId) {
+                    players[p.userId] = {
+                        id: p.userId,
+                        nickname: p.nickname,
+                        isReady: true,
+                        joinedAt: Date.now(),
+                    };
+                }
+            });
+        }
+
         const room = {
             roomId,
             hostId: params.hostId,
-            players: {
-                [params.hostId]: hostPlayer,
-            },
+            players,
             status: 'waiting',
             maxPlayers: 2,
             createdAt: Date.now(),
@@ -55,7 +68,7 @@ export class RoomManager{
         return this.roomservice.getRoom(roomId);
     }
 
-    async updatestatus(room: Room, action: "in_game"| "starting"| "finished"){
+    async updateStatus(room: Room, action: "in_game"| "starting"| "finished"){
         room.status = action
         return await this.roomservice.save(room);
     }

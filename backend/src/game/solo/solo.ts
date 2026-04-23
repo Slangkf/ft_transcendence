@@ -22,7 +22,7 @@ export class SoloService extends GameBaseService implements IModeService
 
         if (!gameState)
             throw new AppError(
-                'Gamestate not find',
+                'Game state not found',
                 ErrorCode.GAME_NOT_FOUND,
                 404);
 
@@ -36,10 +36,10 @@ export class SoloService extends GameBaseService implements IModeService
         }
         const player = gameState.players[userId];
         if (!player) throw new AppError(
-            'player not find',
+            'Player not found',
             ErrorCode.PLAYER_NOT_FOUND);
         if (player.status === 'answered') throw new AppError(
-            'already answered',
+            'Player already answered',
             ErrorCode.PLAYER_ALREADY_ANSWERED
         )
         this.validateAnswer(gameState, selectedAnswerIndex, userId);

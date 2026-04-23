@@ -41,7 +41,7 @@ export type PublicPlayer = {
 }
 //type input from front 
 export type StartGameParms = {
-   mode: "solo" | "multi";
+   mode: "solo" | "multiplayer";
    userId: string;
    nickname: string;
 }

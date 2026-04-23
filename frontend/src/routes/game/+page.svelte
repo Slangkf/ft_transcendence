@@ -22,11 +22,21 @@
     success: boolean;
     message: string;
     data: {
-      isCorrect: boolean;
+      gameresult: {
+        gameId: string;
+        players: Record<string, { id: string; score: number; isAI?: boolean }>;
+        currentQuestionIndex: number;
+        isFinished: boolean;
+        totalQuestions: number;
+      };
       correctAnswer: string;
       nextQuestion: PublicQuestion | null;
-      score: number;
-      isFinished: boolean;
+      finalscore?: {
+        gameId: string;
+        players: Record<string, { id: string; score: number; isAI?: boolean }>;
+        winner: string;
+        finishedAt: number;
+      };
     } | null;
   };
 
@@ -58,8 +68,13 @@
       const result: StartGameApiResponse = await response.json();
       console.log('startGame result:', result);
 
-      if (!response.ok || !result.success || !result.data) {
+      if (!response.ok || !result.success) {
         error = result?.message ?? 'Impossible de démarrer la partie.';
+        return;
+      }
+
+      if (result.data === null) {
+        error = 'En attente d\'un adversaire...';
         return;
       }
 
@@ -95,9 +110,15 @@
         return;
       }
 
-      feedback = result.data.isCorrect
-        ? 'Correct answer.'
-        : `Wrong answer. Correct answer: ${result.data.correctAnswer}`;
+      const data = result.data;
+      const isCorrect = data.correctAnswer === ''; // Empty string means correct answer
+      feedback = !isCorrect ? `Wrong answer. Correct answer: ${data.correctAnswer}` : 'Correct answer.';
+      
+      // Get current player's score (use first player for now, should store userId)
+      const playerScores = Object.values(data.gameresult.players);
+      score = playerScores.length > 0 ? playerScores[0].score : 0;
+      isFinished = data.gameresult.isFinished;
+      currentQuestion = data.nextQuestion;
 
       score = result.data.score;
       isFinished = result.data.isFinished;

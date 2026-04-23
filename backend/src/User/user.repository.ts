@@ -22,9 +22,17 @@ export class UserRepository{
     }
 
     //find a user by email or username, prepare for authendification 
-    async find_by_identifiant(identifiant: string): Promise<UserDB|null>{
+    async find_by_email(identifiant: string): Promise<UserDB|null>{
         const user = await prisma.user.findUnique({
             where: {email: identifiant}
+        })
+        if (!user)  return null 
+        return user
+    }
+    
+    async find_by_username(identifiant: string): Promise<UserDB|null>{
+        const user = await prisma.user.findUnique({
+            where: {username: identifiant}
         })
         if (!user)  return null 
         return user

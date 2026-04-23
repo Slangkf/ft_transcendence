@@ -20,6 +20,7 @@ export type Room = {
 export type CreateRoomParams = {
     hostId: string;
     hostNickname: string;
+    players?: { userId: string; nickname: string }[];
 }
 
 export type JoinRoomParams = {

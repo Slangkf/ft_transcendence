@@ -74,6 +74,12 @@ export class GameBaseService
             404);
         player.answers.push(answer);
         player.status = "answered";
+        
+        // Update score if answer is correct
+        if (isCorrect) {
+            player.score += 1;
+        }
+        
         return {isCorrect, correctIndex: question.correctAnswerIndex};
     }
     //advance to the next question

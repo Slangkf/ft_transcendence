@@ -36,6 +36,11 @@ export class MultiService extends GameBaseService {
         }
 
         await this.gameRepository.update(state);
+        if (state.isFinished){
+            await this.gameRepository.delete(state.gameId);
+            return this.buildfinishedGameInfo(state);
+        }
+
         return this.buildPlayingGameInfo(state);
     }
     
