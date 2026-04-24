@@ -50,7 +50,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./frontend:/app
-      - ./shared:/app/src/lib
       - /app/node_modules
     image: frontend:custom
     container_name: frontend

@@ -3,23 +3,23 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
-	let { children } = $props();
-	let connected = false; // for preliminary testing.
-
 	async function handleGameMode(mode: "solo" | "IA" | "tournament" | "multiplayer") {
     	try {
-    		const response = await fetch('/api/modes', {	// Check if the road is recognized by the backend
+    		const response = await fetch('/api/game', {
         		method: 'POST',
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ mode })
       		});
-
+			if (!response.ok) {
+				console.error("DAMMMN")
+				return;
+			}
 			const result = await response.json();
 			console.log(result);
-			await goto(`/modes/${ result.gameMode }`); // Check the backend's return
+			await goto('/game'); // Check the backend's return
 		}
 		catch (error) {
-			console.error('Game mode error:', error);
+			console.error('Game mode page error:', error);
     	}
   	}
 </script>
