@@ -10,8 +10,8 @@ export type RegisterInput = z.infer<typeof Register_Input>;
 
 //type for login
 export const Login_Input = z.object({
-    email: z.string().email(), 
-    password: z.string().min(8)
+    email: z.string().email("Invalid format"), 
+    password: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters")
 })
 export type LoginInput = z.infer<typeof Login_Input>;
 
