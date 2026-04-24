@@ -56,6 +56,19 @@ export class Multiplayer {
         return result;
     }
 
+    // Player sets ready in the room
+    // Returns game start result if all players are ready, otherwise null
+    async setPlayerReady(roomId: string, userId: string, isReady: boolean): Promise<StartGameResult | null> {
+        const result = await this.roommanager.setReady(roomId, userId, isReady);
+        
+        // If all players are ready and room is in 'starting' status, start the game
+        if (result.allReady && result.room.status === 'starting') {
+            return this.startGameFromRoom(result.room);
+        }
+        
+        return null;
+    }
+
     async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null> {
         return this.multiservice.submitAnswer(gameId, selectedAnswerIndex, userId);
     }

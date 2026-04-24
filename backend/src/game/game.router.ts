@@ -36,7 +36,7 @@ const gamecontroller = new GameController(gameservice);
 router.use(verifyToken);
 
 router.post('/:mode/start', gamecontroller.start);
-router.post('/:roomId/ready', roomcontroller.setReady);
+router.post('/:mode/ready/:roomId', gamecontroller.setready);
 router.post('/:mode/:gameId/answer', gamecontroller.answer);
 
 export const gameRouter = router;

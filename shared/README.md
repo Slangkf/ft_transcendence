@@ -75,7 +75,7 @@
         credentials: "include",
         "Content-Type": "application/json"
       }
-    })
+    )
     response: 
         200
         message logged out in json
@@ -155,3 +155,15 @@
 	},
 	"error": null
 }
+
+8. setready pour le multiplayer
+fetch ('/api/game/:mode/ready/:roomId),  {
+        methode: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            isReady, //true value
+        })
+    })

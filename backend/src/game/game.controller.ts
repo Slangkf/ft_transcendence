@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { GameService } from './game.factory';
-import { AppError } from 'src/error/apperror';
+import { AppError, ErrorCode } from 'src/error/apperror';
 import { Apiresponse } from 'src/lib/api_response';
 
 export class GameController
@@ -22,7 +22,7 @@ export class GameController
                 );
             }
             res.status(200).json(
-                Apiresponse.success(result, "Game started")
+                Apiresponse.success(result, "Match found and game started")
             );
         }catch(error){
             console.error(error);
@@ -34,6 +34,40 @@ export class GameController
             }
             return res.status(500).json(
                 Apiresponse.error("INTERNAL_ERROR", "Internal start game")
+            )
+        } 
+    }
+
+    setready = async(req: Request, res: Response) => {
+        const roomId = req.params.roomId;
+        const isReady = req.body.isReady;
+        const userId = req.user.id;
+        try{
+            const result = await this.gameService.setReady(roomId, userId, isReady);
+            
+            // If result is null, still waiting for other players to ready
+            if (!result) {
+                return res.status(200).json(
+                    Apiresponse.error(
+                        "Waiting for other players",
+                        ErrorCode.MULTI_WAIT_OTHER_PLAYERS)
+                );
+            }
+
+            // All players ready, game starts
+            return res.status(200).json(
+                Apiresponse.success(result, "set ready and game started")
+            );
+        }catch(error){
+            console.error(error);
+            
+            if (error instanceof AppError){
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                );
+            }
+            return res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal set ready")
             )
         } 
     }

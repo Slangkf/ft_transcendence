@@ -61,8 +61,7 @@ export class RoomManager{
         return this.roomservice.leaveRoom(roomId, userId);
     }
 
-    async setReady(roomId: string, userId: string, isready: boolean){
-        const room = await this.roomservice.getRoom(roomId);
+    async setReady(roomId: string, userId: string, isready: boolean): Promise<{ allReady: boolean; room: Room }>{
         return this.roomservice.setPlayerReady(roomId, userId, isready);
     }
 

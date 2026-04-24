@@ -79,7 +79,7 @@ export class RoomService{
         await this.roomrepository.update(room);
         return await this.roomrepository.getroom(roomId);
     }
-    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<void>{
+    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room }>{
         //1. get the player in redis
         const room = await this.roomrepository.getroom(roomId);
         if (!room)  throw new AppError(
@@ -94,7 +94,7 @@ export class RoomService{
         //2. update the status of player
         player.isReady = isReady;
         //3. check if everyone is ready
-        const allPlayers = Object.values(room.players); // need to get from redis
+        const allPlayers = Object.values(room.players);
         const allready = allPlayers.every(p => p.isReady);
         //4. check the condition to start a game, >= 2 players and everyone is ready 
         if (allready && allPlayers.length >= room.maxPlayers){
@@ -102,6 +102,7 @@ export class RoomService{
             room.status = "starting";
         }
         await this.roomrepository.update(room);
+        return { allReady: allready && allPlayers.length >= room.maxPlayers, room };
     }
 
     async deleteRoom(roomId: string): Promise<void>{
