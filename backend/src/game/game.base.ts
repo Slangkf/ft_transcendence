@@ -1,8 +1,7 @@
 import { QuestionService } from "src/question/question.service";
-import { IGameRepository, Player, PublicPlayer, SoloGameState, MultiGameState, GameState, PublicGameState, PlayerAnswer } from "./game.types";
+import { IGameRepository, PublicPlayer, SoloGameState, MultiGameState, GameState, PlayerAnswer, PlayingGameInfo, FinishedGameInfo } from "./game.types";
 import { randomUUID } from 'crypto';
-import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult,
-    Player,PublicPlayer} from "../game.types"
+import { GameInfo, PublicGameState, Player, FinalScore} from "./game.types";
 import { AppError, ErrorCode } from "src/error/apperror";
 
 export class GameBaseService 
@@ -11,26 +10,19 @@ export class GameBaseService
         protected  gameRepository: IGameRepository,
         protected readonly questionService: QuestionService
     ){}
-    protected  toPublicPlayer (players: Record<string, Player>): Record<string, PublicPlayer> {
-            return Object.fromEntries(
-                Object.entries(players).map(([id, player]) => [
-                    id,
-                    {
-                        id: player.id,
-                        score: player.score,
-                        isAI: player.isAI,
-                    }
-                ])
-            );
-        };
-    protected toPublicState (state: GameState): PublicGameState {
+    //prepare to start a game
+    protected buildPlayer(id: string, opts?: { isAI?: boolean; joinOrder?: number }): Player {
         return {
-            gameId: state.gameId,
-            players: this.toPublicPlayer(state.players),
-            currentQuestionIndex: state.currentQuestionIndex,
-            isFinished: state.isFinished,
-            totalQuestions: state.questions.length,}
-        }
+          id,
+          score: 0,
+          answers: [],
+          status: 'playing',
+          Totaltime: 0,
+          isAI: opts?.isAI ?? false,
+          joinOrder: opts?.joinOrder,
+          lastActiveAt: Date.now(),
+        };
+    }
     protected async prepareGame(
         players: Record<string, Player>,
         mode: 'solo' | 'IA',
@@ -52,7 +44,7 @@ export class GameBaseService
               questions,
               currentQuestionIndex: 0,
               isFinished: false,
-              startedAt: new Date(),
+              startedAt: Date.now(),
             };
         
             if (mode === 'multiplayer') {
@@ -60,31 +52,37 @@ export class GameBaseService
             }
             return { ...base, mode };
         }
+    //common to valide answer, and add the score in state
     protected validateAnswer(state: GameState, selectedIndex: number, userId: string): {isCorrect: boolean; correctIndex: number}{
-            const question = state.questions[state.currentQuestionIndex] ?? null;
-            if (!question) throw new AppError(
-                "question not found",
-                ErrorCode.QUESTION_NOT_FOUND,
-            );
-
-            const isCorrect = selectedIndex === question.correctAnswerIndex;
-            const answer: PlayerAnswer = {
-                questionId: question.id,
-                selectedAnswerIndex: selectedIndex,
-                isCorrect,
-                answeredAt: Date.now(),
-            }
-            const player = state.players[userId];
-            if (!player) throw new AppError(
-                'player not find',
-                ErrorCode.PLAYER_NOT_FOUND,
-                400);
-            player.answers.push(answer);
-            player.status = "answered";
-
-            return {isCorrect, correctIndex: question.correctAnswerIndex};
+        const question = state.questions[state.currentQuestionIndex] ?? null;
+        if (!question) throw new AppError(
+            "question not found",
+            ErrorCode.QUESTION_NOT_FOUND,
+            404,
+        );
+        const isCorrect = selectedIndex === question.correctAnswerIndex;
+        const answer: PlayerAnswer = {
+            questionId: question.id,
+            selectedAnswerIndex: selectedIndex,
+            isCorrect,
+            answeredAt: Date.now(),
+        }
+        const player = state.players[userId];
+        if (!player) throw new AppError(
+            'player not find',
+            ErrorCode.PLAYER_NOT_FOUND,
+            404);
+        player.answers.push(answer);
+        player.status = "answered";
+        
+        // Update score if answer is correct
+        if (isCorrect) {
+            player.score += 1;
+        }
+        
+        return {isCorrect, correctIndex: question.correctAnswerIndex};
     }
-
+    //advance to the next question
     protected advance(state: GameState): void{
         state.currentQuestionIndex += 1;
         state.isFinished = state.currentQuestionIndex >= state.questions.length;
@@ -95,12 +93,51 @@ export class GameBaseService
             }
         }
     }
+    //change player to PublicPlayer, prepare for the front reponse
+    protected  toPublicPlayer (players: Record<string, Player>): Record<string, PublicPlayer> {
+            return Object.fromEntries(
+                Object.entries(players).map(([id, player]) => [
+                    id,
+                    {
+                        id: player.id,
+                        score: player.score,
+                        isAI: player.isAI,
+                        Totaltime: player.Totaltime,
+                    }
+                ])
+            );
+        };
+    
+    protected toPublicState (state: GameState): PublicGameState {
+        return {
+            gameId: state.gameId,
+            players: this.toPublicPlayer(state.players),
+            currentQuestionIndex: state.currentQuestionIndex,
+            isFinished: state.isFinished,
+            totalQuestions: state.questions.length,}
+        }
+    //get the final score for the front
+    protected buildFinalScore(state: GameState){
+        const players = Object.values(state.players);
+        const winner = players.reduce((prev, current)=>{
+            if (prev.score > current.score) return prev;
+            if (prev.score < current.score) return current;
 
-    protected buildGameInfo(state: GameState): GameInfo{
+            return prev.Totaltime < current.Totaltime ? prev : current})
+
+        return {
+            gameId: state.gameId,
+            players: this.toPublicPlayer(state.players),
+            winner: winner.id,
+            finishedAt: Date.now(),
+        }
+    }
+    //gamestate information when is playing for front
+    protected buildPlayingGameInfo(state: GameState): PlayingGameInfo{
         const answeredIndex = state.currentQuestionIndex -1;
-        const answeredQuestion = state.state.questions[answeredIndex];
+        const answeredQuestion = state.questions[answeredIndex];
         const correctAnswer = answeredQuestion.options[answeredQuestion.correctAnswerIndex];
- 
+
         const nextQuestion = state.isFinished
           ? null
           : this.questionService.toPublicQuestion(state.questions[state.currentQuestionIndex]);
@@ -111,17 +148,14 @@ export class GameBaseService
           nextQuestion,
         };
     }
-    protected buildPlayer(id: string, opts?: { isAI?: boolean; joinOrder?: number }): Player {
+    //gamestate information when the game finished 
+    protected buildfinishedGameInfo(state: GameState): FinishedGameInfo{
         return {
-          id,
-          score: 0,
-          answers: [],
-          status: 'playing',
-          isAI: opts?.isAI ?? false,
-          joinOrder: opts?.joinOrder,
-          lastActiveAt: Date.now(),
-        };
+            gameresult: this.toPublicState(state),
+            finalscore: this.buildFinalScore(state),
+        }
     }
+   
 }
 
 /**
