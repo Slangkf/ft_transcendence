@@ -1,7 +1,9 @@
 import { MultiService } from "./multi";
 import  type {
     StartGameResult,
-    GameInfo
+    GameInfo,
+    StartGameParms,
+    StartMultiResult
 }from "../game.types"; 
 import { AppError, ErrorCode } from "src/error/apperror";
 import { Room } from "src/room/room.types";
@@ -16,29 +18,40 @@ export class Multiplayer {
         private multiservice: MultiService
     ){}
 
-    //mode, nickname from input user, userid in req.body
-    async startMultiGame(mode: string,userId: string, nickname: string): Promise<StartGameResult | null>{
+    //start multi begin with waiting match in match service
+    //then the user set ready, the status of player change and check if all players are ready in a room
+    //then start the game 
+
+    async startMultiGame(params: StartGameParms): Promise<StartMultiResult>{
         const jointqueue = await this.matchservice.joinQueue({
-            mode: mode,
-            userId: userId,
-            nickname: nickname
+            mode: params.mode,
+            userId: params.userId,
+            nickname: params.nickname
         })
-        const match = await this.matchservice.matchPlayers(mode);
-        if (!match) {
-            // Not enough players, return null to indicate waiting
-            return null;
+        const match = await this.matchservice.matchPlayers(params.mode);
+        if (!match){
+            return {status: 'waiting'};
         }
         const room = await this.roommanager.createRoom({
-            hostId: userId,
-            hostNickname: nickname,
-            players: match.players // Add matched players
+            hostId: params.userId,
+            hostNickname: params.nickname,
+            players: match.players
         })
+        return {
+            status: 'matched',
+            players,
+            room.roomId, //need to tell the players the roomId in controller 
+        }
+    }
+
+    //when all players are ready,start 
+    async startGameFromRoom(room: Room): Promise<StartGameResult>{
         const result = await this.multiservice.startGame(room);
-        room.status = "in_game";
-        room.gameId = result?.gameId;
-        
-        //save in database
-        await this.roommanager.updateStatus(room, "in_game");
+
+        room.status = 'in_game';
+        room.gameId = room.gameId;
+
+        await this.roommanager.updateStatus(room, 'in_game');
         return result;
     }
 

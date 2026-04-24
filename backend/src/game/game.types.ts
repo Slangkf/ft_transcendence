@@ -46,6 +46,17 @@ export type StartGameParms = {
    nickname: string;
 }
 
+export type MatchPlayer = {
+    userId: string;
+    nickname: string;
+};
+
+export type StartMultiResult = {
+    status: "waiting" | "matched";
+    players?: MatchPlayer[];
+    roomId?: string; 
+}
+
 export type StartGameResult = {
     gameId: string;
     question: PublicQuestion;

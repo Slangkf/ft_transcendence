@@ -10,10 +10,9 @@ export class GameController
     ){}
     start = async(req: Request, res: Response)=>
     {
-        const {mode} = req.params;
         try{
             const result = await this.gameService.startGame({
-                mode: mode,
+                mode: req.params,
                 userId: req.user.id,
                 nickname: req.user.username
             })
