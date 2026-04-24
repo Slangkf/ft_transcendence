@@ -25,7 +25,7 @@ export  class AuthService{
     const exist_already = await this.userrepository.find_by_identifiant(input.email)
     if (exist_already){
         throw new AppError(
-            'email already registed in user', 
+            'Email address already registered', 
             ErrorCode.AUTH_MAIL_ALREADY_EXIST,
             409,
             {email: input.email})

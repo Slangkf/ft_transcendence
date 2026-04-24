@@ -74,8 +74,7 @@
         method: "GET",
         credentials: "include",
         "Content-Type": "application/json"
-      }
-    })
+      })
     response: 
         200
         message logged out in json

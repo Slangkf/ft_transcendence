@@ -8,14 +8,14 @@
 
 	async function handleLogout() {
     	try {
-    		await fetch('/api/logout', { // or 'http://localhost:3000/logout' ?
+    		await fetch('/api/logout', {
         		method: 'POST'
       		});
 
 			await goto('/');
 		}
 		catch (error) {
-			console.error('Logout error:', error);
+			console.error('Logout button error:', error);
     	}
   	}
 </script>
