@@ -1,6 +1,6 @@
 import { UserService } from "./user.service";
 import type { Request, Response } from "express";
-import { AppError } from "src/error/apperror";
+import { AppError, ErrorCode } from "src/error/apperror";
 
 export class UserController{
     private userservice: UserService

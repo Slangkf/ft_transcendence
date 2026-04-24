@@ -1,19 +1,19 @@
 import {z} from "zod"
 
-//type question from database
-export const Question_DB = z.object({
-    id: z.string().uuid(),
-    text: z.string(),
-    options: z.string(),
-    answer: z.string()
+// Backend: Database schema for Question
+export const QuestionSchema = z.object({
+    id: z.number(),
+    question: z.string(),
+    options: z.array(z.string()),
+    correctAnswerIndex: z.number()
 })
-export type QuestionDB = z.infer<typeof Question_DB>
+export type Question = z.infer<typeof QuestionSchema>
 
-//type question for front, question without answer
-export const Question_Without_Answer = z.object({
-    id: z.string().uuid(),
-    text: z.string(),
-    options: z.string()
+// Frontend: Public question schema (without correct answer)
+export const PublicQuestionSchema = z.object({
+    id: z.number(),
+    question: z.string(),
+    options: z.array(z.string())
 })
-export type QuestionWithoutAnswer = z.infer<typeof Question_Without_Answer>
+export type PublicQuestion = z.infer<typeof PublicQuestionSchema>
 
