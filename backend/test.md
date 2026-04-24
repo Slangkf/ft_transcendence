@@ -26,18 +26,10 @@ curl -i -b cookies_1.txt -k -X POST https://localhost:8888/api/user/me/changepas
     "confirmpd": "newpass123"
   }'
 
------------join room (url need to check)
-curl -X POST http://localhost:3000/api/room/entry \                                                               
-  -H "Content-Type: application/json" \
-  -b cookies_1.txt \
-  -d '{
-    "type": "game",
-    "nickname": "player1",
-	  "targetId": "room123"
-  }'
-
+-----------start game (multiplayer can be solo)
   curl -X POST http://localhost:3000/api/game/multiplayer/start \
   -b cookies_1.txt
 
+--------set ready 
   curl -X POST http://localhost:3000/api/game/:room/ready \
   -b cookies_1.txt 

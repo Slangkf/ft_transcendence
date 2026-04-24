@@ -49,7 +49,7 @@ export class GameController
                 );
         }
 
-        const rawAnswer = req.query.selectedAnswerIndex;
+        const rawAnswer = req.body.selectedAnswerIndex;
         const selectedAnswerIndex = Number(rawAnswer);
 
         if (!Number.isInteger(selectedAnswerIndex)) {
