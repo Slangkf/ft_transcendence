@@ -1,4 +1,4 @@
-1. register: need regirection to "/profil" 
+1. register: need regirection to "/modes" 
     fetch ("/api/auth/register", {
         method: "POST",
         headers: {
@@ -17,7 +17,7 @@
         201 success to create
         UserOutput in json 
 
-2. login: need redirection to "/profil"
+2. login: need redirection to "/mode"
     fetch ("/api/auth/login", {
         method: "POST",
         credentials: "include",
@@ -78,4 +78,3 @@
     response: 
         200
         message logged out in json
-6.  
