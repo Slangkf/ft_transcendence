@@ -45,7 +45,9 @@ export class    MatchService{
                 matchplayers.map(p=>p.userId))
         return {
             players: matchplayers,
-            matchId
+            matchId,
+            mode,
+            maxPlayers: maxplayers
         }
     }
 

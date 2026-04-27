@@ -22,7 +22,7 @@ export class GameService {
             case "solo":
                 return this.soloService.startGame(userId);
             case "multiplayer":
-                return this.multiplayer.startMultiGame(mode, userId, nickname);
+                return this.multiplayer.startMultiGame({mode, userId, nickname});
             default:
                 throw new AppError(
                     "Unknown game mode",
@@ -53,5 +53,13 @@ export class GameService {
         } else {
             return this.soloService.submitAnswer(gameId, selectedAnswerIndex, userId);
         }
+    }
+
+    /**
+     * Set player ready in multiplayer mode.
+     * Returns StartGameResult if game starts, null if waiting for more players.
+     */
+    async setReady(roomId: string, userId: string, isReady: boolean): Promise<StartGameResult | null> {
+        return this.multiplayer.setPlayerReady(roomId, userId, isReady);
     }
 }

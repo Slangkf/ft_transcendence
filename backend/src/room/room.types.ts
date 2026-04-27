@@ -7,20 +7,22 @@ export type RoomPlayer = {
 }
 
 export type Room = {
+    type: 'game' | 'chat';
     roomId: string;
     hostId: string;
     players: Record<string, RoomPlayer>;
-    status: 'waiting' | 'starting' | 'in_game' | 'finished';
+    status: "waiting" | "starting" | "in_game" | "finished";
     createdAt: number;
     maxPlayers: number;
     gameId?: string; //to save in gamestate 
 }
 
-
 export type CreateRoomParams = {
     hostId: string;
     hostNickname: string;
     players?: { userId: string; nickname: string }[];
+    maxPlayers?: number;
+    type: 'game'| 'chat';
 }
 
 export type JoinRoomParams = {
@@ -28,6 +30,8 @@ export type JoinRoomParams = {
     playerId: string;
     playerNickname: string; 
 }
+
+
 
 export type RoomEntryParams = {
     userId: string;

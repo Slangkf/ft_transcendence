@@ -9,7 +9,7 @@ import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
 import {gameRouter} from './game/game.router';
 import { RoomRouter } from './room/room.router';
-import { redis } from './lib/redis';
+import {initRedis} from './lib/redis';
 
 const app = express();
 const PORT = 3000;
@@ -24,13 +24,7 @@ app.use(cors({
 // ====== INIT FUNCTION ======
 const start = async () => {
   try {
-    // 1. Redis connect
-    await redis.connect();
-    console.log("Redis connected");
-
-    await redis.set("test", "ok");
-    console.log(await redis.get("test"));
-
+    await initRedis();
     // 2. Express setup
     app.use(cookieParser());
     app.use(express.json());

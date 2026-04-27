@@ -24,6 +24,9 @@ export class GameEntryStrategy implements IRoomEntryStrategy{
         )
     }
     
+    async setReady(roomId: string, userId: string, isready: boolean){
+        return this.roomservice.setPlayerReady(roomId, userId, isready);
+    }
 }
 /****
  * in the param for the entry or creation, need the param of maxplayers in a room, it come with the selection of mode of game 

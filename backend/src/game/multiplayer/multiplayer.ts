@@ -6,7 +6,7 @@ import  type {
     StartMultiResult
 }from "../game.types"; 
 import { AppError, ErrorCode } from "src/error/apperror";
-import { Room } from "src/room/room.types";
+import { Room, RoomPlayer } from "src/room/room.types";
 import { RoomManager } from "src/room/room.manager";
 import { MatchService } from "src/game/multiplayer/match/match.service";
 
@@ -35,15 +35,16 @@ export class Multiplayer {
         const room = await this.roommanager.createRoom({
             hostId: params.userId,
             hostNickname: params.nickname,
-            players: match.players
+            players: match.players,
+            type: 'game'
         })
         return {
             status: 'matched',
-            players,
-            room.roomId, //need to tell the players the roomId in controller 
+            players: match.players,
+            roomId: room.roomId, //need to tell the players the roomId in controller 
         }
     }
-
+    
     //when all players are ready,start 
     async startGameFromRoom(room: Room): Promise<StartGameResult>{
         const result = await this.multiservice.startGame(room);
@@ -53,6 +54,19 @@ export class Multiplayer {
 
         await this.roommanager.updateStatus(room, 'in_game');
         return result;
+    }
+
+    // Player sets ready in the room
+    // Returns game start result if all players are ready, otherwise null
+    async setPlayerReady(roomId: string, userId: string, isReady: boolean): Promise<StartGameResult | null> {
+        const result = await this.roommanager.setReady(roomId, userId, isReady);
+        
+        // If all players are ready and room is in 'starting' status, start the game
+        if (result.allReady && result.room.status === 'starting') {
+            return this.startGameFromRoom(result.room);
+        }
+        
+        return null;
     }
 
     async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null> {

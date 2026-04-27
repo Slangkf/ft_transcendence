@@ -14,11 +14,25 @@ export class RoomRepository{
     
         return JSON.parse(data);
     }
-
-    async update(roomId: string): Promise<void>{
-        const data = await this.getroom(roomId);
-        
+    async save(room: Room): Promise<void>{
+        await redis.set(
+            this.getKey(room.roomId),
+            JSON.stringify(room),
+            ROOM_TTL
+        )
     }
+
+    async update(room: Room): Promise<void>{
+        await redis.set(
+            this.getKey(room.roomId),
+            JSON.stringify(room),
+            ROOM_TTL
+        )
+    }
+    async delete(roomId: string): Promise<void> {
+        await redis.del(this.getKey(roomId));
+    }
+
 }
 
 /***
