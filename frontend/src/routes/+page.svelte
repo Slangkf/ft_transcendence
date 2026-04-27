@@ -2,6 +2,7 @@
 	// Import navigation helper to redirect user after successful registration.
 	// Import Zod schema to check the format of the form inputs.
 	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { Register_Input, type RegisterInput } from '$lib/shared/user.schema';
 
 	// Reactive object storing form error messages.
@@ -60,13 +61,14 @@
 				// If backend returned field-specific validation errors.
 				if (result.error?.code === "AUTH_MAIL_ALREADY_EXIST")
 					errors.email = result.error.message;
-				// if (result.error?.code === "AUTH_USERNAME_ALREADY_EXIST")
-				// 	errors.email = result.error.message;
+				else if (result.error?.code === "AUTH_USERNAME_ALREADY_EXIST")
+					errors.username = result.error.message;
 				// Stop execution if request failed.
 				return;
 			}
 			// Redirect user after successful registration.
 			await goto('/modes');
+			await invalidateAll();
 		}
 		// Catch and log unexpected errors.
 		catch (error){

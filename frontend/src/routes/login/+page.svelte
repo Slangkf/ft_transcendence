@@ -1,6 +1,7 @@
 <!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { Login_Input, type LoginInput } from '$lib/shared/user.schema';
 
 	// Reactive object storing form error messages.
@@ -43,6 +44,7 @@
 		try {
 			const response = await fetch('/api/auth/login', {
 				method: 'POST',
+				credentials: 'include',
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password})
 			});
@@ -62,6 +64,7 @@
 			}
 			// Redirect user after successful registration.
 			await goto('/modes');
+			await invalidateAll();
 		}
 		// Catch and log unexpected errors.
 		catch (error){

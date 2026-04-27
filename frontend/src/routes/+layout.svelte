@@ -2,21 +2,29 @@
 	import "../app.css";
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 
-	let { children } = $props();
-	let connected = false; // for preliminary testing.
+	let props = $props();
 
 	async function handleLogout() {
+		// Send logout action to backend API.
     	try {
-    		await fetch('/api/logout', {
-        		method: 'POST'
-      		});
-
+    		const response = await fetch('/api/auth/logout', {
+				method: 'POST',
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				console.error("ERROR IN LOGOUT ACTION");
+				return;
+			}
+			// Redirect user after successful logout.
 			await goto('/');
+			await invalidateAll();
 		}
-		catch (error) {
-			console.error('Logout button error:', error);
-    	}
+		// Catch and log unexpected errors.
+		catch (error){
+			console.error('Logout page error: ', error);
+		}
   	}
 </script>
 
@@ -45,7 +53,7 @@
 		</button>
 		<el-menu anchor="bottom end" popover class="w-25 origin-top-right rounded-md bg-black outline-1 -outline-offset-1 outline-white/10 transition transition-discrete [--anchor-gap:--spacing(2)] data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in">
 			<div class="py-1">
-				{#if !connected}
+				{#if !props.data.connected}
 					{#if page.url.pathname === '/'}
 						<a href="/login" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Sign In</a>
 					{:else if page.url.pathname === '/login'}
@@ -57,14 +65,10 @@
 				{:else}
 					{#if page.url.pathname === '/modes'}
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
-						<form action="/" method="POST">
-							<button type="submit" class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
-						</form>
+						<button onclick={handleLogout} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else if page.url.pathname === '/profile'}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
-						<form action="/" method="POST">
-							<button type="submit" class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
-						</form>
+						<button onclick={handleLogout} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
@@ -78,7 +82,7 @@
   
 	<!-- Content -->
 	<main class="flex flex-1 justify-center items-center p-4">
-	{@render children()}
+	{@render props.children()}
 	</main>
 	
 	<!-- Footer -->

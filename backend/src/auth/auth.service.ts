@@ -34,7 +34,7 @@ export  class AuthService{
     const username_exist = await this.userrepository.find_by_username(input.username)
     if (username_exist){
         throw new AppError(
-            'username already registed in user', 
+            'Username already used', 
             ErrorCode.AUTH_USERNAME_ALREADY_EXIST,
             409,
             {username: input.username})
@@ -59,7 +59,7 @@ export  class AuthService{
         const user = await this.userrepository.find_by_email(input.email);
         if (!user){
             throw new AppError(
-                'Invalid credentials', 
+                'Invalid email', 
                 ErrorCode.AUTH_INVALID_CREDENTIALS,
                 401)
         }
@@ -68,7 +68,7 @@ export  class AuthService{
         const valide_password = await bcrypt.compare(input.password, user.password);
         if (!valide_password){
             throw new AppError (
-                'Invalid credentials', 
+                'Invalid password', 
                 ErrorCode.AUTH_INVALID_CREDENTIALS,
                 401)
         }
