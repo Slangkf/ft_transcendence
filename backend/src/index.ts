@@ -15,8 +15,9 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors({
-  origin: 'http://localhost:5500',
-  credentials: true
+	// origin: 'http://localhost:5500',	// JIANXIN
+  	origin: 'https://localhost:8888', // must match the Origin header sent by the browser (protocol + host + port)
+	credentials: true
 }));
 
 
