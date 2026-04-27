@@ -34,13 +34,23 @@
   <header class="flex h-24 w-full items-center p-4">
     <!-- Logo -->
     <div class="flex-1">
-      <a href='/' class="inline-block">
-        <img src="/images/logo.png" alt="logo" class="h-24 w-auto drop-shadow-[0_0_20px_blue]"/>
-      </a>
+		{#if !props.data.connected}
+			<a href='/' class="inline-block">
+				<img src="/images/logo.png" alt="logo" class="h-24 w-auto drop-shadow-[0_0_20px_blue]"/>
+			</a>
+		{:else}
+			<a href='/modes' class="inline-block">
+				<img src="/images/logo.png" alt="logo" class="h-24 w-auto drop-shadow-[0_0_20px_blue]"/>
+			</a>
+		{/if}
     </div>
     <!-- Title -->
     <div class="flex-1 text-center text-xl sm:text-4xl font-bold text-pink-500 drop-shadow-[0_0_20px_blue]">
-		<a href='/'>42Brain</a>
+		{#if !props.data.connected}
+			<a href='/'>42Brain</a>
+		{:else}
+			<a href='/modes'>42Brain</a>
+		{/if}
 		<h2 class="text-xs sm:text-sm font-semibold text-pink-500 text-center">Your number one quiz plateform !</h2>
     </div>
     <!-- Drop-down menu -->
