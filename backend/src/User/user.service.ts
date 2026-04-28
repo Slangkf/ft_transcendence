@@ -1,6 +1,6 @@
 import { UserRepository } from './user.repository'
-import type {UserOutput, ChangePdInput} from '@shared/user.schema'
-import { AppError } from 'src/error/apperror';
+import type {UserOutput, ChangePdInput, ChangeUsernameInput} from '@shared/user.schema'
+import { AppError, ErrorCode } from 'src/error/apperror';
 import bcrypt from 'bcrypt';
 import fs from 'fs/promises';
 import path from 'path';
@@ -46,9 +46,31 @@ export class UserService{
         return true;
     }
 
+    async change_username(userid: number, input: ChangeUsernameInput): Promise<UserOutput> {
+        const user = await this.userrepository.find_by_id(userid);
+        if (!user) {
+            throw new AppError("user not found", 404);
+        }
+
+        if (user.username === input.newUsername) {
+            throw new AppError("new username cannot be the same as current", 400);
+        }
+
+        const existingUser = await this.userrepository.find_by_username(input.newUsername);
+        if (existingUser) {
+            throw new AppError("username already taken", 409);
+        }
+
+        await this.userrepository.update_username(userid, input.newUsername);
+        return await this.get_profile(userid);
+    }
+
     async update_avatar(userid: number, file?: Express.Multer.File): Promise<UserOutput>{
         if (!file) {
-            throw new AppError("avatar file is required", 400);
+            throw new AppError(
+                "avatar file is required",
+                ErrorCode.AVATAR_REQUIRED,
+                400);
         }
 
         const user = await this.userrepository.find_by_id(userid);

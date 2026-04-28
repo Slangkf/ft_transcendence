@@ -45,6 +45,18 @@ export class UserController{
         }
     }
 
+    ChangeUsername = async (req: Request, res: Response) => {
+        try {
+            const result = await this.userservice.change_username(req.user.id, req.body);
+            res.json(result);
+        } catch (error) { 
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            res.status(500).json({ message: "Internal username change error" });
+        }
+    }
+
     UpdateAvatar = async(req: Request, res: Response) => {
         try{
             const result = await this.userservice.update_avatar(req.user.id, req.file);

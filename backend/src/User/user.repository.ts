@@ -72,6 +72,15 @@ export class UserRepository{
         })
     }
 
+    async update_username(userid: number, new_username: string){
+        return await prisma.user.update({
+            where: {id: userid},
+            data: {
+                username: new_username
+            }
+        })
+    }
+
     async update_avatar(userid: number, avatarUrl: string) {
         const updatedUser = await prisma.user.update({
             where: { id: userid },

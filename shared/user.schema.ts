@@ -55,3 +55,8 @@ export const Change_Pd_Input = z.object({
     confirmpd: z.string().min(3).max(20)
 })
 export type ChangePdInput = z.infer<typeof Change_Pd_Input>;
+
+export const Change_Username_Input = z.object({
+    newUsername: z.string().min(3).max(20)
+})
+export type ChangeUsernameInput = z.infer<typeof Change_Username_Input>;
