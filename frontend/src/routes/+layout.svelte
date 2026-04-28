@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
+	import { toast } from '$lib/toast.svelte'
 
 	let props = $props();
 
@@ -92,12 +93,19 @@
   
 	<!-- Content -->
 	<main class="flex flex-1 justify-center items-center p-4">
-	{@render props.children()}
+		{@render props.children()}
 	</main>
 	
 	<!-- Footer -->
 	<footer class="flex justify-center gap-8 mt-auto text-xs text-pink-500">
-	<a href="/terms_of_service" class="hover:text-blue-500">TERMS OF SERVICE</a>
-	<a href="/privacy_policy" class="hover:text-blue-500">PRIVACY POLICY</a>
+		<a href="/terms_of_service" class="hover:text-blue-500">TERMS OF SERVICE</a>
+		<a href="/privacy_policy" class="hover:text-blue-500">PRIVACY POLICY</a>
 	</footer>
+
+	<!-- Toast notification -->
+	{#if toast.message}
+		<div class="fixed top-6 right-6 bg-pink-500 text-white px-4 py-2 rounded-md shadow-lg">
+			{toast.message}
+		</div>
+	{/if}
 </div>
