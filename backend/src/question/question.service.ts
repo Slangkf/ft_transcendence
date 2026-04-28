@@ -35,12 +35,15 @@ export class QuestionService{
         if (!quiz || quiz.questions.length === 0)
             return null;
 
-        return quiz.questions.map((q: PrismaQuestion) => ({
-            id: q.id,
-            question: q.text,
-            options: q.options,
-            correctAnswerIndex: q.options.findIndex(opt => opt === q.answer),
-        }));
+        return quiz.questions.map((q: PrismaQuestion) => {
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            return {
+                id: q.id,
+                question: q.text,
+                options: shuffledOptions,
+                correctAnswerIndex: shuffledOptions.findIndex(opt => opt === q.answer),
+            };
+        });
     }
     toPublicQuestion(question: Question): PublicQuestion
     {
