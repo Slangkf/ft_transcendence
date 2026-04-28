@@ -67,7 +67,7 @@
     gameId = null;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/game/${mode}/start`, {
+      const response = await fetch(`/api/game/${mode}/start`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
@@ -100,7 +100,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/game/${mode}/${gameId}/answer`,
+        `/api/game/${mode}/${gameId}/answer`,
         {
           method: 'POST',
           credentials: 'include',

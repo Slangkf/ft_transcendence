@@ -1,12 +1,10 @@
 <script lang="ts">
 	import "../../app.css";
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
-	async function handleGameMode(mode: "solo" | "IA" | "tournament" | "multiplayer")
-	{
-		await goto(`/game?mode=${mode}`);
-  	}
+	async function startSolo() {
+		await goto('/game?mode=solo');
+	}
 </script>
 
 <!-- Main card -->
@@ -17,23 +15,23 @@
 	<!-- Mode cards -->
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2 pb-2 w-full">
 		<!-- Solo button -->
-		<button onclick={() => handleGameMode("solo")} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
+		<button onclick={startSolo} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
 			<img src="/images/solo_mode.png" alt="solo mode" class="w-full max-w-180px h-auto object-cover">
 			<p class="text-sm font-semibold text-center">Practice</p>
 		</button>
-		<!-- Versus IA button -->
-		<button onclick={() => handleGameMode("IA")} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
+		<!-- Versus IA button (not implemented) -->
+		<button disabled class="flex flex-col items-center overflow-hidden rounded-xl text-pink-500 opacity-60 cursor-not-allowed">
 			<img src="/images/versus_mode.png" alt="versus mode" class="w-full max-w-180px h-auto object-cover">
 			<p class="text-sm font-semibold text-center">Versus AI</p>
 		</button>
-		<!-- Multiplayer button -->
-		<button onclick={() => handleGameMode("multiplayer")} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
+		<!-- Multiplayer button (not implemented) -->
+		<button disabled class="flex flex-col items-center overflow-hidden rounded-xl text-pink-500 opacity-60 cursor-not-allowed">
 			<img src="/images/multiplayer_mode.png" alt="multiplayer mode" class="w-full max-w-180px h-auto object-cover">
 			<p class="text-sm font-semibold text-center">Online multiplayer</p>
 		</button>
-		<!-- Tournament button -->
-		<button onclick={() => handleGameMode("tournament")} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
-			<img src="/images/tournament_mode.png" alt="multiplayer mode" class="w-full max-w-180px h-auto object-cover">
+		<!-- Tournament button (not implemented) -->
+		<button disabled class="flex flex-col items-center overflow-hidden rounded-xl text-pink-500 opacity-60 cursor-not-allowed">
+			<img src="/images/tournament_mode.png" alt="tournament mode" class="w-full max-w-180px h-auto object-cover">
 			<p class="text-sm font-semibold text-center">Local tournament</p>
 		</button>
 	</div>
