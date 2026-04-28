@@ -1,11 +1,14 @@
-// export async function load() {
-// 	const response = await fetch('/api/profile');
-// 	const user = await response.json();
+import { redirect } from '@sveltejs/kit';
 
-// 	return {
-// 		user
-// 	};
-// }
+export async function load({ fetch }) {
+	const response = await fetch('/api/user/me');
+	if (!response.ok) {
+		console.error('Load profile page error');
+		throw redirect(302, '/login');
+	}	
+	const user = await response.json();
+	return { user };
+}
 
 // import { redirect } from '@sveltejs/kit';
 // import type { PageServerLoad } from './$types';
@@ -13,6 +16,7 @@
 // export const load: PageServerLoad = async ({ cookies, fetch }) => {
 //   const token = cookies.get('auth_token');
   
+//   console.log(token);
 //   if (!token) {
 //     // 未登录 → 重定向回登录页
 //     throw redirect(302, '/login');

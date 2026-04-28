@@ -4,7 +4,6 @@
 export async function load ({ fetch }) {
 	try {
 		const response = await fetch('/api/user/me', {
-			method: 'GET',
 			credentials: 'include'
 		});
 		return {
@@ -12,7 +11,7 @@ export async function load ({ fetch }) {
 		};
 	}
 	catch {
-		console.error('Load function error');
+		console.error('Load layout menu error');
 		return {
 			connected: false
 		}
