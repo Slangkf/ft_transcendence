@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { Login_Input, type LoginInput } from '$lib/shared/user.schema';
-	import { toast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/toast.svelte'
 
 	// Reactive object storing form error messages.
 	let errors = $state({
@@ -65,6 +65,7 @@
 			// Redirect user after successful registration.
 			await goto('/modes');
 			await invalidateAll();
+			showToast("Connection successful");
 		}
 		// Catch and log unexpected errors.
 		catch (error){

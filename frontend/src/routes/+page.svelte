@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { Register_Input, type RegisterInput } from '$lib/shared/user.schema';
+	import { showToast } from '$lib/toast.svelte';
 
 	// Reactive object storing form error messages.
 	let errors = $state({
@@ -69,6 +70,7 @@
 			// Redirect user after successful registration.
 			await goto('/modes');
 			await invalidateAll();
+			showToast("Registration successful");
 		}
 		// Catch and log unexpected errors.
 		catch (error){

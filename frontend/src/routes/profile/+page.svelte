@@ -3,6 +3,8 @@
 
 	let { data } = $props();
 	let fileInput = $state<HTMLInputElement | null>(null)
+	// Display the default avatar with the URL returned by the backend
+	let avatarUrl = $state(data.user.url)
 
 	// Trigger the hidden file input click to open the file picker
 	function openFilePicker() {
@@ -20,6 +22,18 @@
 			return;
 		}
 
+		// Type and size verifications
+		const allowedType = ['image/png', 'image/jpeg']
+		if (!allowedType.includes(file.type)) {
+			showToast("Only .png, or .jpg/jpeg files are allowed");
+			return;
+		}
+		const maxSize = 2 * 1024 * 1024
+		if (file.size > maxSize) {
+			showToast("File size must not exceed 2Mo");
+			return;
+		}
+
 		// Build a FormData with the selected file
 		// FormData is the standard way to send files over HTTP
 		const formData = new FormData();
@@ -29,7 +43,7 @@
 			// Send the avatar to the backend
             // NB: Content-Type header is intentionally omitted so the browser
             // can set it automatically with the correct multipart boundary
-			const response = await fetch('/api/user/me/avatar', { // route to be created
+			const response = await fetch('/api/user/me/avatar', {
 				method: 'POST',
 				credentials: 'include',
 				body: formData
@@ -41,7 +55,7 @@
 
 			// Update the displayed avatar with the URL returned by the backend
 			const result = await response.json()
-			data.user.avatar = result.avatar
+			avatarUrl = result.url
 			showToast("Avatar successfully updated");
 		}
 		catch (error){
@@ -57,7 +71,7 @@
 	<p class="mt-1 text-pink-500 text-center">Your personnal informations</p>
 
 	<!-- Avatar -->
-	<img src={ data.user.avatar || "/images/avatar.png" } alt="avatar" class="h-37 w-37 rounded-full object-cover mt-8">
+	<img src={ avatarUrl ?? "/images/avatar.jpg"} alt="avatar" class="h-37 w-37 rounded-full object-cover mt-8">
 	<!-- Hidden file input: opens the native file picker when triggered, stores the selected file in fileInput via bind:this, then fires handleFileChange via onchange -->
 	<input type="file" accept=".png, .jpg, .jpeg" hidden bind:this={fileInput} onchange={handleFileChange}/>
 	<!-- Edit avatar button -->
@@ -70,11 +84,11 @@
 		<!-- Informations -->
 		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Email</span>
-			<span class="text-white">{ data.user.email || "Unknown" }</span>
+			<span class="text-white">{ data.user.email ?? "Unknown data" }</span>
 		</div>
 		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Username</span>
-			<span class="text-white">{ data.user.username || "Unknown" }</span>
+			<span class="text-white">{ data.user.username ?? "Unknown data" }</span>
 		</div>
 	</div>
 	
@@ -110,15 +124,15 @@
 		<!-- Statistic cards -->
 		<div class="flex justify-between">
 			<span class="text-sm text-slate-400">Games played</span>
-			<span>{ data.user.gamesPlayed || "Unknown" }</span>
+			<span>{ data.user.played ?? "Unknown data" }</span>
 		</div>
 		<div class="flex justify-between mt-2">
 			<span class="text-sm text-slate-400">Games won</span>
-			<span>{ data.user.gamesWon || "Unknown" }</span>
+			<span>{ data.user.wins ?? "Unknown data" }</span>
 		</div>
 		<div class="flex justify-between mt-2">
 			<span class="text-sm text-slate-400">Average score</span>
-			<span>{ data.user.averageScore || "Unknown" }%</span>
+			<span>{ data.user.score ?? "Unknown data" }%</span>
 		</div>
 	</div>
 	
@@ -129,7 +143,7 @@
 		<!-- Statistics -->
 		<div class="flex justify-between">
 			<span class="text-sm text-slate-400">Friends</span>
-			<span>{ data.user.friendCount || "Unknown" }</span>
+			<span>{ data.user.friendsNb ?? "Unknown data" }</span>
 		</div>
 		<!-- View Friends button -->
 		<button class="cursor-pointer ursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">View friends</button>

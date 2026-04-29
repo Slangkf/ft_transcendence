@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/toast.svelte'
 
 	let props = $props();
 
@@ -21,6 +22,7 @@
 			// Redirect user after successful logout.
 			await goto('/');
 			await invalidateAll();
+			showToast("Logout successful");
 		}
 		catch (error){
 			console.error('Exception throwed in the handleLogout function: ', error);
