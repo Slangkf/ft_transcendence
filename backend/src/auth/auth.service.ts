@@ -76,7 +76,7 @@ export  class AuthService{
         const token = jwt.sign(
             {
                 id: user.id,
-                jti: randomUUID(),
+                jti: randomUUID()
             },
             JWT_SECRET,
             {expiresIn: '7d'}
@@ -85,9 +85,14 @@ export  class AuthService{
         return {
             token,
             user: {
-                id: user.id, 
-                username: user.username, 
-                email: user.email,}
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                url: user.url,
+                wins: user.wins,
+                losses: user.losses,
+                friendsNb: user.friendsNb
+            }
         }
     }
 }

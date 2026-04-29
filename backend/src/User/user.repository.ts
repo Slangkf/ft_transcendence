@@ -1,9 +1,20 @@
-import type { UserDB, RegisterInput, UserOutput, UserProfil} from "@shared/user.schema";
+import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
-import { AppError } from "src/error/apperror";
 
 export class UserRepository{
+    private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'wins' | 'losses' | 'friendsNb'>): UserOutput {
+        return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            url: user.url,
+            wins: user.wins,
+            losses: user.losses,
+            friendsNb: user.friendsNb
+        };
+    }
+
     //1. creation a compte
     async create(input: RegisterInput): Promise<UserOutput>{
         const hashed_password = await bcrypt.hash(input.password, 10);
@@ -12,13 +23,10 @@ export class UserRepository{
                 username: input.username,
                 email: input.email,
                 password: hashed_password,
+                url: "/uploads/avatars/default.jpg"
             }
         })
-        return {
-            id: newuser.id,
-            username: newuser.username,
-            email: newuser.email
-        }
+        return this.toUserOutput(newuser);
     }
 
     //find a user by email or username, prepare for authendification 
@@ -38,7 +46,15 @@ export class UserRepository{
         return user
     }
 
-    async find_by_id(userid: string): Promise<UserDB | null>{
+    async findByUsername(identifiant: string): Promise<UserDB|null>{
+        const user = await prisma.user.findUnique({
+            where: {username: identifiant}
+        })
+        if (!user)  return null 
+        return user
+    }
+
+    async find_by_id(userid: number): Promise<UserDB | null>{
         const user = await prisma.user.findUnique({
             where: {id: userid}
         })
@@ -47,7 +63,7 @@ export class UserRepository{
     }
 
     //update password 
-    async update_password(userid: string, new_pd: string){
+    async update_password(userid: number, new_pd: string){
         return await prisma.user.update({
             where: {id: userid},
             data: {
@@ -55,6 +71,25 @@ export class UserRepository{
             }
         })
     }
+
+    async update_username(userid: number, new_username: string){
+        return await prisma.user.update({
+            where: {id: userid},
+            data: {
+                username: new_username
+            }
+        })
+    }
+
+    async update_avatar(userid: number, avatarUrl: string) {
+        const updatedUser = await prisma.user.update({
+            where: { id: userid },
+            data: { url: avatarUrl }
+        });
+
+        return this.toUserOutput(updatedUser);
+    }
+
 }
 
 
