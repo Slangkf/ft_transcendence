@@ -29,13 +29,13 @@
 			// Send the avatar to the backend
             // NB: Content-Type header is intentionally omitted so the browser
             // can set it automatically with the correct multipart boundary
-			const response = await fetch('/api/user/me/avatar', { // route must be checked
+			const response = await fetch('/api/user/me/avatar', { // route to be created
 				method: 'POST',
 				credentials: 'include',
 				body: formData
 			});
 			if (!response.ok) {
-				console.error("Error: Failed to send avatar to server");
+				console.error("fetch error in the avatar sending section");
 				return;
 			}
 
@@ -45,7 +45,7 @@
 			showToast("Avatar successfully updated");
 		}
 		catch (error){
-			console.error('Avatar handler error: ', error);
+			console.error('Exception throwed in the avatar sending function: ', error);
 		}
 	}
 </script>

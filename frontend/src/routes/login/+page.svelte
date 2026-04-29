@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { Login_Input, type LoginInput } from '$lib/shared/user.schema';
+	import { toast } from '$lib/toast.svelte'
 
 	// Reactive object storing form error messages.
 	let errors = $state({
@@ -54,11 +55,10 @@
 			// If HTTP response indicates failure (4xx).
 			if (!response.ok) {
 				// If backend returned field-specific validation errors.
-				if (result.errors) {
-					for (const key in result.errors) {
-						errors = { ...errors, [key]: result.errors[key] };
-					}
-				}
+				if (result.error?.code === 'AUTH_INVALID_MAIL')
+					errors.email = result.error.message;
+				else if (result.error?.code === 'AUTH_INVALID_PASSWORD')
+					errors.password = result.error.message;
 				// Stop execution if request failed.
 				return;
 			}
