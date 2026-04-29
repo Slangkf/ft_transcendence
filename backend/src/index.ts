@@ -27,6 +27,8 @@ const start = async () => {
     app.use(cookieParser());
     app.use(express.json());
 
+    app.use('/uploads', express.static('uploads'));
+
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
     app.use('/api/game', gameRouter);

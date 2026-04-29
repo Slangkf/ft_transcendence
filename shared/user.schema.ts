@@ -2,11 +2,15 @@ import {z} from 'zod'
 
 //type user for database 
 export const User_DB = z.object({
-    id: z.string().uuid(),
+    id: z.number().int(),
     username: z.string().min(3).max(20),
     email: z.string().email(),
     password: z.string(),
-    createdAt: z.date()
+    createdAt: z.date(),
+    url: z.string().max(512).nullable().optional(),
+    wins: z.number().int().nullable().optional(),
+    losses: z.number().int().nullable().optional(),
+    friendsNb: z.number().int().nullable().optional()
 })
 export type UserDB = z.infer<typeof User_DB>;
 
@@ -27,9 +31,13 @@ export type LoginInput = z.infer<typeof Login_Input>;
 
 //type output for front， without password
 export const User_Output = z.object({
-    id: z.string().uuid(),
+    id: z.number().int(),
     username: z.string().min(3).max(20),
-    email: z.string().email()
+    email: z.string().email(),
+    url: z.string().max(512).nullable().optional(),
+    wins: z.number().int().nullable().optional(),
+    losses: z.number().int().nullable().optional(),
+    friendsNb: z.number().int().nullable().optional()
 })
 export type UserOutput = z.infer<typeof User_Output>;
 
@@ -47,3 +55,8 @@ export const Change_Pd_Input = z.object({
     confirmpd: z.string().min(3).max(20)
 })
 export type ChangePdInput = z.infer<typeof Change_Pd_Input>;
+
+export const Change_Username_Input = z.object({
+    newUsername: z.string().min(3).max(20)
+})
+export type ChangeUsernameInput = z.infer<typeof Change_Username_Input>;
