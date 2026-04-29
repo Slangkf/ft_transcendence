@@ -3,15 +3,18 @@ import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
 
 export class UserRepository{
-    private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'wins' | 'losses' | 'friendsNb'>): UserOutput {
+    private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'role'>): UserOutput {
         return {
             id: user.id,
+            createdAt: user.createdAt,
             username: user.username,
             email: user.email,
             url: user.url,
+            score: user.score,
             wins: user.wins,
-            losses: user.losses,
-            friendsNb: user.friendsNb
+            played: user.played,
+            friendsNb: user.friendsNb,
+            role: user.role
         };
     }
 

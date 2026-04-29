@@ -16,10 +16,16 @@ model User {
     url         String?     @db.VarChar(512)
     score       Int?        @default(0)
     wins        Int?        @default(0)
-    losses      Int?        @default(0)
+    played      Int?        @default(0)
     friendsNb   Int?        @default(0)
     role        Role        @default(USER)
     quizzes     Quiz[]
+
+    sentFriendships     Friendship[] @relation("SentFriendships")
+    receivedFriendships Friendship[] @relation("ReceivedFriendships")
+    
+    playerMatches      PlayerMatch[]
+    matchesWon         MatchResult[] @relation("MatchWinner")
 }
 
 model Quiz {
@@ -39,6 +45,57 @@ model Question {
   answer      String
   quiz        Quiz     @relation(fields: [quizId], references: [id])
   quizId      Int
+}
+
+model Friendship {
+  id        Int              @id @default(autoincrement())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  
+  userId    Int
+  friendId  Int
+  
+  status    FriendshipStatus @default(PENDING)
+  
+    user   User @relation("SentFriendships", fields: [userId], references: [id], onDelete: Cascade)
+    friend User @relation("ReceivedFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, friendId])
+  
+
+}
+
+model MatchResult {
+    id        Int          @id @default(autoincrement())
+    createdAt DateTime     @default(now())
+    
+    players   PlayerMatch[]
+    
+    winnerId  Int?
+    winner    User?        @relation("MatchWinner", fields: [winnerId], references: [id])
+    
+    scores    Json?
+        
+    @@index([winnerId])
+}
+
+model PlayerMatch {
+    id        Int         @id @default(autoincrement())
+    userId    Int
+    matchId   Int
+    
+    user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    match     MatchResult @relation(fields: [matchId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId, matchId])
+    @@index([userId])
+    @@index([matchId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
 }
 
 enum Role {

@@ -8,9 +8,11 @@ export const User_DB = z.object({
     password: z.string(),
     createdAt: z.date(),
     url: z.string().max(512).nullable().optional(),
+    score: z.number().int().nullable().optional(),
     wins: z.number().int().nullable().optional(),
-    losses: z.number().int().nullable().optional(),
-    friendsNb: z.number().int().nullable().optional()
+    played: z.number().int().nullable().optional(),
+    friendsNb: z.number().int().nullable().optional(),
+    role: z.enum(['USER', 'ADMIN']).optional()
 })
 export type UserDB = z.infer<typeof User_DB>;
 
@@ -32,12 +34,15 @@ export type LoginInput = z.infer<typeof Login_Input>;
 //type output for front， without password
 export const User_Output = z.object({
     id: z.number().int(),
+    createdAt: z.date(),
     username: z.string().min(3).max(20),
     email: z.string().email(),
     url: z.string().max(512).nullable().optional(),
+    score: z.number().int().nullable().optional(),
     wins: z.number().int().nullable().optional(),
-    losses: z.number().int().nullable().optional(),
-    friendsNb: z.number().int().nullable().optional()
+    played: z.number().int().nullable().optional(),
+    friendsNb: z.number().int().nullable().optional(),
+    role: z.enum(['USER', 'ADMIN']).optional()
 })
 export type UserOutput = z.infer<typeof User_Output>;
 
