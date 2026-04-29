@@ -3,7 +3,7 @@ import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
 
 export class UserRepository{
-    private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'role'>): UserOutput {
+    private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'status' | 'lastSeen' | 'role'>): UserOutput {
         return {
             id: user.id,
             createdAt: user.createdAt,
@@ -14,6 +14,8 @@ export class UserRepository{
             wins: user.wins,
             played: user.played,
             friendsNb: user.friendsNb,
+            status: user.status,
+            lastSeen: user.lastSeen,
             role: user.role
         };
     }
@@ -93,7 +95,40 @@ export class UserRepository{
         return this.toUserOutput(updatedUser);
     }
 
-}
+    // Incrémenter le nombre d'amis
+    async increment_friends_count(userId: number): Promise<void> {
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                friendsNb: {
+                    increment: 1
+                }
+            }
+        });
+    }
+
+    // Décrémenter le nombre d'amis
+    async decrement_friends_count(userId: number): Promise<void> {
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                friendsNb: {
+                    decrement: 1
+                }
+            }
+        });
+    }
+
+    // Mettre à jour le statut en ligne/hors ligne
+    async update_status(userId: number, status: 'ONLINE' | 'OFFLINE' | 'AWAY' | 'IN_GAME', lastSeen: Date | null = null): Promise<void> {
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                status,
+                lastSeen
+            }
+        });
+    }
 
 
 /**

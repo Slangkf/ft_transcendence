@@ -9,6 +9,7 @@ import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
 import {gameRouter} from './game/game.router';
 import { RoomRouter } from './room/room.router';
+import friendshipRouter from './friendship/friendship.router';
 import {initRedis} from './lib/redis';
 
 const app = express();
@@ -32,6 +33,7 @@ const start = async () => {
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
     app.use('/api/game', gameRouter);
+    app.use('/api/friends', friendshipRouter);
     //app.use('/api/room', RoomRouter);
 
     // 3. Start server

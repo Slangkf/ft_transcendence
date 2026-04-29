@@ -12,6 +12,8 @@ export const User_DB = z.object({
     wins: z.number().int().nullable().optional(),
     played: z.number().int().nullable().optional(),
     friendsNb: z.number().int().nullable().optional(),
+    status: z.enum(['ONLINE', 'OFFLINE', 'AWAY', 'IN_GAME']).optional(),
+    lastSeen: z.date().nullable().optional(),
     role: z.enum(['USER', 'ADMIN']).optional()
 })
 export type UserDB = z.infer<typeof User_DB>;
@@ -41,8 +43,8 @@ export const User_Output = z.object({
     score: z.number().int().nullable().optional(),
     wins: z.number().int().nullable().optional(),
     played: z.number().int().nullable().optional(),
-    friendsNb: z.number().int().nullable().optional(),
-    role: z.enum(['USER', 'ADMIN']).optional()
+    friendsNb: z.number().int().nullable().optional(),    status: z.enum(['ONLINE', 'OFFLINE', 'AWAY', 'IN_GAME']).optional(),
+    lastSeen: z.date().nullable().optional(),    role: z.enum(['USER', 'ADMIN']).optional()
 })
 export type UserOutput = z.infer<typeof User_Output>;
 
