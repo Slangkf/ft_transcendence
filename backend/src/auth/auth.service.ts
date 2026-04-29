@@ -60,7 +60,7 @@ export  class AuthService{
         if (!user){
             throw new AppError(
                 'Invalid email', 
-                ErrorCode.AUTH_INVALID_CREDENTIALS,
+                ErrorCode.AUTH_INVALID_MAIL,
                 401)
         }
 
@@ -69,7 +69,7 @@ export  class AuthService{
         if (!valide_password){
             throw new AppError (
                 'Invalid password', 
-                ErrorCode.AUTH_INVALID_CREDENTIALS,
+                ErrorCode.AUTH_INVALID_PASSWORD,
                 401)
         }
         //3. get a jwt token 

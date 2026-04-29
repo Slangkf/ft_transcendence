@@ -7,7 +7,8 @@ import { redis } from '../lib/redis';
 import { AppError, ErrorCode } from 'src/error/apperror';
 
 export const verifyToken = async(req: Request, res: Response, next: NextFunction)=>{
-    const token = req.cookies?.auth_token;
+	// check either the cookie or the Authorization header
+    const token = req.cookies?.auth_token || req.headers.authorization?.split(' ')[1];
     if (!token){
         return next(new AppError(
             "Not authenticated",
@@ -36,5 +37,3 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
         ))
     }
 }
-
-//verifie token for profil 

@@ -15,16 +15,15 @@
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				console.error("ERROR IN LOGOUT ACTION");
+				console.error('fetch error in the layout logout section');
 				return;
 			}
 			// Redirect user after successful logout.
 			await goto('/');
 			await invalidateAll();
 		}
-		// Catch and log unexpected errors.
 		catch (error){
-			console.error('Logout page error: ', error);
+			console.error('Exception throwed in the handleLogout function: ', error);
 		}
   	}
 </script>
@@ -104,7 +103,7 @@
 
 	<!-- Toast notification -->
 	{#if toast.message}
-		<div class="fixed top-6 right-6 bg-pink-500 text-white px-4 py-2 rounded-md shadow-lg">
+		<div class="fixed bottom-6 right-6 bg-pink-500 text-white px-4 py-2 rounded-md shadow-lg">
 			{toast.message}
 		</div>
 	{/if}

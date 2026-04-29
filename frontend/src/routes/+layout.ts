@@ -10,8 +10,8 @@ export async function load ({ fetch }) {
 			connected: response.ok
 		};
 	}
-	catch {
-		console.error('Load layout menu error');
+	catch (error){
+		console.error('Exception throwed in the layout load function: ', error);
 		return {
 			connected: false
 		}
