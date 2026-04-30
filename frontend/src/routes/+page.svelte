@@ -54,7 +54,6 @@
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, username, password})
 			});
-
 			// Parse backend response as JSON.
 			const result = await response.json();
 			// If HTTP response indicates failure (4xx).
@@ -67,7 +66,8 @@
 				// Stop execution if request failed.
 				return;
 			}
-			// Redirect user after successful registration.
+			// Redirect user after successful registration
+			// invalidateAll() will re-run all load functions
 			await goto('/modes');
 			await invalidateAll();
 			showToast("Registration successful");
@@ -75,6 +75,7 @@
 		// Catch and log unexpected errors.
 		catch (error){
 			console.error('Register page error: ', error);
+			showToast("Internal error, please try later");
 		}
 	}
 </script>

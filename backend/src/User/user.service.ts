@@ -14,7 +14,11 @@ export class UserService{
     async get_profile(input: number): Promise<UserOutput>{
         const user = await this.userrepository.find_by_id(input);
         if (!user){
-            throw new AppError("user not exist", 401)
+			throw new AppError(
+				'Unknown user', 
+				ErrorCode.USER_NOT_FOUND,
+				401,
+				{user: input});
         }
         const {password, ...profil_of_user} = user;
         return profil_of_user
@@ -28,16 +32,29 @@ export class UserService{
 
         const user = await this.userrepository.find_by_id(userid);
         if (!user){
-            throw new AppError("user not found", 404)
+            throw new AppError(
+				'Unknown user', 
+				ErrorCode.USER_NOT_FOUND,
+				404,
+				{userID: userid});
+
         }
 
         const is_valide = await bcrypt.compare(input.oldpassword, user.password);
         if (!is_valide){
-            throw new AppError("old password is not correct", 401);
+			throw new AppError(
+				'Incorrect old password', 
+				ErrorCode.INVALID_OLD_PASSWORD,
+				401,
+				{oldpassword: input.oldpassword});
         }
 
         if (input.oldpassword === input.newpassword){
-            throw new AppError("new password cannot be the same as the old password", 400);
+			throw new AppError(
+				'The new password cannot be the same as the old one', 
+				ErrorCode.SAME_NEW_OLD_PASSWORD,
+				400,
+				{newpassword: input.newpassword});
         }
 
         const new_hashed_pd = await bcrypt.hash(input.newpassword, 10);
@@ -49,16 +66,29 @@ export class UserService{
     async change_username(userid: number, input: ChangeUsernameInput): Promise<UserOutput> {
         const user = await this.userrepository.find_by_id(userid);
         if (!user) {
-            throw new AppError("user not found", 404);
+			throw new AppError(
+				'Unknown user', 
+				ErrorCode.USER_NOT_FOUND,
+				404,
+				{userID: userid});
+		
         }
 
         if (user.username === input.newUsername) {
-            throw new AppError("new username cannot be the same as current", 400);
+			throw new AppError(
+				'The new username cannot be the same as the old one', 
+				ErrorCode.SAME_NEW_OLD_USERNAME,
+				400,
+				{newusername: input.newUsername});
         }
 
         const existingUser = await this.userrepository.find_by_username(input.newUsername);
         if (existingUser) {
-            throw new AppError("username already taken", 409);
+			throw new AppError(
+				'Username already taken', 
+				ErrorCode.AUTH_USERNAME_ALREADY_EXIST,
+				409,
+				{newusername: input.newUsername});
         }
 
         await this.userrepository.update_username(userid, input.newUsername);
@@ -67,16 +97,19 @@ export class UserService{
 
     async update_avatar(userid: number, file?: Express.Multer.File): Promise<UserOutput>{
         if (!file) {
-            // throw new AppError(
-            //     "avatar file is required",
-            //     ErrorCode.AVATAR_REQUIRED,
-            //     400);
-            throw new AppError("avatar file is required", 400);
+            throw new AppError(
+                'Need an avatar file',
+                ErrorCode.AVATAR_REQUIRED,
+                400);
         }
 
         const user = await this.userrepository.find_by_id(userid);
         if (!user){
-            throw new AppError("user not found", 404)
+			throw new AppError(
+				'Unknown user', 
+				ErrorCode.USER_NOT_FOUND,
+				404,
+				{userID: userid});
         }
 
         const previousAvatarUrl = user.url;
