@@ -23,7 +23,6 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	}
 	catch (error) {
 		if (isRedirect(error)) throw error;
-		console.error('Error friends list: ', error);
-		return { friends: [] }
+		console.error('Error profile page: ', error);
 	}
 };
