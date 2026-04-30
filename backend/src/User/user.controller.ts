@@ -1,6 +1,7 @@
 import { UserService } from "./user.service";
 import type { Request, Response } from "express";
 import { AppError, ErrorCode } from "src/error/apperror";
+import { Apiresponse } from "src/lib/api_response";
 
 export class UserController{
     private userservice: UserService
@@ -13,11 +14,15 @@ export class UserController{
             const result = await this.userservice.get_profile(req.user.id);
             res.json(result)
 
-        }catch(error){
+        }catch(error) {
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({message: error.message})
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            res.status(500).json({message: "Internal profil error"})
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfil controler error")
+                )
         }
     }
 
@@ -37,11 +42,15 @@ export class UserController{
                     message: "Password change success, please login again"
                 })
             }
-        }catch(error){
+        }catch(error) {
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({message: error.message})
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            res.status(500).json({message: "Internal changepassword error"})
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal ChangePassword controler error")
+                )
         }
     }
 
@@ -49,11 +58,15 @@ export class UserController{
         try {
             const result = await this.userservice.change_username(req.user.id, req.body);
             res.json(result);
-        } catch (error) { 
-            if (error instanceof AppError) {
-                return res.status(error.statusCode).json({ message: error.message });
+        }catch(error) {
+            if (error instanceof AppError){
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            res.status(500).json({ message: "Internal username change error" });
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal ChangeUrsername controler error")
+                )
         }
     }
 
@@ -61,21 +74,15 @@ export class UserController{
         try{
             const result = await this.userservice.update_avatar(req.user.id, req.file);
             res.json(result);
-        }catch(error){
+        }catch(error) {
             if (error instanceof AppError){
-                return res.status(error.statusCode).json({message: error.message})
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
             }
-            res.status(500).json({message: "Internal avatar update error"})
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal UpdateAvatar controler error")
+                )
         }
     }
 }
-
-/****
- * user profil: 
- *  - Users can update their profile information.
- *  - Users can upload an avatar (with a default avatar if none provided)
- *  - Users can add other users as friends and see their online status: realise by friendship service
- *  - Users have a profile page displaying their information.(done)
- * 
- * 
- */

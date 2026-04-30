@@ -27,7 +27,7 @@ export class AuthController{
             const {token, user} = await this.authservice.register(req.valideBody)
             res.cookie('auth_token', token, this.cookieOptions);
             res.status(201).json(
-                Apiresponse.success(user, "success to registe")
+                Apiresponse.success(user, "success to register")
                 );
         }catch(error){
             if (error instanceof AppError){
