@@ -72,6 +72,7 @@ export  class AuthService{
                 ErrorCode.AUTH_INVALID_PASSWORD,
                 401)
         }
+        await this.userrepository.update_status(user.id, 'ONLINE');
         //3. get a jwt token 
         const token = jwt.sign(
             {
@@ -91,7 +92,8 @@ export  class AuthService{
                 url: user.url,
                 wins: user.wins,
                 losses: user.losses,
-                friendsNb: user.friendsNb
+                friendsNb: user.friendsNb,
+                status: 'ONLINE'
             }
         }
     }

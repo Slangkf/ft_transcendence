@@ -68,6 +68,12 @@ export class AuthController{
                 const jti = decoded.jti;
                 const exp = decoded.exp;
 
+                if (decoded.id) {
+                    const { UserRepository } = await import('../User/user.repository');
+                    const userRepo = new UserRepository();
+                    await userRepo.update_status(decoded.id as number, 'OFFLINE');
+                }
+
                 if (jti && exp) {
                     const ttl = Math.max(exp - Math.floor(Date.now() / 1000), 1);
                     await redis.set(`blacklist:${jti}`, "1", { EX: ttl });

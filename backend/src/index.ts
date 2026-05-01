@@ -33,7 +33,7 @@ const start = async () => {
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
     app.use('/api/game', gameRouter);
-    app.use('/api/friends', friendshipRouter);
+    app.use('/api/friendship', friendshipRouter);
     //app.use('/api/room', RoomRouter);
 
     // 3. Start server

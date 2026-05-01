@@ -18,8 +18,7 @@ model User {
     wins        Int?        @default(0)
     played      Int?        @default(0)
     friendsNb   Int?        @default(0)
-    status      UserStatus  @default(OFFLINE)  // Statut en ligne/hors ligne
-    lastSeen    DateTime?   // Dernière fois vu en ligne
+    status      UserStatus  @default(OFFLINE)
     role        Role        @default(USER)
     quizzes     Quiz[]
 
@@ -95,7 +94,6 @@ model PlayerMatch {
 enum FriendshipStatus {
   PENDING
   ACCEPTED
-  BLOCKED
 }
 
 enum Role {
@@ -106,6 +104,4 @@ enum Role {
 enum UserStatus {
     ONLINE
     OFFLINE
-    AWAY
-    IN_GAME
 }
