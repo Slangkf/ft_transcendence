@@ -24,6 +24,19 @@ export class UserService{
         return profil_of_user
     }
 
+    async get_profile_by_username(username: string): Promise<UserOutput>{
+        const user = await this.userrepository.findByUsername(username);
+        if (!user){
+			throw new AppError(
+				'Unknown user', 
+				ErrorCode.USER_NOT_FOUND,
+				401,
+				{user: username});
+        }
+        const {password, ...profil_of_user} = user;
+        return profil_of_user
+    }
+
     async change_password(userid: number, input: ChangePdInput): Promise<Boolean>{
         // verifie with the password will realise by middleware in level controller
         // 1. verifie if the old password from input is the same in database

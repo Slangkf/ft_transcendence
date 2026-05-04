@@ -15,6 +15,7 @@ import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcrypt';
 import { fileURLToPath } from 'url';
+import 'dotenv/config';
 
 const prisma: PrismaClient = new PrismaClient();
 const __filename: string = fileURLToPath(import.meta.url);
@@ -35,12 +36,19 @@ interface Quiz
 }
 
 async function main(): Promise<void> {
-    const hashed_password = await bcrypt.hash("admin_pass", 10);
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+        throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables');
+    }
+
+    const hashed_password = await bcrypt.hash(adminPassword, 10);
     const admin = await prisma.user.upsert({
-        where: { email: "seedAdmin@42paris.fr" },
+        where: { email: adminEmail },
         update: {},
         create: {
-            email: "seedAdmin@42paris.fr",
+            email: adminEmail,
             username: "admin",
             password: hashed_password,
             role: "ADMIN",

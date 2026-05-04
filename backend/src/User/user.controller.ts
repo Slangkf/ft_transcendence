@@ -13,6 +13,42 @@ export class UserController{
         try{
             const result = await this.userservice.get_profile(req.user.id);
             res.json(result)
+            
+        }catch(error) {
+            if (error instanceof AppError){
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                )
+            }
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfil controler error")
+            )
+        }
+    }
+    
+    GetProfilById = async(req: Request, res: Response)=>{
+        try{
+            const userId = parseInt(req.params.userId, 10);
+            const result = await this.userservice.get_profile(userId);
+            res.json(result)
+
+        }catch(error) {
+            if (error instanceof AppError){
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                    )
+            }
+            res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfil controler error")
+                )
+        }
+    }
+
+    GetProfilByUsername = async(req: Request, res: Response)=>{
+        try{
+            const username = req.params.username;
+            const result = await this.userservice.get_profile_by_username(username);
+            res.json(result)
 
         }catch(error) {
             if (error instanceof AppError){
