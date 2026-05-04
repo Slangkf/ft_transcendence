@@ -6,10 +6,8 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export class UserService{
-    private userrepository: UserRepository;
-    constructor(){
-        this.userrepository = new UserRepository();
-    }
+    constructor(private userrepository: UserRepository)
+    {}
 
     async get_profile(input: number): Promise<UserOutput>{
         const user = await this.userrepository.find_by_id(input);

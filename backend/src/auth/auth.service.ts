@@ -12,11 +12,9 @@ if (!JWT_SECRET) {
 }
 
 export  class AuthService{
-    private userrepository: UserRepository;
 
-    constructor(){
-        this.userrepository = new UserRepository();
-    }
+    constructor( private userrepository: UserRepository)
+    {}
     
     async register(input: RegisterInput):Promise<AuthResult>{
     //1. check mail or username existe

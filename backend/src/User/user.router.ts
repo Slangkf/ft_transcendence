@@ -2,9 +2,10 @@ import { verifyToken } from "src/middleware/verify_token";
 import {Router} from 'express'
 import { UserController } from "./user.controller";
 import { handleAvatarUpload } from "../middleware/avatar_upload";
+import { userService } from "src/container";
 
 const router = Router();
-const usercontroller = new UserController();
+const usercontroller = new UserController(userService);
 
 router.use(verifyToken);
 router.get('/me', usercontroller.GetProfil)

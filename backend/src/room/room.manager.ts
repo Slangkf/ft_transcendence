@@ -31,7 +31,7 @@ export class RoomManager{
             });
         }
 
-        const room = {
+        const room: Room = {
             type: params.type,
             roomId,
             hostId: params.hostId,
@@ -39,10 +39,10 @@ export class RoomManager{
             status: 'waiting',
             maxPlayers: params.maxPlayers ?? 2, 
             createdAt: Date.now(),
-            gameId: '',
+            sessionId: '',
         }
         //save in redis
-       
+       await this.roomservice.createRoom(room);
         return room
     }
     async entry(type: 'game' | 'chat', params: RoomEntryParams): Promise<RoomEntryResult>{

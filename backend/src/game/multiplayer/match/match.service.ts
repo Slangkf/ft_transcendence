@@ -40,9 +40,9 @@ export class    MatchService{
         const matchId = randomUUID();
 
         //delete in queue
-            await this.matchrepository.dequeue(
-                mode, 
-                matchplayers.map(p=>p.userId))
+        await this.matchrepository.dequeue(
+            mode, 
+            matchplayers.map(p=>p.userId))
         
         //save the result of matchplayers in database
         const result: MatchResult = {
@@ -58,7 +58,11 @@ export class    MatchService{
     }
 
     async getMyMatch(userId: string): Promise<MatchResult| null>{
-        return this.matchrepository.getMatchByPlayer(userId);
+        return await this.matchrepository.getMatchByPlayer(userId);
+    }
+
+    async leaveQueue(userId: string): Promise<void>{
+        return await this.matchrepository.removeFromQueue(userId);
     }
 
     private getmaxplayersfrommode(mode: string):number{

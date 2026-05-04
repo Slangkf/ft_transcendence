@@ -3,19 +3,23 @@ import  type {
     StartGameResult,
     GameInfo,
     StartGameParms,
-    StartMultiResult
+    StartMultiResult,
+    GameState
 }from "../game.types"; 
 import { AppError, ErrorCode } from "src/error/apperror";
 import { Room, RoomPlayer } from "src/room/room.types";
 import { RoomManager } from "src/room/room.manager";
 import { MatchService } from "src/game/multiplayer/match/match.service";
+import {randomUUID} from 'crypto';
+import { IEmitter } from "src/websocket/socket.emitter";
 
 
 export class Multiplayer {
     constructor(
         private matchservice: MatchService,
         private roommanager: RoomManager,
-        private multiservice: MultiService
+        private multiservice: MultiService,
+        private emitter: IEmitter,
     ){}
 
     //start multi begin with waiting match in match service
@@ -58,6 +62,15 @@ export class Multiplayer {
             type: 'game'
         })
 
+
+        //send a message for all user that match successfully
+        for(const player of match.players){
+            await this.emitter.toUser(player.userId, 'matched', {
+                roomId: room.roomId,
+                players: match.players,
+            })
+        }
+
         return {
             status: 'matched',
             players: match.players,
@@ -65,10 +78,19 @@ export class Multiplayer {
         }
     }
 
+    // Player sets ready in the room
     // Returns game start result if all players are ready, otherwise null
     async setPlayerReady(roomId: string, userId: string, isReady: boolean): Promise<StartGameResult | null> {
         const result = await this.roommanager.setReady(roomId, userId, isReady);
         
+        //tell every player is ready
+        await this.emitter.toRoom(roomId, 'player_ready', {
+            playerId: userId,
+            isReady,
+            allReady: result.allReady,
+        })
+
+
         // If all players are ready, start the game
         if (result.allReady) {
             return this.startGameFromRoom(result.room);
@@ -84,15 +106,27 @@ export class Multiplayer {
         room.sessionId = result.gameId;
 
         await this.roommanager.updateStatus(room, "active");
+
+        await this.emitter.toRoom(room.roomId, 'game_started', result); 
+
         return result;
     }
 
-    // Player sets ready in the room
     
 
     async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null> {
-        return this.multiservice.submitAnswer(gameId, selectedAnswerIndex, userId);
+        const result = await this.multiservice.submitAnswer(gameId, selectedAnswerIndex, userId);
+        if (!result)
+            return null;
+
+        const gamestate = await this.multiservice.getGameState(gameId);
+        if (gamestate && 'roomId' in gamestate){
+            await this.emitter.toRoom(gamestate.roomId, 'answer_result', result);
+        }
+        return result;
     }
+
+    
 }
 /****
  * the layer to make multiplayer and room together(?? multiplayer entry by here or game? )

@@ -5,11 +5,9 @@ import { AppError, ErrorCode } from 'src/error/apperror';
 
 
 export class RoomService{
-    private roomrepository: RoomRepository;
 
-    constructor(){
-        this.roomrepository = new RoomRepository();
-    }
+    constructor(private roomrepository: RoomRepository)
+    {}
 
     async createRoom(room: Room): Promise<void>{
         await this.roomrepository.save(room);
@@ -30,7 +28,7 @@ export class RoomService{
             409
         );
         //3. when it starts, check nombre of players in the room, >= 2 && <4 ok 
-        if (Object.keys(room.players).length >= 2) throw new AppError(
+        if (Object.keys(room.players).length >= room.maxPlayers) throw new AppError(
             "Room is full",
             ErrorCode.ROOM_FULL,
             409
@@ -72,8 +70,11 @@ export class RoomService{
         }
         //if the player is the host: change the host of room
         if (room.hostId === playerId){
-            const newhost = remainPlayers[0];
+            room.hostId = remainPlayers[0];
         }
+        
+        delete room.players[playerId];
+
         await this.roomrepository.update(room);
         return await this.roomrepository.getroom(roomId);
     }
@@ -94,7 +95,7 @@ export class RoomService{
         player.isReady = isReady;
         //3. check if everyone is ready
         const allPlayers = Object.values(room.players);
-        const allready = allPlayers.every(p => p.isReady) && allPlayers.length >= room.maxPlayers;
+        const allready = allPlayers.every(p => p.isReady);
        
         await this.roomrepository.update(room);
         return { allReady: allready, room };

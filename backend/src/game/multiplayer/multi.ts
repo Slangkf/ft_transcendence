@@ -44,6 +44,12 @@ export class MultiService extends GameBaseService {
 
         return this.buildPlayingGameInfo(state);
     }
+    async getGameState(gameId: string){
+        const state = await this.gameRepository.findById(gameId);
+        if (!state) return null;
+
+        return this.buildPlayingGameInfo(state);
+    }
     
     private buildPlayerFromRoom(roomplayers: RoomPlayer[]){
         return Object.fromEntries(

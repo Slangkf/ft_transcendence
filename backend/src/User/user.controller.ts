@@ -4,10 +4,9 @@ import { AppError, ErrorCode } from "src/error/apperror";
 import { Apiresponse } from "src/lib/api_response";
 
 export class UserController{
-    private userservice: UserService
-    constructor(){
-        this.userservice = new UserService()
-    }
+    
+    constructor(private userservice: UserService)
+    {}
 
     GetProfil = async(req: Request, res: Response)=>{
         try{

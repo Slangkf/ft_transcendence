@@ -93,10 +93,6 @@ export class GameBaseService
             })
         }
 
-
-
-
-
         state.currentQuestionIndex += 1;
         state.isFinished = state.currentQuestionIndex >= state.questions.length;
 

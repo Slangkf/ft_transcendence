@@ -17,19 +17,20 @@ export class GameController
                 nickname: req.user.username
             })
             if (!result) {
-                return res.status(500).json(
-                    Apiresponse.success(null, "failed to start")
+                return res.status(202).json(
+                    Apiresponse.success(null, "waiting for match")
                 );
             }
-            if ('status' in result && result.status === 'waiting'){
-                return res.status(202).json(
+            if ('status' in result){
+                if (result.status === 'waiting'){
+                    return res.status(202).json(
                     Apiresponse.success(null, "Waiting for match")
-                )
-            }
-            if ('status' in result && result.status === 'matched'){
-                return res.status(200).json(
+                )}
+                if (result.status === 'matched'){
+                    return res.status(200).json(
                     Apiresponse.success(result, 'Match found and game started')
-                )
+                )}
+
             }
 
             res.status(200).json(

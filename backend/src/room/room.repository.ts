@@ -1,36 +1,36 @@
-import { redis } from "src/lib/redis";
+import { Redis, RedisKeys } from "src/lib/redis";
 import { Room } from "./room.types";
 
 const ROOM_TTL = 60 * 60 *1;
 
 export class RoomRepository{
     private getKey(roomId: string){
-        return `room:${roomId}`
+        return RedisKeys.game.room(roomId);
     }
 
     async getroom(roomId: string): Promise<Room | null>{
-        const data = await redis.get(this.getKey(roomId));
+        const data = await Redis.get(this.getKey(roomId));
         if (!data) return null;
     
         return JSON.parse(data);
     }
     async save(room: Room): Promise<void>{
-        await redis.set(
+        await Redis.set(
             this.getKey(room.roomId),
             JSON.stringify(room),
-            ROOM_TTL
+            {EX: ROOM_TTL}
         )
     }
 
     async update(room: Room): Promise<void>{
-        await redis.set(
+        await Redis.set(
             this.getKey(room.roomId),
             JSON.stringify(room),
-            ROOM_TTL
+            {EX: ROOM_TTL}
         )
     }
     async delete(roomId: string): Promise<void> {
-        await redis.del(this.getKey(roomId));
+        await Redis.del(this.getKey(roomId));
     }
 
 }

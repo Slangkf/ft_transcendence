@@ -4,14 +4,13 @@ import { AppError } from "src/error/apperror";
 import {valideRequest} from "../middleware/zod_check"
 import { Apiresponse } from "src/lib/api_response";
 import jwt from "jsonwebtoken";
-import { redis } from "../lib/redis";
+import { Redis } from "../lib/redis";
 
 //version for middleware of zod, add token in cookie 
 export class AuthController{
-    private authservice: AuthService;
-    constructor(){
-        this.authservice = new AuthService();
-    }
+    
+    constructor(private authservice: AuthService)
+    {}
 
     private cookieOptions = {
         httpOnly: true,
@@ -76,7 +75,7 @@ export class AuthController{
 
                 if (jti && exp) {
                     const ttl = Math.max(exp - Math.floor(Date.now() / 1000), 1);
-                    await redis.set(`blacklist:${jti}`, "1", { EX: ttl });
+                    await Redis.set(`blacklist:${jti}`, "1", { EX: ttl });
                 }
             }
         } catch (error) {
