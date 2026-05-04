@@ -1,11 +1,13 @@
-<!-- <script lang="ts">
+<script lang="ts">
 	const { data } = $props();
-</script> -->
+	
+</script>
 
 <!-- Main card -->
 <div class="flex flex-col items-center justify-center w-full max-w-120 rounded-xl px-6 py-8 border border-slate-700 bg-slate-900/90 backdrop-blur-xs text-white text-sm">
 	<!-- Main card title -->
 	<h2 class="text-2xl font-semibold text-pink-500 text-center">Profile</h2>
+	<p class="mt-1 text-pink-500 text-center">****'s' profile page</p>
 	<!-- Avatar -->
 	<img src="/images/avatar.png" alt="avatar" class="h-37 w-37 rounded-full object-cover mt-8">
 	<!-- Add friend button -->
