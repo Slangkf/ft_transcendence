@@ -12,10 +12,10 @@ export type Room = {
     roomId: string;
     hostId: string;
     players: Record<string, RoomPlayer>;
-    status: "waiting" | "starting" | "in_game" | "finished";
+    status: "waiting" | "active" | "closed";
     createdAt: number;
     maxPlayers: number;
-    gameId?: string; //to save in gamestate 
+    sessionId?: string; // gameid or userid for friends chat 
 }
 
 export type CreateRoomParams = {

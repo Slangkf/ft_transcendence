@@ -18,6 +18,8 @@ export type MathQueueResult = {
 export type MatchResult = {
     players: QueuePlayer[];
     matchId: string;
+    roomId: string;
     mode: string;
     maxPlayers: number;
+    createdAt: number;
 }

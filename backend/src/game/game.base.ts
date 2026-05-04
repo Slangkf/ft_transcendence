@@ -20,7 +20,6 @@ export class GameBaseService
           Totaltime: 0,
           isAI: opts?.isAI ?? false,
           joinOrder: opts?.joinOrder,
-          lastActiveAt: Date.now(),
         };
     }
     protected async prepareGame(
@@ -84,6 +83,20 @@ export class GameBaseService
     }
     //advance to the next question
     protected advance(state: GameState): void{
+        if (state.currentQuestionIndex + 1 >= state.questions.length){
+            state.isFinished = true;
+        } else { 
+            state.currentQuestionIndex += 1;
+            Object.values(state.players).forEach(p => {
+                if (p.status !== 'disconnected')
+                    p.status = 'playing'
+            })
+        }
+
+
+
+
+
         state.currentQuestionIndex += 1;
         state.isFinished = state.currentQuestionIndex >= state.questions.length;
 

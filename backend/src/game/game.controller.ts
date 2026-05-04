@@ -17,12 +17,23 @@ export class GameController
                 nickname: req.user.username
             })
             if (!result) {
-                return res.status(202).json(
-                    Apiresponse.success(null, "Waiting for match")
+                return res.status(500).json(
+                    Apiresponse.success(null, "failed to start")
                 );
             }
+            if ('status' in result && result.status === 'waiting'){
+                return res.status(202).json(
+                    Apiresponse.success(null, "Waiting for match")
+                )
+            }
+            if ('status' in result && result.status === 'matched'){
+                return res.status(200).json(
+                    Apiresponse.success(result, 'Match found and game started')
+                )
+            }
+
             res.status(200).json(
-                Apiresponse.success(result, "Match found and game started")
+                Apiresponse.success(result, "Solo game start")
             );
         }catch(error){
             console.error(error);
@@ -103,6 +114,7 @@ export class GameController
                 Apiresponse.success(result, result.gameresult.isFinished ? "Game finished." : "Answer submitted.")
                 );
         } catch (error) {
+            console.error(error);
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json(
                     Apiresponse.error(error.code, error.message)

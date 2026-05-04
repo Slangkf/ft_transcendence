@@ -1,19 +1,12 @@
 import { randomUUID } from 'crypto';
-import { ChatEntryStrategy } from "./ChatEntry.stratege";
-import { GameEntryStrategy } from "./GameEntry.stratege";
 import { RoomService } from "./room.service";
 import { CreateRoomParams, IRoomEntryStrategy, Room, RoomEntryParams, RoomEntryResult, RoomPlayer } from "./room.types";
 
 export class RoomManager{
-    private strategies: Map<'game'| 'chat', IRoomEntryStrategy>;
     constructor(
         private roomservice: RoomService,
-    ){
-        this.strategies = new Map([
-            ['game', new GameEntryStrategy(this.roomservice)],
-            ['chat', new ChatEntryStrategy(this.roomservice)],
-        ])
-    }
+    ){}
+
     async createRoom(params: CreateRoomParams): Promise<Room>{
         const roomId = randomUUID();
 
@@ -49,11 +42,11 @@ export class RoomManager{
             gameId: '',
         }
         //save in redis
-        await this.roomservice.createRoom(room);
+       
         return room
     }
     async entry(type: 'game' | 'chat', params: RoomEntryParams): Promise<RoomEntryResult>{
-        const strategy = this.strategies.get(type)!;
+        //const strategy = this.strategies.get(type)!;
         return strategy.entry(params);
     }
 
@@ -69,7 +62,7 @@ export class RoomManager{
         return this.roomservice.getRoom(roomId);
     }
 
-    async updateStatus(room: Room, action: "in_game"| "starting"| "finished"){
+    async updateStatus(room: Room, action: "active" | "closed"){
         room.status = action
         return await this.roomservice.save(room);
     }

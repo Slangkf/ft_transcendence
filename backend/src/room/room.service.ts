@@ -94,14 +94,10 @@ export class RoomService{
         player.isReady = isReady;
         //3. check if everyone is ready
         const allPlayers = Object.values(room.players);
-        const allready = allPlayers.every(p => p.isReady);
-        //4. check the condition to start a game, >= 2 players and everyone is ready 
-        if (allready && allPlayers.length >= room.maxPlayers){
-            //redis update the status of room to starting
-            room.status = "starting";
-        }
+        const allready = allPlayers.every(p => p.isReady) && allPlayers.length >= room.maxPlayers;
+       
         await this.roomrepository.update(room);
-        return { allReady: allready && allPlayers.length >= room.maxPlayers, room };
+        return { allReady: allready, room };
     }
 
     async deleteRoom(roomId: string): Promise<void>{

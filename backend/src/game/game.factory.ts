@@ -1,5 +1,5 @@
 import { AppError, ErrorCode } from "src/error/apperror";
-import { IModeService, StartGameParms, StartGameResult, GameInfo } from "./game.types";
+import { IModeService, StartGameParms, StartGameResult, GameInfo, StartMultiResult } from "./game.types";
 import { Multiplayer } from "./multiplayer/multiplayer";
 import { SoloService } from "./solo/solo";
 import { IGameRepository } from "./game.types";
@@ -15,14 +15,14 @@ export class GameService {
         private gameRepository: IGameRepository
     ){}
 
-    async startGame(params: StartGameParms): Promise<StartGameResult | null> {
+    async startGame(params: StartGameParms): Promise<StartGameResult | StartMultiResult | null> {
         const {mode, userId, nickname} = params;
 
         switch(mode){
             case "solo":
-                return this.soloService.startGame(userId);
+                return this.soloService.startGame(params.userId);
             case "multiplayer":
-                return this.multiplayer.startMultiGame({mode, userId, nickname});
+                return this.multiplayer.joinMatchmaking(params);
             default:
                 throw new AppError(
                     "Unknown game mode",

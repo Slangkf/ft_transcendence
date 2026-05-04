@@ -1,12 +1,13 @@
 ----- register: 
-curl -i -c cookies_2.txt -k -X POST http://localhost:3000/api/auth/register   -H "Content-Type: application/json"   -d '{
-    "username": "abcde",
-    "email": "abcde@gmail.com",
+
+curl -i -c cookies1.txt -k -X POST http://localhost:3000/api/auth/register   -H "Content-Type: application/json"   -d '{
+    "username": "abcde22f1",
+    "email": "abcde21@gmail.com",
     "password": "12345678900"
   }'
-curl -i -c cookies_1.txt -k -X POST http://localhost:3000/api/auth/register   -H "Content-Type: application/json"   -d '{
-    "username": "abcdeef",
-    "email": "abcd1efw@gmail.com",
+curl -i -c cookies2.txt -k -X POST http://localhost:3000/api/auth/register   -H "Content-Type: application/json"   -d '{
+    "username": "abcdeef1",
+    "email": "abcd1efw1@gmail.com",
     "password": "12345678900"
   }'
 
@@ -34,18 +35,19 @@ curl -i -b cookies_1.txt -k -X POST https://localhost:8888/api/user/me/changepas
 
 -----------start game (multiplayer can be solo)
   curl -X POST http://localhost:3000/api/game/multiplayer/start \
-  -b cookies_2.txt
+  -b cookies2.txt
 
 --------set ready 
-  curl -X POST http://localhost:3000/api/game/multiplayer/ready/2efaabbe-04b1-4ab3-b5af-44b405e89bc1 \
-  -b cookies_1.txt \
+  curl -X POST "http://localhost:3000/api/game/multiplayer/ready/abe67eae-702d-4c67-96f9-463437c9ac51" \
+  -b cookies1.txt \
   -H "Content-Type: application/json" \
   -d '{
     "isReady": true
   }'
 -----------submit answer 
-curl -i -X POST "http://localhost:3000/api/game/multiplayer/12c2ea1f-9a3e-479c-aa29-af26c25de8df/answer" \
-  -b cookies_1.txt
+
+curl -i -X POST http://localhost:3000/api/game/multiplayer/bc0d206c-6236-417c-8864-75e470be31aa/answer \
+  -b cookies1.txt \
   -H "Content-Type: application/json" \
   -d '{"selectedAnswerIndex": 0}'
 ----- update avatar:

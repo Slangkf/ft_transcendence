@@ -1,6 +1,6 @@
 import { redis } from "src/lib/redis";
 
-import { JoinQueueParams, QueuePlayer } from "./match.types";
+import { JoinQueueParams, MatchResult, QueuePlayer } from "./match.types";
 
 export class MatchRepository{
 
@@ -33,4 +33,9 @@ export class MatchRepository{
             )
         }
     }
+    async saveMatch(match: MatchResult): Promise<void>{
+        
+    }
+
+    async getMatchByPlayer(userId: string): Promise <>
 }

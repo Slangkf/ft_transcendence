@@ -30,7 +30,8 @@ export class MultiService extends GameBaseService {
         if (player.status === 'answered') throw new AppError('Player already answered', ErrorCode.PLAYER_ALREADY_ANSWERED, 409);
 
         this.validateAnswer(state, selectedAnswerIndex, userId);
-        const allAnswered = Object.values(state.players).every(p => p.status === 'answered')
+        const allAnswered = Object.values(state.players).filter(p => p.status !== 'disconnected')
+                                                        .every(p => p.status === 'answered')
         if (allAnswered){
             this.advance(state);
         }

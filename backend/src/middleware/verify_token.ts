@@ -8,6 +8,8 @@ import { AppError, ErrorCode } from 'src/error/apperror';
 
 export const verifyToken = async(req: Request, res: Response, next: NextFunction)=>{
 	// check either the cookie or the Authorization header
+    console.log("auth token: ", req.cookies.auth_token);
+    console.log("header token: ", req.headers.authorization);
     const token = req.cookies?.auth_token || req.headers.authorization?.split(' ')[1];
     if (!token){
         return next(new AppError(

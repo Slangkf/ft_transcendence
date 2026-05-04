@@ -25,7 +25,7 @@ export class    MatchService{
         }
     }
 
-    async matchPlayers(mode: string ): Promise<MatchResult | null>{
+    async matchPlayers(mode: string, roomId: string ): Promise<MatchResult | null>{
         const queue = await this.matchrepository.getqueue(mode);
         const maxplayers = this.getmaxplayersfrommode(mode);
 
@@ -43,12 +43,22 @@ export class    MatchService{
             await this.matchrepository.dequeue(
                 mode, 
                 matchplayers.map(p=>p.userId))
-        return {
+        
+        //save the result of matchplayers in database
+        const result: MatchResult = {
             players: matchplayers,
             matchId,
+            roomId,
             mode,
-            maxPlayers: maxplayers
+            createdAt: Date.now(),
+            maxPlayers: maxplayers,
         }
+        await this.matchrepository.saveMatch(result);
+        return result
+    }
+
+    async getMyMatch(userId: string): Promise<MatchResult| null>{
+        return this.matchrepository.getMatchByPlayer(userId);
     }
 
     private getmaxplayersfrommode(mode: string):number{
