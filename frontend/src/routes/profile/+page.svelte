@@ -76,7 +76,7 @@
 			showToast("Your avatar has been successfully changed");
 		}
 		catch (error){
-			console.error('Exception throwed in the avatar sending function: ', error);
+			console.error('Exception thrown in the avatar sending function: ', error);
 		}
 	}
 
@@ -270,15 +270,15 @@
 		<!-- Statistic title -->
 		<h3 class="text-lg text-pink-500 mb-4">Statistics</h3>
 		<!-- Statistic cards -->
-		<div class="flex justify-between">
+		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Games played</span>
 			<span>{ data.user.played ?? "Unknown data" }</span>
 		</div>
-		<div class="flex justify-between mt-2">
+		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Games won</span>
 			<span>{ data.user.wins ?? "Unknown data" }</span>
 		</div>
-		<div class="flex justify-between mt-2">
+		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Average score</span>
 			<span>{ data.user.score ?? "Unknown data" }%</span>
 		</div>
@@ -289,7 +289,7 @@
 		<!-- Title -->
 		<h3 class="text-lg text-pink-500 mb-4">Social</h3>
 		<!-- Statistics -->
-		<div class="flex justify-between">
+		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Friends</span>
 			<span>{ data.user.friendsNb ?? "Unknown data" }</span>
 		</div>

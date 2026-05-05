@@ -21,7 +21,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 	}
 	// If an error occurs (network, server down, etc.), consider the user as not connected
 	catch (error) {
-		console.error('Exception throwed in layout.server.ts: ', error)
+		console.error('Exception thrown in layout.server.ts: ', error)
 		return { connected: false }
 	}
 };
