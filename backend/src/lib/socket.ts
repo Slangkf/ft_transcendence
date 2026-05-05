@@ -10,14 +10,17 @@ dotenv.config();
 
 export function createSocketServer(httpserver: HttpServer, redis: Redis){
     const io = new Server(httpserver, {
-        cors:{ origin: 'https://localhost:8888', credentials: true},
+        cors:{ 
+            origin: 'https://localhost:8888', 
+            credentials: true,
+            methods:['GET', 'POST']},
     })
 
     io.use(async(socket, next)=> {
         try{
             const token = socket.handshake.auth.token;
-            const payload = jwt.verify(token, process.env.JWT_SECRET);
-            socket.data.userId = payload.userId;
+            const payload = jwt.verify(token, process.env.JWT_SECRET) as any;
+            socket.data.userId = payload.id;
             socket.data.nickname = payload.nickname;
             next();
         }catch(error){

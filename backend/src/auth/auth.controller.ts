@@ -15,9 +15,9 @@ export class AuthController{
     private cookieOptions = {
         httpOnly: true,
         // secure: process.env.NODE_ENV === 'production',	// JIANXIN
-        // sameSite: 'lax',									// JIANXIN
+         sameSite: 'lax',									// JIANXIN
 		secure: true, // required for sameSite: 'none', cookies are ignored otherwise
-        sameSite: 'none', // for cross-site infrastructure
+        //sameSite: 'none', // for cross-site infrastructure
         maxAge: 7 * 24 * 60 * 60 * 1000
     };
 

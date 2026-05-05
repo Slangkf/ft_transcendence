@@ -2,7 +2,8 @@ import { io } from "socket.io-client";
 import fetch  from "node-fetch";
 
 // ================= CONFIG =================
-const SERVER_URL = "http://localhost:3000";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+const SERVER_URL = "https://localhost:8888";
 
 // ================= STATE =================
 const State = {
@@ -77,12 +78,24 @@ class TestUser {
     console.log(`🔌 [${this.name}] connecting WS...`);
 
     this.socket = io(SERVER_URL, {
-      auth: { token: this.token }
+       auth: (cb) => {
+        cb({ token: this.token });
+    },
+    rejectUnauthorized: false, // 忽略自签名证书
     });
 
     this.socket.on("connect", () => {
-      console.log(`✅ [${this.name}] WS connected`);
+      console.log(`✅ [${this.name}] WS connected, id: ${this.socket.id}`);
       this.state = State.CONNECTED;
+    });
+
+    this.socket.on('connect_error', (err) => {
+        console.log(`❌ [${this.name}] connect_error: ${err.message}`);
+        console.log(`❌ [${this.name}] error data:`, err.data); // 服务端传的错误信息
+    });
+
+    this.socket.onAny((event, ...args) => {
+        console.log(`📨 [${this.name}] event: ${event}`, JSON.stringify(args));
     });
 
     this.socket.on("matched", (data) => {
@@ -111,7 +124,7 @@ class TestUser {
   async startMatchmaking() {
     console.log(`🎮 [${this.name}] start matchmaking`);
 
-    await fetch(`${SERVER_URL}/api/game/multiplayer/start`, {
+    const res = await fetch(`${SERVER_URL}/api/game/multiplayer/start`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -119,8 +132,14 @@ class TestUser {
       },
       body: JSON.stringify({ mode: "multiplayer" })
     });
-
-    this.state = State.MATCHING;
+    console.log(`[${this.name}] response status:`, res.status);
+    const data = await res.json();
+    console.log(`[${this.name}] response data:`, data);
+    if (data.roomId){
+      this.roomId = data.roomId;
+      this.state = State.MATCHING;
+    }
+   
   }
 
   async ready() {
@@ -128,7 +147,7 @@ class TestUser {
 
     console.log(`🟢 [${this.name}] ready`);
 
-    await fetch(`${SERVER_URL}/api/game/multiplayer/ready/${this.roomId}`, {
+    const res =await fetch(`${SERVER_URL}/api/game/multiplayer/ready/${this.roomId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -136,8 +155,11 @@ class TestUser {
       },
       body: JSON.stringify({ isReady: true })
     });
-
-    this.state = State.READY;
+    const data = await res.json();
+    console.log(data);
+    if (data.gameId){
+      this.gameId = data.gameId;
+      this.state = State.READY;}
   }
 
   async answer(index = 0) {
@@ -151,7 +173,7 @@ class TestUser {
 
   async waitForState(target) {
     while (this.state !== target) {
-      await wait(100);
+      await wait(50);
     }
   }
 }
@@ -171,7 +193,8 @@ async function run() {
   u1.connectWS();
   u2.connectWS();
 
-  await wait(1000);
+  await u1.waitForState(State.CONNECTED);
+  await u2.waitForState(State.CONNECTED);
 
   // 3. START MATCHMAKING
   await u1.startMatchmaking();
@@ -179,6 +202,7 @@ async function run() {
 
   // 4. WAIT MATCH
   await u1.waitForState(State.MATCHED);
+  await u2.waitForState(State.MATCHED);
 
   console.log("\n✅ MATCH CREATED:", u1.roomId);
 
@@ -188,6 +212,7 @@ async function run() {
 
   // 6. WAIT GAME START
   await u1.waitForState(State.STARTED);
+  await u2.waitForState(State.STARTED);
 
   console.log("\n🚀 GAME STARTED:", u1.gameId);
 

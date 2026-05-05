@@ -65,6 +65,7 @@ export class Multiplayer {
 
         //send a message for all user that match successfully
         for(const player of match.players){
+            await this.emitter.joinRoom(player.userId, room.roomId);
             await this.emitter.toUser(player.userId, 'matched', {
                 roomId: room.roomId,
                 players: match.players,

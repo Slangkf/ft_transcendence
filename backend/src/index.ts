@@ -8,7 +8,6 @@ import {createServer} from 'http';
 
 import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
-<<<<<<< HEAD
 import {createGameRouter} from './game/game.router';
 import friendshipRouter from './friendship/friendship.router';
 import {initRedis, Redis} from './lib/redis';
@@ -30,6 +29,7 @@ const PORT = 3000;
 // ====== INIT FUNCTION ======
 const start = async () => {
   try {
+    app.get('/health', (req, res) => res.json({ok: true}))
     await initRedis();
     // 2. Express setup
     app.use(cookieParser());
@@ -59,11 +59,7 @@ const start = async () => {
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
-<<<<<<< HEAD
     app.use('/api/game', createGameRouter(gameService));
-=======
-    app.use('/api/game', gameRouter);
->>>>>>> main
     app.use('/api/friendship', friendshipRouter);
     //app.use('/api/room', RoomRouter);
 

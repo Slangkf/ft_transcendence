@@ -1,6 +1,6 @@
 import type { SocketEvent } from "./socket.types";
 import { Server } from 'socket.io';
-import { Redis } from 'ioredis';
+import { Redis, RedisKeys } from 'src/lib/redis';
 
 export interface IEmitter {
     toUser<K extends keyof SocketEvent>(
@@ -27,7 +27,7 @@ export class SocketEmitter implements IEmitter{
         event: K,
         data: SocketEvent[K]
     ): Promise<void>{
-        const socketId = await this.redis.get(`socketId:${userId}`)
+        const socketId = await this.redis.get(RedisKeys.socket.user(userId))
         if (socketId){
             this.io.to(socketId).emit(event, data);
         }
@@ -39,5 +39,13 @@ export class SocketEmitter implements IEmitter{
         data: SocketEvent[K]
     ){
         this.io.to(roomId).emit(event, data)
+    }
+
+    async joinRoom(userId: string, roomId: string): Promise<void>{
+        const socketId = await this.redis.get(RedisKeys.socket.user(userId))
+        if (socketId){
+            const socket = this.io.sockets.sockets.get(socketId);
+            if (socket) socket.join(roomId);
+        }
     }
 }

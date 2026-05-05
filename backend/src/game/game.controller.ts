@@ -32,7 +32,6 @@ export class GameController
                 )}
 
             }
-
             res.status(200).json(
                 Apiresponse.success(result, "Solo game start")
             );

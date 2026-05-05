@@ -24,7 +24,7 @@ export class GameBaseService
     }
     protected async prepareGame(
         players: Record<string, Player>,
-        mode: 'solo' | 'IA',
+        mode: 'solo' | 'ia',
         options?: { totalQuestions?: number }): Promise<SoloGameState>
 
     protected async prepareGame(
@@ -34,7 +34,7 @@ export class GameBaseService
     
     protected async prepareGame(
         players: Record<string, Player>,
-        mode: 'solo' | 'IA' | 'multiplayer',
+        mode: 'solo' | 'ia' | 'multiplayer',
         options?: { totalQuestions?: number; roomId?: string; hostId?: string }): Promise<GameState> {
             const questions = await this.questionService.getQuestions(options?.totalQuestions ?? 10);
             const base = {

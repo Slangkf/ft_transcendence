@@ -71,7 +71,7 @@ export type BaseGameState = {
 }
 
 export type SoloGameState = BaseGameState & {
-    mode: "Solo" | "IA"
+    mode: "solo" | "ai"
 }
 
 export type MultiGameState = BaseGameState & {
@@ -89,6 +89,10 @@ export type PublicGameState = {
   currentQuestionIndex: number;
   isFinished: boolean;
   totalQuestions: number;
+  mode: "solo" | "ai" | "multiplayer";
+  roomId?: string;
+  hostId?: string;
+  status?: "waiting" | "starting" | "playing" | "finished";
 }
 
 export type FinalScore = {
