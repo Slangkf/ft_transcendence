@@ -96,11 +96,6 @@
 			{#if errors.password}
 				<p class="text-red-500 text-xs mb-2">{errors.password}</p>
 			{/if}
-
-			<!-- Forgot password link -->
-			<div class="text-right">
-				<a href="/login" class="font-medium text-blue-500 hover:text-pink-500">Forgot password?</a>
-			</div>
 			
 			<!-- Login button -->
 			<button type="submit" class="w-full mt-10 px-4 py-2.5 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Login</button>

@@ -25,7 +25,7 @@
 			showToast("Logout successful");
 		}
 		catch (error){
-			console.error('Exception throwed in the handleLogout function: ', error);
+			console.error('Exception thrown in the handleLogout function: ', error);
 		}
   	}
 </script>
