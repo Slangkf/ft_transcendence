@@ -8,6 +8,7 @@ import {createServer} from 'http';
 
 import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
+<<<<<<< HEAD
 import {createGameRouter} from './game/game.router';
 import friendshipRouter from './friendship/friendship.router';
 import {initRedis, Redis} from './lib/redis';
@@ -19,6 +20,7 @@ import { createGameServices,
   matchService,
   gamerepo,
 } from './container';
+
 
 const app = express();
 const PORT = 3000;
@@ -57,7 +59,11 @@ const start = async () => {
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
+<<<<<<< HEAD
     app.use('/api/game', createGameRouter(gameService));
+=======
+    app.use('/api/game', gameRouter);
+>>>>>>> main
     app.use('/api/friendship', friendshipRouter);
     //app.use('/api/room', RoomRouter);
 

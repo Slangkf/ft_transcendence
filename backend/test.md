@@ -67,10 +67,28 @@ curl -i -k -c cookies.txt -X POST http://localhost:3000/api/auth/register \
     "password": "12345678900"
   }'
 
+# ou via Nginx
+
+curl -i -k -c cookies.txt -X POST https://localhost:8888/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser_cycle",
+    "email": "testcycle@gmail.com",
+    "password": "12345678900"
+  }'
 
 2. Login
 
 curl -i -k -b cookies.txt -c cookies.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "testcycle@gmail.com",
+    "password": "12345678900"
+  }'
+
+# ou via Nginx
+
+  curl -i -k -b cookies.txt -c cookies.txt -X POST https://localhost:8888/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "testcycle@gmail.com",
@@ -82,10 +100,23 @@ curl -i -k -b cookies.txt -c cookies.txt -X POST http://localhost:3000/api/auth/
 
 curl -i -k -b cookies.txt http://localhost:3000/api/user/me
 
+# ou via Nginx
+
+curl -i -k -b cookies.txt https://localhost:8888/api/user/me
 
 4. Changer le mot de passe
 
 curl -i -k -b cookies.txt -X POST http://localhost:3000/api/user/me/changepassword \
+  -H "Content-Type: application/json" \
+  -d '{
+    "oldpassword": "12345678900",
+    "newpassword": "NouveauMdp123",
+    "confirmpd": "NouveauMdp123"
+  }'
+
+# ou via Nginx
+
+curl -i -k -b cookies.txt -X POST https://localhost:8888/api/user/me/changepassword \
   -H "Content-Type: application/json" \
   -d '{
     "oldpassword": "12345678900",
@@ -103,6 +134,14 @@ curl -i -k -c cookies_old.txt -X POST http://localhost:3000/api/auth/login \
     "password": "12345678900"
   }'
 
+# ou via Nginx
+
+curl -i -k -c cookies_old.txt -X POST https://localhost:8888/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "testcycle@gmail.com",
+    "password": "12345678900"
+  }'
 
 6. Login avec le nouveau mot de passe
 
@@ -113,21 +152,39 @@ curl -i -k -b cookies.txt -c cookies.txt -X POST http://localhost:3000/api/auth/
     "password": "NouveauMdp123"
   }'
 
+# ou via Nginx
+
+curl -i -k -b cookies.txt -c cookies.txt -X POST https://localhost:8888/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "testcycle@gmail.com",
+    "password": "NouveauMdp123"
+  }'
 
 7. Vérifier à nouveau le profil
 
 curl -i -k -b cookies.txt http://localhost:3000/api/user/me
 
+# ou via Nginx
+
+curl -i -k -b cookies.txt https://localhost:8888/api/user/me
 
 8. Logout
 
 curl -i -k -b cookies.txt -c cookies.txt -X POST http://localhost:3000/api/auth/logout
+
+# ou via Nginx
+
+curl -i -k -b cookies.txt -c cookies.txt -X POST https://localhost:8888/api/auth/logout
 
 
 9. Vérifier qu’on n’est plus connecté
 
 curl -i -k -b cookies.txt http://localhost:3000/api/user/me
 
+# ou via Nginx
+
+curl -i -k -b cookies.txt https://localhost:8888/api/user/me
 
 Résultats attendus :
 - `register` -> `201 Created`
