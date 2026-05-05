@@ -1,6 +1,9 @@
 <script lang="ts">
 	const { data } = $props();
 	
+	// Display the default avatar with the URL returned by the backend
+	let avatarUrl = $state(data.user.url)
+
 </script>
 
 <!-- Main card -->
@@ -9,7 +12,7 @@
 	<h2 class="text-2xl font-semibold text-pink-500 text-center">Profile</h2>
 	<p class="mt-1 text-pink-500 text-center">****'s' profile page</p>
 	<!-- Avatar -->
-	<img src="/images/avatar.png" alt="avatar" class="h-37 w-37 rounded-full object-cover mt-8">
+	<img src={ avatarUrl ?? "/images/avatar.jpg"} alt="avatar" class="h-37 w-37 rounded-full object-cover mt-8">
 	<!-- Add friend button -->
 	<button type="submit" class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Add friend</button>
 	<!-- Account information card -->
@@ -19,8 +22,7 @@
 		<!-- Informations -->
 		<div>
 			<p class="text-sm text-slate-400">Username</p>
-			<p class="text-white">Ruth</p>
-			<!-- <p class="text-white">{data.user.username}</p> -->
+			<p class="text-white">{data.user.username}</p>
 		</div>
 	</div>
 
