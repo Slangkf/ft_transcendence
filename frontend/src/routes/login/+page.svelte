@@ -65,11 +65,12 @@
 			// Redirect user after successful registration.
 			await goto('/modes');
 			await invalidateAll();
-			showToast("Connection successful");
+			showToast("Connection successful, welcome back!");
 		}
 		// Catch and log unexpected errors.
 		catch (error){
 			console.error('Login page error: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
 </script>

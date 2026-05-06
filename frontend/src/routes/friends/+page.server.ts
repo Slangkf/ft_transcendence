@@ -19,7 +19,6 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 			throw redirect(302, '/profil');
 		}
 		const friends = await response.json();
-		console.error(friends)
 		return { friends };
 	}
 	catch (error) {
@@ -27,5 +26,4 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 		console.error('Error friends list: ', error);
 		return { friends: [] }
 	}
-
 };

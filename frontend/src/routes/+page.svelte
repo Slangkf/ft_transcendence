@@ -70,12 +70,12 @@
 			// invalidateAll() will re-run all load functions
 			await goto('/modes');
 			await invalidateAll();
-			showToast("Registration successful");
+			showToast("Registration successful. Welcome!");
 		}
 		// Catch and log unexpected errors.
 		catch (error){
 			console.error('Register page error: ', error);
-			showToast("Internal error, please try later");
+			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
 </script>

@@ -1,9 +1,6 @@
-<script>
+<script lang="ts">
 	let { data } = $props();
 
-	async function removeFriend(){
-		return;
-	}
 </script>
 
 
@@ -24,8 +21,6 @@
 					<span class="text-white font-medium">{friend.username}</span>
 				</div>
 				
-				<!-- Remove friend button -->
-				<button onclick={removeFriend} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Remove</button>
 			</div>
 		{/each}
 	</div>

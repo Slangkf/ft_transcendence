@@ -22,10 +22,11 @@
 			// Redirect user after successful logout.
 			await goto('/');
 			await invalidateAll();
-			showToast("Logout successful");
+			showToast("You are now disconnected, see you soon.");
 		}
 		catch (error){
 			console.error('Exception thrown in the handleLogout function: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
   	}
 </script>
