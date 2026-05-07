@@ -27,8 +27,9 @@ export interface Player{
     score: number;
     answers: PlayerAnswer[];
     status: PlayerStatus;
-    totalTime: number;
-    isAI: boolean;
+    Totaltime: number;
+    isAI?: boolean;
+    joinOrder?: number;
 }
 
 
@@ -36,6 +37,7 @@ export enum GameMode {
     SOLO = "solo",
     AI = "ai",
     MULTIPLAYER = "multiplayer",
+    TOURNAMENT = "tournament",  
 }
 //runtime gamestate to save in redis 
 export interface BaseGameState {
@@ -46,7 +48,9 @@ export interface BaseGameState {
     currentQuestionIndex: number;
     isFinished: boolean;
     startedAt: number;
-    roomId?: string; 
+    roomId?: string;
+    hostId?: string;
+    status?: "waiting" | "starting" | "playing" | "finished";
 }
 
 export interface SoloGameState extends BaseGameState {
@@ -54,9 +58,10 @@ export interface SoloGameState extends BaseGameState {
 }
 
 export interface MultiGameState extends BaseGameState {
-    mode: GameMode.MULTIPLAYER;
+    mode: GameMode.MULTIPLAYER | GameMode.TOURNAMENT;
     roomId: string;
     hostId: string;
+    status: "waiting" | "starting" | "playing" | "finished";
 }
 
 export type GameState = SoloGameState | MultiGameState; 
@@ -97,9 +102,22 @@ export interface GameUpdateResponse {
 export interface StartGameResult {
     gameId: string;
     question: PublicQuestion;
-
 }
-export type StartMultiResult extends StartGameResult {
+
+export interface StartMultiResult extends StartGameResult {
     status: "matched" | "waiting";
-    
+    players?: MatchPlayer[];
+    roomId?: string;
+}
+
+export type MatchPlayer = {
+    userId: string;
+    nickname: string;
+};
+
+//input 
+export type StartGameParms = {
+   mode: "solo" | "multiplayer";
+   userId: string;
+   nickname: string;
 }

@@ -17,7 +17,7 @@ export class GameBaseService
             score: 0,
             answers: [],
             status: 'playing',
-            totalTime: 0,
+            Totaltime: 0,
             isAI: false,
         }
         return player;
@@ -37,7 +37,7 @@ export class GameBaseService
         }
     }
 
-    protected async processAnswer(state: BaseGameState, selectedIndex: number, userId: string): {isCorrect: boolean; correctIndex: number, correctText: string} {
+    protected async processAnswer(state: BaseGameState, selectedIndex: number, userId: string): Promise<{isCorrect: boolean; correctAnswerIndex: number, correctText: string}> {
 
         const currentQuestion = state.questions[state.currentQuestionIndex];
         if (!currentQuestion){
@@ -69,7 +69,7 @@ export class GameBaseService
                 player.score += 1;
             }
 
-            return {isCorrect, correctIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
+            return {isCorrect, correctAnswerIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
     }
 
     protected advanceGame(state: BaseGameState): void {
@@ -102,13 +102,13 @@ export class GameBaseService
 
     private buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PLayerSnapShot> {
         return Object.fromEntries(
-            Object.entries(players).map(([id, player]) => [
+            Object.entries(players).map(([id, player]: [string, Player]) => [
                 id,
                 {
                     id: player.id,
                     score: player.score,
                     status: player.status,
-                    isAI: player.isAI
+                    isAI: player.isAI || false
                 }
             ])
         )
@@ -116,12 +116,12 @@ export class GameBaseService
 
     private buildFinalScore(players: Record<string, Player>): FinalScore{
         const scores = Object.fromEntries(
-            Object.entries(players).map(([id, player]) => [
+            Object.entries(players).map(([id, player]: [string, Player]) => [
                 id,
                 player.score
             ])
         );
-        const winnerId = Object.entries(scores).reduce((maxId, [id, score]) => score > scores[maxId] ? id : maxId, Object.keys(scores)[0]);
+        const winnerId = Object.entries(scores).reduce((maxId, [id, score]) => score > (scores[maxId] || 0) ? id : maxId, Object.keys(scores)[0]);
         return {
             winnerId,
             finishedAt: Date.now(),

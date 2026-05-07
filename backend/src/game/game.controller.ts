@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { GameService } from './game.factory';
+import { GameService } from './game.service';
 import { AppError, ErrorCode } from 'src/error/apperror';
 import { Apiresponse } from 'src/lib/api_response';
 
@@ -12,9 +12,9 @@ export class GameController
     {
         try{
             const result = await this.gameService.startGame({
-                mode: req.params.mode,
-                userId: req.user.id,
-                nickname: req.user.username
+                mode: req.params.mode as "solo" | "multiplayer",
+                userId: req.user!.id,
+                nickname: req.user!.id
             })
             if (!result) {
                 return res.status(202).json(
@@ -50,9 +50,9 @@ export class GameController
     }
 
     setready = async(req: Request, res: Response) => {
-        const roomId = req.params.roomId;
+        const roomId = req.params.roomId as string;
         const isReady = req.body.isReady;
-        const userId = req.user.id;
+        const userId = req.user!.id;
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);
 
@@ -82,9 +82,9 @@ export class GameController
     }
 
     answer = async (req: Request, res: Response)=> {
-        const userId = req.user.id;
+        const userId = req.user!.id;
 
-        const gameId = req.params.gameId;
+        const gameId = req.params.gameId as string;
 
         if (!gameId) {
             return res.status(400).json(
@@ -111,7 +111,7 @@ export class GameController
             }
 
             return res.status(200).json(
-                Apiresponse.success(result, result.gameresult.isFinished ? "Game finished." : "Answer submitted.")
+                Apiresponse.success(result, result.status === 'finished' ? "Game finished." : "Answer submitted.")
                 );
         } catch (error) {
             console.error(error);

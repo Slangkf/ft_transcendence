@@ -81,6 +81,24 @@ class TestUser {
     this.state = State.AUTH;
 
     console.log(`✅ [${this.name}] authenticated`);
+    
+    // Clean up any previous matchmaking state
+    await this.cleanupQueue();
+  }
+
+  async cleanupQueue() {
+    try {
+      await fetch(`${SERVER_URL}/api/game/leave-queue`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`
+        }
+      });
+      console.log(`🧹 [${this.name}] cleaned up old queue data`);
+    } catch (e) {
+      // Ignore cleanup errors
+    }
   }
 
   connectWS() {
@@ -204,8 +222,9 @@ class TestUser {
 async function run() {
   console.log("\n🚀 AUTO STATE MACHINE TEST\n");
 
-  const u1 = new TestUser("user1", "user1@test.com", "123456yhtg4r");
-  const u2 = new TestUser("user2", "user2@test.com", "123456j6hy5t4r3");
+  const timestamp = Date.now();
+  const u1 = new TestUser(`user1_${timestamp}`, `user1_${timestamp}@test.com`, "123456yhtg4r");
+  const u2 = new TestUser(`user2_${timestamp}`, `user2_${timestamp}@test.com`, "123456j6hy5t4r3");
 
   // 1. AUTH
   await u1.auth();

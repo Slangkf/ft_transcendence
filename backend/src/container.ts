@@ -3,12 +3,11 @@ import { AuthService } from "./auth/auth.service";
 import { FriendshipRepository } from "./friendship/friendship.repository";
 import { FriendshipService } from "./friendship/friendship.service";
 import { GameService } from "./g/game.factory";
-import { RedisGameRepository } from "./g/game.redis.repository";
-import { MatchRepository } from "./g/multiplayer/match/match.repository";
-import { MatchService } from "./g/multiplayer/match/match.service";
-import { MultiService } from "./g/multiplayer/m";
-import { Multiplayer } from "./g/multiplayer/multiplayer";
-import { SoloService } from "./g/solo/s";
+import { RedisGameRepository } from "./game/game.redis.repository";
+import { MatchRepository } from "./game/match/match.repository";
+import { MatchService } from "./game/match/match.service";
+import { MultiPlayerFacade } from "./game/game.multi";
+import { SoloService } from "./game/solo";
 import { QuestionRepository } from "./question/question.repository";
 import { QuestionService } from "./question/question.service";
 import { RoomManager } from "./room/room.manager";
@@ -17,6 +16,8 @@ import { RoomService } from "./room/room.service";
 import { UserRepository } from "./User/user.repository";
 import { UserService } from "./User/user.service";
 import { FriendEmitter, GameEmitter, IEmitter } from "./websocket/socket.emitter";
+import { SessionService } from "./game/session.service";
+import { LocalMultiPlayer } from "./game/game.local";
 
 // repo 
 const questionrepo = new QuestionRepository();
@@ -31,8 +32,7 @@ export const matchService = new MatchService(matchrepo);
 export const roomService = new RoomService(roomrepo);
 
 //export const roomManager = new RoomManager(roomService);
-const multiService = new MultiService(gamerepo, questionService);
-const soloService = new SoloService(gamerepo, questionService);
+const soloService = new SoloService(questionService, gamerepo);
 
 //user service 
 export const userService = new UserService(userrepo);
@@ -40,11 +40,12 @@ export const authService = new AuthService(userrepo);
 
 export function createGameServices(emitter: GameEmitter){
 
-const multiPlayer = new Multiplayer(
+const multiPlayer = new MultiPlayerFacade(
     matchService,
     roomService,
-    multiService,
-    emitter,
+    new LocalMultiPlayer(questionService, gamerepo),
+    new SessionService(),
+    emitter
 );
 
 const gameService = new GameService(

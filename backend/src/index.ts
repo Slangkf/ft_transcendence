@@ -23,6 +23,7 @@ import { createGameServices,
 import { GameSocketHandler } from './websocket/socket.gamehandler';
 import { FriendSocketHandler } from './websocket/socket.FriendHandler';
 import { sign } from 'crypto';
+import { SessionService } from './game/session.service';
 
 
 const app = express();
@@ -60,7 +61,8 @@ const start = async () => {
       matchService, 
       gamerepo, 
       gameemitter,
-      gameService);
+      gameService,
+      new SessionService(),);
     io.of('/game').on('connection', socket => gamehandler.onConnection(socket));
 
     //friendsocket

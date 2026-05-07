@@ -82,21 +82,28 @@ export class MatchRepository{
     }
 
     async removeFromQueue(userId: string): Promise<void>{
-        const mode = await Redis.get(this.playerkey(userId));
-
-        if (!mode)
-            return;
-        const queue = await this.getqueue(mode);
-        const new_queue = queue.filter(p => p.userId !== userId);
-
-        const key = this.queuekey(mode);
-        await Redis.del(key);
-        if (new_queue.length > 0){
-            await Redis.rPush(
-                key, 
-                ...new_queue.map(p=> JSON.stringify(p))
-            )
+        // Try to remove from all possible queues since we don't know which mode the player was in
+        const modes = ['multiplayer', 'tournament', 'solo', 'ai'];
+        
+        for (const mode of modes) {
+            const queue = await this.getqueue(mode);
+            const playerInQueue = queue.find(p => p.userId === userId);
+            
+            if (playerInQueue) {
+                const new_queue = queue.filter(p => p.userId !== userId);
+                const key = this.queuekey(mode);
+                await Redis.del(key);
+                if (new_queue.length > 0){
+                    await Redis.rPush(
+                        key, 
+                        ...new_queue.map(p=> JSON.stringify(p))
+                    )
+                }
+                break; // Player was only in one queue
+            }
         }
+        
+        // Also clean up the player key
         await Redis.del(this.playerkey(userId));
     }
 }

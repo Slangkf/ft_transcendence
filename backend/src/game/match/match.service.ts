@@ -8,6 +8,7 @@ export class    MatchService{
     constructor(private matchrepository: MatchRepository){}
 
     async joinQueue(params: JoinQueueParams): Promise<MathQueueResult>{
+        console.log("joint mode: ", params.mode);
         const queue = await this.matchrepository.getqueue(params.mode);
         const exist = queue.find(q => q.userId === params.userId);
         if (exist) throw new AppError(

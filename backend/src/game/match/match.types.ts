@@ -1,6 +1,7 @@
+import { GameMode } from "../game.types";
 
 export type JoinQueueParams = {
-    mode: string,
+    mode: GameMode,
     userId: string,
     nickname: string,
 }

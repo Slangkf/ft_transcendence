@@ -7,8 +7,12 @@ import { Redis, RedisKeys } from "../lib/redis"
 import { GameState } from "src/g/types";
 import { stat } from "fs";
 import { RoomService } from "src/room/room.service";
+import { SessionService } from "src/game/session.service";
+import { Return } from "@prisma/client/runtime/library";
 
 export class GameSocketHandler{
+    private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
     constructor(
         private io: Namespace,
         private redis: typeof Redis,
@@ -16,7 +20,8 @@ export class GameSocketHandler{
         private matchservice: MatchService,
         private gamerepos: RedisGameRepository,
         private emitter: GameEmitter,
-        private gameService: any
+        private gameService: any,
+        private sessionService: SessionService,
     ){}
 
     private gameuserkey(userId: string){
@@ -29,15 +34,17 @@ export class GameSocketHandler{
     async onConnection(socket: Socket): Promise<void>{
         const userId = socket.data.userId;
 
+        //delete from disconnect timer if exist
+        const existingTimer = this.disconnectTimers.get(userId);
+        if (existingTimer){
+            clearTimeout(existingTimer);
+            this.disconnectTimers.delete(userId);
+        }
+        await this.redis.del(this.disconnectkey(userId));
+
         // save in redis 
         await this.redis.set(this.gameuserkey(userId), socket.id);
 
-        const room = await this.roomservice.getRoomByPlayerId(userId);
-        if (!room) return;
-
-        socket.join(room.roomId);
-        console.log(`User ${userId} rejoined room ${room.roomId}`);
-        
         await this.handleReconnect(socket, userId);
 
         socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
@@ -45,31 +52,81 @@ export class GameSocketHandler{
     }
 
     private async handleReconnect(socket: Socket, userId: string): Promise<void>{
-        const match = await this.matchservice.getMyMatch(userId);
+        const session = await this.sessionService.get(userId);
+        if (!session) return ;
 
-        if (!match) return ;
-
-        const room = await this.roomservice.getRoom(match.roomId);
-        if (!room)  return ;
-
-        socket.join(room.roomId);
-
-        // 只在room是active状态且有sessionId时发送reconnection
-        if (room.status === 'active' && room.sessionId){
-            const gamestate = await this.gamerepos.findById(room.sessionId);
-            if (gamestate){
-                socket.emit('reconnection', {
-                    roomId: room.roomId,
-                    gameId: gamestate.gameId,
-                    state: this.buildPublicGameState(gamestate),
+        const {status} = session;
+        if (session.roomId){
+            socket.join(session.roomId);
+        }
+        switch (status){
+            case "queue":{
+                socket.emit('reconnect', {
+                    type: "queue",
+                    message: "Still in matchmaking queue"
                 })
+                break;
             }
-        } else if (room.status === 'closed') {
-            // 游戏已完成，通知客户端
-            socket.emit('game_finished', {
-                roomId: room.roomId,
-                message: 'Game has finished'
-            });
+            case "matched":{
+                const match = await this.matchservice.getMyMatch(userId);
+                if (!match){
+                    await this.sessionService.update(userId, {
+                        status: "idle"
+                });
+                break;}
+
+                socket.emit('reconnect', {
+                    type: "matched",
+                    players: match.players,
+                    roomId: match.roomId,
+                })
+                break;
+            }
+            case "in_room":{
+                const room = await this.roomservice.getRoom(session.roomId!);
+                if (!room){
+                    await this.sessionService.update(userId, {
+                        status: "idle"
+                });
+                break;}
+                
+                socket.emit('reconnect', {
+                    type: "in_room",
+                    roomId: room.roomId,
+                    players: Object.values(room.players).map(p=>({
+                        id: p.id,
+                        nickname: p.nickname,
+                        isReady: p.isReady,
+                    })),
+                    roomStatus: room.status
+                })
+                break;
+            }
+            case "in_game":{
+                if (!session.gameId) break;
+                const gamestate = await this.gamerepos.findById(session.gameId);
+                if (!gamestate){
+                    await this.sessionService.update(userId, {
+                        status: "idle"
+                });
+                break;}
+                if (gamestate.isFinished){
+                    socket.emit('game_finished', {
+                        type: "game_finished",
+                        gameId: gamestate.gameId,
+                        state: this.buildPublicGameState(gamestate),
+                    });
+                } else {
+                    socket.emit('reconnect', {
+                        type: "in_game",
+                        gameId: gamestate.gameId,
+                        state: this.buildPublicGameState(gamestate),
+                    })
+                    break; 
+                }
+            }
+            default:
+                socket.emit('reconnect', {type: "idle"});
         }
     }
 
@@ -79,24 +136,31 @@ export class GameSocketHandler{
         // 给 60 秒重连窗口，超时才真正处理离开逻辑
         await this.redis.set(this.disconnectkey(userId), '1', {EX: 60});
 
-        setTimeout(async () => {
+        const timer =setTimeout(async () => {
             const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
             if (!stillDisconnected) return; // 已重连，不处理
 
             // 真正离开：从队列和房间里清理
             await this.matchservice.leaveQueue(userId);
 
-            const match = await this.matchservice.getMyMatch(userId);
-            if (match) {
-                const room = await this.roomservice.leaveRoom(match.roomId, userId);
-                if (room) {
-                    this.emitter.toRoom(room.roomId, 'player_left', {
-                        playerId: userId,
-                        newHostId: room.hostId,
-                    });
+            const session = await this.sessionService.get(userId);
+            if (session?.roomId){
+                try{
+                    const room = await this.roomservice.leaveRoom(session.roomId, userId);
+                    if (room){
+                        this.emitter.toRoom(room.roomId, 'player_left', {
+                            playerId: userId,
+                            newHostId: room.hostId,
+                        });
+                    }
+                }catch (error){
+                    console.error("Error leaving room on disconnect:", error);
                 }
             }
+            await this.sessionService.update(userId, {
+                status: "idle"});
         }, 60_000);
+        this.disconnectTimers.set(userId, timer);
     }
     
 

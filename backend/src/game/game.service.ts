@@ -1,0 +1,53 @@
+import { AppError, ErrorCode } from "src/error/apperror";
+import { MultiPlayerFacade } from "./game.multi";
+import { GameMode, GameUpdateResponse, StartGameParms, StartMultiResult } from "./game.types";
+import { SoloService } from "./solo";
+import { IGameRepository } from "src/g/game.redis.repository";
+
+export type GameStartResult = GameUpdateResponse | {status: 'waiting' | 'matched'; players?: any[]; roomId?: string};
+
+export class GameService{
+    constructor(
+        private soloservice: SoloService,
+        private multiplayer: MultiPlayerFacade,
+        private gameRepository: IGameRepository,
+    ){}
+
+    async startGame(params:StartGameParms): Promise<GameStartResult>{
+        const {mode, userId, nickname} = params;
+
+        switch(mode){
+            case "solo":
+                return this.soloservice.startGame(userId, nickname, GameMode.SOLO);
+            case "multiplayer":
+                return this.multiplayer.joinMatchmaking(userId, nickname, GameMode.MULTIPLAYER);
+            default:
+                throw new AppError(
+                    "Unknown game mode",
+                    ErrorCode.GAME_UNKOWN_MODE,
+                    400
+                )
+        }
+    }
+
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameUpdateResponse>{
+            const gameState = await this.gameRepository.findById(gameId);
+            
+            if (!gameState) {
+                throw new AppError(
+                    'Game not found',
+                    ErrorCode.GAME_NOT_FOUND,
+                    404
+                );
+            }
+            if (gameState.mode === GameMode.MULTIPLAYER) {
+                return this.multiplayer.submitAnswer(gameId, selectedAnswerIndex, userId);
+            } else {
+                return this.soloservice.submitAnswer(gameId, selectedAnswerIndex, userId);
+            }
+    }
+
+    async setReady(roomId: string, userId: string, isReady: boolean): Promise<GameUpdateResponse | null>{
+        return this.multiplayer.setPlayerReady(roomId, userId, isReady);
+    }
+}
