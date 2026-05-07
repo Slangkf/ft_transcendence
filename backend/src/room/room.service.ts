@@ -9,9 +9,45 @@ export class RoomService{
     constructor(private roomrepository: RoomRepository)
     {}
 
-    async createRoom(room: Room): Promise<void>{
+    async createRoom(params: CreateRoomParams): Promise<Room>{
+        const roomId = randomUUID();
+
+        const hostPlayer: RoomPlayer = {
+            id: params.hostId,
+            nickname: params.hostNickname,
+            isReady: false,
+            joinedAt: Date.now(),
+        }
+
+        const players = { [params.hostId]: hostPlayer };
+        if (params.players) {
+            params.players.forEach(p => {
+                if (p.userId !== params.hostId) {
+                    players[p.userId] = {
+                        id: p.userId,
+                        nickname: p.nickname,
+                        isReady: false,
+                        joinedAt: Date.now(),
+                    };
+                }
+            });
+        }
+
+        const room: Room = {
+            type: params.type,
+            roomId,
+            hostId: params.hostId,
+            players,
+            status: 'waiting',
+            maxPlayers: params.maxPlayers ?? 2, 
+            createdAt: Date.now(),
+            sessionId: '',
+        }
+        //save in redis
         await this.roomrepository.save(room);
+        return room
     }
+
     async joinRoom(params: JoinRoomParams): Promise<Room>{
         //1. check the status of the room
         const room = await this.roomrepository.getroom(params.roomId);
@@ -109,6 +145,15 @@ export class RoomService{
     }
     async save(room: Room): Promise<void>{
         return await this.roomrepository.update(room); //????
+    }
+
+    async updateStatus(room: Room, action: "active" | "closed"){
+        room.status = action
+        return await this.roomrepository.update(room);
+    }
+    
+    async getRoomByPlayerId(playerId: string): Promise<Room | null>{
+        return await this.roomrepository.getRoomByPlayerId(playerId);
     }
 }
 

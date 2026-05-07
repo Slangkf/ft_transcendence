@@ -12,13 +12,16 @@ import {createGameRouter} from './game/game.router';
 import friendshipRouter from './friendship/friendship.router';
 import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
-import {SocketHandler} from './websocket/socket.handler';
-import {SocketEmitter} from './websocket/socket.emitter';
+import {FriendEmitter, GameEmitter} from './websocket/socket.emitter';
 import { createGameServices,
-  roomManager,
+  roomService,
   matchService,
   gamerepo,
+  createFriendshipService,
 } from './container';
+import { GameSocketHandler } from './websocket/socket.gamehandler';
+import { FriendSocketHandler } from './websocket/socket.FriendHandler';
+import { sign } from 'crypto';
 
 
 const app = express();
@@ -45,17 +48,31 @@ const start = async () => {
     //socket server 
     const io = createSocketServer(httpserver, Redis);
 
-    //service layer event emitter of socket
-    const emitter = new SocketEmitter(io, Redis)
-    const {gameService} = createGameServices(emitter);
+    //service layer event emitter of gamesocket
+    const gameemitter = new GameEmitter(io, Redis)
+    const {gameService, multiPlayer} = createGameServices(gameemitter);
 
-    const handler = new SocketHandler(
+    const gamehandler = new GameSocketHandler(
+      io.of('/game'),
       Redis, 
-      roomManager, 
+      roomService, 
       matchService, 
       gamerepo, 
-      emitter);
-    io.on('connection', socket => handler.onConnection(socket));
+      gameemitter,
+      gameService);
+    io.of('/game').on('connection', socket => gamehandler.onConnection(socket));
+
+    //friendsocket
+    const friendemitter = new FriendEmitter(io, Redis);
+    const friendshipservice = createFriendshipService(friendemitter);
+    const friendhandler = new FriendSocketHandler(
+      io.of('/friendship'),
+      Redis,
+      friendemitter,
+      friendshipservice
+    );
+    io.of('/friendship').on('connection', socket=> friendhandler.onConnection(socket));
+    
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);

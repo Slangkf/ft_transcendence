@@ -2,15 +2,15 @@ import { FriendshipRepository } from './friendship.repository';
 import { UserRepository } from '../User/user.repository';
 import type { FriendshipOutput, SendFriendRequestInput, FriendshipStatus as FriendshipStatusType } from '@shared/friendship.schema';
 import { AppError, ErrorCode } from 'src/error/apperror';
+import { FriendEmitter } from 'src/websocket/socket.emitter';
 
 export class FriendshipService {
-    private friendshipRepository: FriendshipRepository;
-    private userRepository: UserRepository;
+    
 
-    constructor() {
-        this.friendshipRepository = new FriendshipRepository();
-        this.userRepository = new UserRepository();
-    }
+    constructor(
+        private friendshipRepository: FriendshipRepository,
+        private userRepository: UserRepository,
+        private emitter: FriendEmitter,) {}
 
     async send_friend_request(userId: number, input: SendFriendRequestInput): Promise<FriendshipOutput> {
         if (userId === input.friendId) {
@@ -33,7 +33,15 @@ export class FriendshipService {
             }
         }
 
-        return await this.friendshipRepository.create_friend_request(userId, input.friendId);
+        const result = await this.friendshipRepository.create_friend_request(userId, input.friendId);
+
+        //notification for friend
+        await this.emitter.toUser(String(input.friendId), 'friend_request', {
+            fromuserId: String(userId),
+            fromNickname: user.username,
+        })
+
+        return result;
     }
 
     async accept_friend_request(userId: number, friendshipId: number): Promise<FriendshipOutput> {
@@ -56,6 +64,11 @@ export class FriendshipService {
         await this.userRepository.increment_friends_count(friendship.userId);
         await this.userRepository.increment_friends_count(friendship.friendId);
 
+        //socket notification 
+        await this.emitter.toUser(String(friendship.userId), 'friend_accept', {
+            userId: String(userId),
+            nickname: (await this.userRepository.find_by_id(userId))?.username ?? ''
+        })
         return updatedFriendship;
     }
 

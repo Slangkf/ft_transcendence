@@ -48,7 +48,8 @@ class TestUser {
         email: this.email,
         password: this.password,
         username: this.name
-      })
+      }),
+      credentials: "include"
     });
 
     // already exists → login
@@ -59,14 +60,22 @@ class TestUser {
         body: JSON.stringify({
           email: this.email,
           password: this.password
-        })
+        }),
+        credentials: "include"
       });
     }
 
-    const cookie = res.headers.get("set-cookie");
-    const match = cookie?.match(/auth_token=([^;]+)/);
+    const cookieHeader = res.headers.get("set-cookie");
+    if (!cookieHeader) {
+      console.error(`❌ [${this.name}] No set-cookie header. Status: ${res.status}`);
+      const body = await res.json();
+      console.error(`❌ [${this.name}] Response:`, body);
+      throw new Error("No token");
+    }
 
-    if (!match) throw new Error("No token");
+    const match = cookieHeader.match(/auth_token=([^;]+)/);
+
+    if (!match) throw new Error("No token in set-cookie");
 
     this.token = match[1];
     this.state = State.AUTH;
@@ -77,11 +86,12 @@ class TestUser {
   connectWS() {
     console.log(`🔌 [${this.name}] connecting WS...`);
 
-    this.socket = io(SERVER_URL, {
+    this.socket = io(`${SERVER_URL}/game`, {
        auth: (cb) => {
         cb({ token: this.token });
     },
     rejectUnauthorized: false, // 忽略自签名证书
+    transports: ['websocket', 'polling'],
     });
 
     this.socket.on("connect", () => {
@@ -114,6 +124,18 @@ class TestUser {
 
     this.socket.on("answer_result", (data) => {
       console.log(`📊 [${this.name}] answer result`, data);
+      if (data && data.gameresult && data.gameresult.isFinished) {
+        this.state = State.PLAYING;
+      }
+    });
+
+    this.socket.on("answer_submitted", (data) => {
+      console.log(`✅ [${this.name}] answer submitted`, data);
+    });
+
+    this.socket.on("game_finished", (data) => {
+      console.log(`🏁 [${this.name}] game finished`, data);
+      this.state = State.PLAYING; // Mark as finished
     });
 
     this.socket.on("player_ready", (data) => {
@@ -136,10 +158,10 @@ class TestUser {
     const data = await res.json();
     console.log(`[${this.name}] response data:`, data);
     if (data.roomId){
-      this.roomId = data.roomId;
+      this.roomId = data.data.roomId;
       this.state = State.MATCHING;
     }
-   
+    console.log("state: ", `${this.state}`);
   }
 
   async ready() {
@@ -216,11 +238,28 @@ async function run() {
 
   console.log("\n🚀 GAME STARTED:", u1.gameId);
 
-  // 7. PLAY
-  await wait(1000);
-
-  await u1.answer(0);
-  await u2.answer(1);
+  // 7. PLAY - 持续回答直到游戏结束
+  let gameFinished = false;
+  let answerCount = 0;
+  
+  const maxAnswers = 10; // 最多回答10次
+  
+  while (answerCount < maxAnswers && !gameFinished) {
+    await wait(500);
+    
+    if (u1.gameId && u2.gameId) {
+      console.log(`\n📝 [ROUND ${answerCount + 1}] Players submitting answers...`);
+      await u1.answer(Math.floor(Math.random() * 4));
+      await u2.answer(Math.floor(Math.random() * 4));
+      answerCount++;
+      
+      // 检查是否有任何一个player的state改变了，表示游戏可能结束了
+      // 由于是多人游戏，game_finished可能会通过websocket通知
+      if (u1.state === State.PLAYING && u2.state === State.PLAYING) {
+        console.log("✅ Both players answered");
+      }
+    }
+  }
 
   console.log("\n🎉 TEST FLOW COMPLETED\n");
 }

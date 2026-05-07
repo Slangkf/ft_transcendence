@@ -32,7 +32,27 @@ export class RoomRepository{
     async delete(roomId: string): Promise<void> {
         await Redis.del(this.getKey(roomId));
     }
+    async getRoomByPlayerId(playerId: string): Promise<Room | null>{
+        const pattern = this.getKey('*');
 
+        for await (const keyOrKeys of Redis.scanIterator({
+            MATCH: pattern,
+            COUNT: 100,
+        })) {
+            const keys = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys];
+            for (const key of keys) {
+                const data = await Redis.get(key);
+                if (!data) continue;
+
+                const room: Room = JSON.parse(data);
+                if (room.players[playerId]) {
+                    return room;
+                }
+            }
+        }
+
+        return null;
+    }   
 }
 
 /***

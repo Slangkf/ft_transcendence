@@ -5,11 +5,8 @@ import { Apiresponse } from "src/lib/api_response";
 import type { SendFriendRequestInput, UpdateStatusInput } from '@shared/friendship.schema';
 
 export class FriendshipController {
-    private friendshipService: FriendshipService;
 
-    constructor() {
-        this.friendshipService = new FriendshipService();
-    }
+    constructor(private friendshipService: FriendshipService) {}
 
     SendFriendRequest = async (req: Request, res: Response) => {
         try {

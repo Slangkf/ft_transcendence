@@ -25,7 +25,7 @@ export class    MatchService{
         }
     }
 
-    async matchPlayers(mode: string, roomId: string ): Promise<MatchResult | null>{
+    async matchPlayers(mode: string): Promise<MatchResult | null>{
         const queue = await this.matchrepository.getqueue(mode);
         const maxplayers = this.getmaxplayersfrommode(mode);
 
@@ -48,7 +48,7 @@ export class    MatchService{
         const result: MatchResult = {
             players: matchplayers,
             matchId,
-            roomId,
+            roomId: '', //need to update after create room
             mode,
             createdAt: Date.now(),
             maxPlayers: maxplayers,
@@ -65,6 +65,10 @@ export class    MatchService{
         return await this.matchrepository.removeFromQueue(userId);
     }
 
+    async updatateMatch(match: MatchResult): Promise<void>{
+        return await this.matchrepository.saveMatch(match);
+    }
+
     private getmaxplayersfrommode(mode: string):number{
         switch(mode){
             case 'multiplayer':
@@ -79,3 +83,13 @@ export class    MatchService{
         }
     }
 }
+
+/**
+ * match service: 
+ *  put the players in the systeme of queue to wait
+ *  get the maxplayers from the different mode of game
+ *  try to match the players for the mode
+ * 
+ * 
+ * 
+ */

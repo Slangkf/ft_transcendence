@@ -1,4 +1,7 @@
+import { emit } from "process";
 import { AuthService } from "./auth/auth.service";
+import { FriendshipRepository } from "./friendship/friendship.repository";
+import { FriendshipService } from "./friendship/friendship.service";
 import { GameService } from "./game/game.factory";
 import { RedisGameRepository } from "./game/game.redis.repository";
 import { MatchRepository } from "./game/multiplayer/match/match.repository";
@@ -13,7 +16,7 @@ import { RoomRepository } from "./room/room.repository";
 import { RoomService } from "./room/room.service";
 import { UserRepository } from "./User/user.repository";
 import { UserService } from "./User/user.service";
-import { IEmitter } from "./websocket/socket.emitter";
+import { FriendEmitter, GameEmitter, IEmitter } from "./websocket/socket.emitter";
 
 // repo 
 const questionrepo = new QuestionRepository();
@@ -25,9 +28,9 @@ const roomrepo = new RoomRepository();
 // game services
 const questionService = new QuestionService(questionrepo);
 export const matchService = new MatchService(matchrepo);
-const roomService = new RoomService(roomrepo);
+export const roomService = new RoomService(roomrepo);
 
-export const roomManager = new RoomManager(roomService);
+//export const roomManager = new RoomManager(roomService);
 const multiService = new MultiService(gamerepo, questionService);
 const soloService = new SoloService(gamerepo, questionService);
 
@@ -35,11 +38,11 @@ const soloService = new SoloService(gamerepo, questionService);
 export const userService = new UserService(userrepo);
 export const authService = new AuthService(userrepo);
 
-export function createGameServices(emitter: IEmitter){
+export function createGameServices(emitter: GameEmitter){
 
 const multiPlayer = new Multiplayer(
     matchService,
-    roomManager,
+    roomService,
     multiService,
     emitter,
 );
@@ -53,3 +56,10 @@ return {multiPlayer, gameService};
 }
 
 
+export function createFriendshipService(emitter: FriendEmitter): FriendshipService{
+    return new FriendshipService(
+        new FriendshipRepository(),
+        userrepo,
+        emitter,        
+    )
+}

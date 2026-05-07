@@ -1,6 +1,8 @@
 import { GameInfo, MatchPlayer, PublicGameState, StartGameResult } from "src/game/game.types";
+import {SendFriendRequestInput} from "@shared/friendship.schema";
 
-export type SocketEvent = {
+
+export type GameSocketEvents = {
     //match making before start multiplayer game 
     'matched': {
         roomId: string;
@@ -25,4 +27,27 @@ export type SocketEvent = {
         gameId: string;
         state: PublicGameState //???? public or no 
     }
+}
+
+export type FriendSocketEvents = {
+    'friend_request':{
+        fromuserId: string;
+        fromNickname: string;
+    };
+
+    'friend_accept':{
+        userId: string;
+        nickname: string;
+    };
+
+    'friend_online':{
+        userId: string;
+    };
+    'friend_offline':{
+        userId: string;
+    }
+}
+
+export type ChatSocketEvents ={
+
 }

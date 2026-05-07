@@ -70,4 +70,5 @@ export class RoomManager{
 /***
  *  management of all rooms, how to join a room 
  *  by roomid? random? by queue? 
+ *  need to delete?? 
  */

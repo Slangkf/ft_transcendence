@@ -38,8 +38,10 @@ export class MultiService extends GameBaseService {
 
         await this.gameRepository.update(state);
         if (state.isFinished){
+            const finishedInfo = this.buildfinishedGameInfo(state);
+            // 延迟删除，等待事件发送完毕
             await this.gameRepository.delete(state.gameId);
-            return this.buildfinishedGameInfo(state);
+            return finishedInfo;
         }
 
         return this.buildPlayingGameInfo(state);
