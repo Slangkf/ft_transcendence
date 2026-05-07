@@ -69,7 +69,7 @@
 
 	<!-- Friends list -->
 	<div class="flex flex-col w-full gap-3 mt-4">
-		{#each data.friends as friend}
+		{#each data.friendsList as friend}
 			<div class="flex items-center justify-between w-full px-4 py-3 border border-slate-700 bg-slate-800 rounded-xl">
 				
 				<!-- Avatar + username -->
