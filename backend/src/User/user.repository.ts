@@ -27,7 +27,11 @@ export class UserRepository{
                 username: input.username,
                 email: input.email,
                 password: hashed_password,
-                url: "/uploads/avatars/default.jpg"
+                url: "/uploads/avatars/default.jpg",
+                wins: input.wins,
+                score: input.score,
+                friendsNb: input.friendsNb,
+                status: 'ONLINE'
             }
         })
         return this.toUserOutput(newuser);
