@@ -56,7 +56,7 @@
 	<p class="mt-1 text-pink-500 text-center">Your friends list</p>
 
 	<!-- Search bar -->
-	<form class="p-4 w-full">   
+	<form class="p-4 w-full mt-4">   
 		<label for="search" class ="block mb-2.5 text-sm font-medium text-gray-500 sr-only ">Search</label>
 		<div class="relative">
 			<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -68,8 +68,8 @@
 	</form>
 
 	<!-- Friends list -->
-	<div class="flex flex-col w-full gap-3 mt-6">
-		{#each data.friends as friend}
+	<div class="flex flex-col w-full gap-3 mt-4">
+		{#each data.friendsList as friend}
 			<div class="flex items-center justify-between w-full px-4 py-3 border border-slate-700 bg-slate-800 rounded-xl">
 				
 				<!-- Avatar + username -->
@@ -83,6 +83,12 @@
 
 				<!-- Remove friend button -->
 				<button onclick={() => removeFriend(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Remove</button>
+			</div>
+		{:else}
+			
+			<!-- No friends message -->
+			<div class="flex items-center justify-center w-full px-4 py-3 border border-slate-700 rounded-xl">
+				<p class="text-pink-500 font-medium">No friends yet</p>
 			</div>
 		{/each}
 	</div>
