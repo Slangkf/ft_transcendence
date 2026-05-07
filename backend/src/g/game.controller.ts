@@ -81,7 +81,7 @@ export class GameController
         }
     }
 
-    answer = async (req: Request, res: Response): Promise<void> => {
+    answer = async (req: Request, res: Response)=> {
         const userId = req.user.id;
 
         const gameId = req.params.gameId;

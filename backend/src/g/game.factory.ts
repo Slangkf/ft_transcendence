@@ -1,8 +1,8 @@
 import { AppError, ErrorCode } from "src/error/apperror";
-import { IModeService, StartGameParms, StartGameResult, GameInfo, StartMultiResult } from "./game.types";
+import { StartGameParms, StartGameResult, GameInfo, StartMultiResult } from "./types";
 import { Multiplayer } from "./multiplayer/multiplayer";
-import { SoloService } from "./solo/solo";
-import { IGameRepository } from "./game.types";
+import { SoloService } from "./solo/s";
+import { IGameRepository } from "./types";
 
 /**
  * Simple service router that delegates to appropriate game service based on mode.

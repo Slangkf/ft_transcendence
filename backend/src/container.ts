@@ -2,13 +2,13 @@ import { emit } from "process";
 import { AuthService } from "./auth/auth.service";
 import { FriendshipRepository } from "./friendship/friendship.repository";
 import { FriendshipService } from "./friendship/friendship.service";
-import { GameService } from "./game/game.factory";
-import { RedisGameRepository } from "./game/game.redis.repository";
-import { MatchRepository } from "./game/multiplayer/match/match.repository";
-import { MatchService } from "./game/multiplayer/match/match.service";
-import { MultiService } from "./game/multiplayer/multi";
-import { Multiplayer } from "./game/multiplayer/multiplayer";
-import { SoloService } from "./game/solo/solo";
+import { GameService } from "./g/game.factory";
+import { RedisGameRepository } from "./g/game.redis.repository";
+import { MatchRepository } from "./g/multiplayer/match/match.repository";
+import { MatchService } from "./g/multiplayer/match/match.service";
+import { MultiService } from "./g/multiplayer/m";
+import { Multiplayer } from "./g/multiplayer/multiplayer";
+import { SoloService } from "./g/solo/s";
 import { QuestionRepository } from "./question/question.repository";
 import { QuestionService } from "./question/question.service";
 import { RoomManager } from "./room/room.manager";
@@ -20,7 +20,7 @@ import { FriendEmitter, GameEmitter, IEmitter } from "./websocket/socket.emitter
 
 // repo 
 const questionrepo = new QuestionRepository();
-const userrepo = new UserRepository();
+export const userrepo = new UserRepository();
 const matchrepo = new MatchRepository();
 export const gamerepo = new RedisGameRepository();
 const roomrepo = new RoomRepository();

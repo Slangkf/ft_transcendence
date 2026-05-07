@@ -1,9 +1,9 @@
-import { GameInfo, GameState, IModeService, PublicGameState, StartGameResult,
-    Player,PublicPlayer} from "../game.types"
-import { GameBaseService } from '../game.base';
+import { GameInfo, GameState, PublicGameState, StartGameResult,
+    Player,PublicPlayer} from "../types"
+import { GameBaseService } from '../base';
 import { AppError, ErrorCode } from 'src/error/apperror';
 
-export class SoloService extends GameBaseService implements IModeService
+export class SoloService extends GameBaseService
 {
     async startGame(userId: string): Promise<StartGameResult | null>
     {

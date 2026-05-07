@@ -1,10 +1,10 @@
-import { RedisGameRepository } from "src/game/game.redis.repository";
-import { MatchService } from "src/game/multiplayer/match/match.service";
+import { RedisGameRepository } from "src/g/game.redis.repository";
+import { MatchService } from "src/g/multiplayer/match/match.service";
 //import { RoomManager } from "src/room/room.manager";
 import { GameEmitter } from "./socket.emitter";
 import { Namespace, Socket } from "socket.io";
 import { Redis, RedisKeys } from "../lib/redis"
-import { GameState } from "src/game/game.types";
+import { GameState } from "src/g/types";
 import { stat } from "fs";
 import { RoomService } from "src/room/room.service";
 

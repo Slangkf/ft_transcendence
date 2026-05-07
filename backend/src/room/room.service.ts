@@ -132,6 +132,9 @@ export class RoomService{
         //3. check if everyone is ready
         const allPlayers = Object.values(room.players);
         const allready = allPlayers.every(p => p.isReady);
+        if (allready){
+            room.status = 'starting';
+        }
        
         await this.roomrepository.update(room);
         return { allReady: allready, room };
@@ -147,7 +150,7 @@ export class RoomService{
         return await this.roomrepository.update(room); //????
     }
 
-    async updateStatus(room: Room, action: "active" | "closed"){
+    async updateStatus(room: Room, action: "active" | "closed" | "starting" | "waiting"): Promise<void>{
         room.status = action
         return await this.roomrepository.update(room);
     }

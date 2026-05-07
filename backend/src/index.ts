@@ -8,7 +8,7 @@ import {createServer} from 'http';
 
 import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
-import {createGameRouter} from './game/game.router';
+import {createGameRouter} from './g/game.router';
 import friendshipRouter from './friendship/friendship.router';
 import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
@@ -18,6 +18,7 @@ import { createGameServices,
   matchService,
   gamerepo,
   createFriendshipService,
+  userrepo,
 } from './container';
 import { GameSocketHandler } from './websocket/socket.gamehandler';
 import { FriendSocketHandler } from './websocket/socket.FriendHandler';
@@ -69,7 +70,8 @@ const start = async () => {
       io.of('/friendship'),
       Redis,
       friendemitter,
-      friendshipservice
+      friendshipservice,
+      userrepo
     );
     io.of('/friendship').on('connection', socket=> friendhandler.onConnection(socket));
     

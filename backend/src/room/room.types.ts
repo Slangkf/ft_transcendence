@@ -12,7 +12,7 @@ export type Room = {
     roomId: string;
     hostId: string;
     players: Record<string, RoomPlayer>;
-    status: "waiting" | "active" | "closed";
+    status: "waiting" | "active" | "closed" | "starting";
     createdAt: number;
     maxPlayers: number;
     sessionId?: string; // gameid or userid for friends chat 

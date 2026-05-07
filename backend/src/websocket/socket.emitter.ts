@@ -20,7 +20,7 @@ export interface IEmitter<TEvents> {
 class BaseSocketEmitter<TEvents> implements IEmitter<TEvents>{
     constructor(
         protected ns: Namespace,
-        protected redis: Redis,
+        protected redis: typeof Redis,
         protected userkey: (userId: string)=> string,
     ){}
 
@@ -39,19 +39,19 @@ class BaseSocketEmitter<TEvents> implements IEmitter<TEvents>{
 }
 
 export class GameEmitter extends BaseSocketEmitter<GameSocketEvents>{
-    constructor(io: Server, redis: Redis){
+    constructor(io: Server, redis: typeof Redis){
         super(io.of('/game'), redis, RedisKeys.socket.gameUser);
     }
 }
 
 export class FriendEmitter extends BaseSocketEmitter<FriendSocketEvents>{
-    constructor(io: Server, redis: Redis){
+    constructor(io: Server, redis: typeof Redis){
         super(io.of('/friendship'), redis, RedisKeys.socket.friendUser);
     }
 }
 
 export class ChatEmitter extends BaseSocketEmitter<ChatSocketEvents>{
-constructor(io: Server, redis: Redis){
+constructor(io: Server, redis: typeof Redis){
     super(io.of('/chat'), redis, RedisKeys.socket.chatUser);
 }
 }

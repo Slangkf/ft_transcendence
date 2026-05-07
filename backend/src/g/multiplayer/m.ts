@@ -1,5 +1,5 @@
-import { GameBaseService } from "../game.base";
-import {  GameInfo, StartGameResult } from "../game.types";
+import { GameBaseService } from "../base";
+import {  GameInfo, StartGameResult } from "../types";
 import { AppError, ErrorCode } from "src/error/apperror";
 import { Room, RoomPlayer } from "src/room/room.types";
 

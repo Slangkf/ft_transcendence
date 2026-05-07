@@ -1,4 +1,4 @@
-import { GameInfo, MatchPlayer, PublicGameState, StartGameResult } from "src/game/game.types";
+import { GameInfo, MatchPlayer, PublicGameState, StartGameResult } from "src/g/types";
 import {SendFriendRequestInput} from "@shared/friendship.schema";
 
 
@@ -14,7 +14,7 @@ export type GameSocketEvents = {
         isReady: boolean;
         allReady: boolean;
     };
-    'game_started': StartGameResult;
+    'game_started': ; // ？？？ 
 
     'answer_result': GameInfo;
     'player_left':{
@@ -42,9 +42,11 @@ export type FriendSocketEvents = {
 
     'friend_online':{
         userId: string;
+        nickname: string;
     };
     'friend_offline':{
         userId: string;
+        nickname: string;
     }
 }
 

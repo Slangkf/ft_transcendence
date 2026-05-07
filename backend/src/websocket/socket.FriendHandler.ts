@@ -2,6 +2,7 @@ import { Namespace, Socket } from "socket.io";
 import { FriendEmitter } from "./socket.emitter";
 import { Redis, RedisKeys } from "src/lib/redis";
 import { FriendshipService } from "src/friendship/friendship.service";
+import { UserRepository } from "src/User/user.repository";
 
 export class FriendSocketHandler{
     constructor(
@@ -9,6 +10,7 @@ export class FriendSocketHandler{
         private redis: typeof Redis,
         private emitter: FriendEmitter,
         private friendshipservice: FriendshipService,
+        private userRepository: UserRepository,
     ){}
 
     async onConnection(socket: Socket): Promise<void>{
@@ -26,12 +28,14 @@ export class FriendSocketHandler{
         })
     }
 
-    private async   notification_friendship(userId: string, event: 'friend_online' | 'friend_offline'): Promise<void>{
+    private async notification_friendship(userId: string, event: 'friend_online' | 'friend_offline'): Promise<void>{
         const friends = await this.friendshipservice.get_friends(Number(userId));
+        const user = await this.userRepository.find_by_id(Number(userId));
+        const nickname = user?.username || '';
 
         for(const F of friends){
             const friendId = String(F.userId === userId? F.friendId: F.userId);
-            await this.emitter.toUser(friendId, event, {userId});
+            await this.emitter.toUser(friendId, event, {userId, nickname});
         }
     } 
 

@@ -1,4 +1,4 @@
-import { GameState} from './game.types';
+import { GameState} from './types';
 
 export interface IGameRepository {
     create(game:GameState): Promise<void>;

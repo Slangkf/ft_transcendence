@@ -1,15 +1,15 @@
-import { MultiService } from "./multi";
+import { MultiService } from "./m";
 import  type {
     StartGameResult,
     GameInfo,
     StartGameParms,
     StartMultiResult,
     GameState
-}from "../game.types"; 
+}from "../types"; 
 import { AppError, ErrorCode } from "src/error/apperror";
 import { Room, RoomPlayer } from "src/room/room.types";
 //import { RoomManager } from "src/room/room.manager";
-import { MatchService } from "src/game/multiplayer/match/match.service";
+import { MatchService } from "src/g/multiplayer/match/match.service";
 import {randomUUID} from 'crypto';
 import { GameEmitter } from "src/websocket/socket.emitter";
 import { RoomService } from "src/room/room.service";

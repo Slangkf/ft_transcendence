@@ -1,5 +1,3 @@
-
-//this type maybe need zod to protected, it comes with database
 export type Question = {
     id: number;
     question: string;
@@ -22,102 +20,86 @@ export type PlayerAnswer = {
     answeredAt?: number; // for multiplayer
 }
 
-export type Player = {
-    id: string; //playerid
+export type PlayerStatus = "playing" | "answered" | "disconnected";
+
+export interface Player{
+    id: string;
     score: number;
     answers: PlayerAnswer[];
-    status: "disconnected"| "playing" | 'answered';
-    Totaltime: number;
-
-    isAI?: boolean;
-    joinOrder?: number; // to get a host for the room 
+    status: PlayerStatus;
+    totalTime: number;
+    isAI: boolean;
 }
 
-export type PublicPlayer = {
-    id: string; //playerid
-    score: number;
-    isAI?: boolean;
-}
-//type input from front 
-export type StartGameParms = {
-   mode: "solo" | "multiplayer";
-   userId: string;
-   nickname: string;
-}
 
-export type MatchPlayer = {
-    userId: string;
-    nickname: string;
-};
-
-export type StartMultiResult = {
-    status: "waiting" | "matched";
-    players?: MatchPlayer[];
-    roomId?: string; 
+export enum GameMode {
+    SOLO = "solo",
+    AI = "ai",
+    MULTIPLAYER = "multiplayer",
 }
-
-export type StartGameResult = {
+//runtime gamestate to save in redis 
+export interface BaseGameState {
     gameId: string;
-    question: PublicQuestion;
-};
-
-export type BaseGameState = {
-    gameId: string;
+    mode: GameMode;
     questions: Question[];
     players: Record<string, Player>;
     currentQuestionIndex: number;
     isFinished: boolean;
     startedAt: number;
+    roomId?: string; 
 }
 
-export type SoloGameState = BaseGameState & {
-    mode: "solo" | "ai"
+export interface SoloGameState extends BaseGameState {
+    mode: GameMode.SOLO | GameMode.AI
 }
 
-export type MultiGameState = BaseGameState & {
-    mode: "multiplayer";
+export interface MultiGameState extends BaseGameState {
+    mode: GameMode.MULTIPLAYER;
     roomId: string;
     hostId: string;
-    status: "waiting" | "starting" | "playing" | "finished";
 }
-export type GameState = SoloGameState | MultiGameState;
 
-//type for front 
-export type PublicGameState = {
-  gameId: string;
-  players: Record<string, PublicPlayer>;
-  currentQuestionIndex: number;
-  isFinished: boolean;
-  totalQuestions: number;
-  mode: "solo" | "ai" | "multiplayer";
-  roomId?: string;
-  hostId?: string;
-  status?: "waiting" | "starting" | "playing" | "finished";
+export type GameState = SoloGameState | MultiGameState; 
+
+//informations for front 
+export interface PLayerSnapShot{
+    id: string;
+    score: number;
+    status: PlayerStatus;
+    isAI: boolean;
 }
 
 export type FinalScore = {
-    gameId: string;
-    players: Record<string, PublicPlayer>;
-    winner: string; //give the id of winner
+    winnerId: string;
     finishedAt: number;
-}
-//give all info to front with the correct answer
-export type PlayingGameInfo = {
-    gameresult: PublicGameState,
-    correctAnswer: string,
-    nextQuestion: PublicQuestion | null,
+    scores: Record<string, number>;
 }
 
-export type FinishedGameInfo = {
-    gameresult: PublicGameState;
-    finalscore: FinalScore;
+export interface GameUpdateResponse {
+    gameId: string;
+    status: "playing" | "finished";
+    state: {
+        currentQuestionIndex: number;
+        totalQuestions: number;
+        player: Record<string, PLayerSnapShot>;
+    };
+    lastAnswerUpdate? :{
+        isCorrect: boolean;
+        correctAnswerIndex: number;
+        correctText: string;
+    };
+
+    nextQuestion?: PublicQuestion | null;
+    finalScore?: FinalScore | null; 
 }
 
-export type GameInfo = PlayingGameInfo | FinishedGameInfo; 
 
-export interface IGameRepository {
-    create(game:GameState): Promise<void>;
-    findById(gameId: string): Promise<GameState | null>;
-    update(game: GameState): Promise<void>;
-    delete(gameId: string): Promise<void>;
+export interface StartGameResult {
+    gameId: string;
+    question: PublicQuestion;
+
+}
+export type StartMultiResult extends StartGameResult {
+    status: "matched" | "waiting";
+    
 }
