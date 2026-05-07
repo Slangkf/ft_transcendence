@@ -1,0 +1,57 @@
+{
+  "title": "Sciences - Quiz 6",
+  "category": "Sciences",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "En informatique, que signifie 'RAM' ?",
+      "options": ["Random Access Memory", "Read Access Memory", "Rapid Action Memory", "Run Access Memory"],
+      "answer": "Random Access Memory"
+    },
+    {
+      "text": "Lequel de ces éléments est un exemple de périphérique d'entrée ?",
+      "options": ["Clavier", "Moniteur", "Imprimante", "Haut-parleurs"],
+      "answer": "Clavier"
+    },
+    {
+      "text": "Un octet (byte) est composé de 8 bits.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Comment appelle-t-on la distance autour d'un cercle ?",
+      "options": ["Circonférence", "Diamètre", "Rayon", "Aire"],
+      "answer": "Circonférence"
+    },
+    {
+      "text": "La valeur de 'e' est d'environ 2,718.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Quel instrument est utilisé pour mesurer la pression atmosphérique ?",
+      "options": ["Baromètre", "Thermomètre", "Anémomètre", "Hygromètre"],
+      "answer": "Baromètre"
+    },
+    {
+      "text": "Combien font 100 divisé par 4 ?",
+      "options": ["25", "20", "50", "40"],
+      "answer": "25"
+    },
+    {
+      "text": "Quel est le nombre suivant dans la suite : 2, 4, 8, 16... ?",
+      "options": ["32", "24", "20", "64"],
+      "answer": "32"
+    },
+    {
+      "text": "Quelle partie de la plante réalise la photosynthèse ?",
+      "options": ["Feuilles", "Racines", "Tige", "Fleurs"],
+      "answer": "Feuilles"
+    },
+    {
+      "text": "Quel est l'organe principal qui pompe le sang dans le corps humain ?",
+      "options": ["Cœur", "Poumons", "Cerveau", "Foie"],
+      "answer": "Cœur"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "title": "Sciences - Quiz 7",
+  "category": "Sciences",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "La lumière est à la fois une particule et une onde.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Que signifie 'USB' ?",
+      "options": ["Universal Serial Bus", "Universal Smart Bus", "Unique Serial Bus", "User Serial Bus"],
+      "answer": "Universal Serial Bus"
+    },
+    {
+      "text": "Quel moteur de recherche est le plus utilisé au monde ?",
+      "options": ["Google", "Bing", "Yahoo", "DuckDuckGo"],
+      "answer": "Google"
+    },
+    {
+      "text": "Qui a développé la théorie de la relativité ?",
+      "options": ["Albert Einstein", "Isaac Newton", "Galileo Galilei", "Stephen Hawking"],
+      "answer": "Albert Einstein"
+    },
+    {
+      "text": "Quelle planète est la plus proche du Soleil ?",
+      "options": ["Mercure", "Vénus", "Terre", "Mars"],
+      "answer": "Mercure"
+    },
+    {
+      "text": "Combien de côtés a un triangle ?",
+      "options": ["3", "4", "5", "6"],
+      "answer": "3"
+    },
+    {
+      "text": "Combien font 15 % de 100 ?",
+      "options": ["15", "10", "20", "5"],
+      "answer": "15"
+    },
+    {
+      "text": "Quel est le plus grand organe du corps humain ?",
+      "options": ["Peau", "Foie", "Cerveau", "Cœur"],
+      "answer": "Peau"
+    },
+    {
+      "text": "Quel est le symbole chimique de l'Or ?",
+      "options": ["Au", "Ag", "Fe", "Pb"],
+      "answer": "Au"
+    },
+    {
+      "text": "Un triangle équilatéral a trois côtés égaux.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    }
+  ]
+}

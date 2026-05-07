@@ -1,0 +1,57 @@
+{
+  "title": "Histoire & Géo - Quiz 10",
+  "category": "Histoire & Geographie",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Laquelle de ces mers est la plus grande du monde ?",
+      "options": ["Mer des Philippines", "Mer de Corail", "Mer d'Arabie", "Mer de Chine méridionale"],
+      "answer": "Mer des Philippines"
+    },
+    {
+      "text": "Les chutes Victoria sont situées sur quel fleuve ?",
+      "options": ["Zambèze", "Nil", "Congo", "Limpopo"],
+      "answer": "Zambèze"
+    },
+    {
+      "text": "Quelle est la capitale de la Thaïlande ?",
+      "options": ["Bangkok", "Phuket", "Chiang Mai", "Pattaya"],
+      "answer": "Bangkok"
+    },
+    {
+      "text": "Quel pays possède le plus grand nombre de fuseaux horaires ?",
+      "options": ["France", "Russie", "États-Unis", "Chine"],
+      "answer": "France"
+    },
+    {
+      "text": "Laquelle de ces villes n'est PAS une ville d'Égypte ?",
+      "options": ["Adana", "Alexandrie", "Louxor", "Gizeh"],
+      "answer": "Adana"
+    },
+    {
+      "text": "Dans quel pays actuel se trouve l'ancienne cité de Pétra ?",
+      "options": ["Jordanie", "Égypte", "Syrie", "Irak"],
+      "answer": "Jordanie"
+    },
+    {
+      "text": "La quatrième croisade a duré de 1095 à 1099 après J.-C.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Qui était le principal dirigeant du mouvement pour l'indépendance de l'Inde ?",
+      "options": ["Mahatma Gandhi", "Jawaharlal Nehru", "Subhas Chandra Bose", "Sardar Patel"],
+      "answer": "Mahatma Gandhi"
+    },
+    {
+      "text": "En quelle année les États-Unis sont-ils entrés dans la Première Guerre mondiale ?",
+      "options": ["1917", "1914", "1918", "1916"],
+      "answer": "1917"
+    },
+    {
+      "text": "Lequel de ces États américains est surnommé le 'Sunshine State' ?",
+      "options": ["Floride", "Californie", "Texas", "Arizona"],
+      "answer": "Floride"
+    }
+  ]
+}

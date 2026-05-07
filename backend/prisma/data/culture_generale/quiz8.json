@@ -1,0 +1,57 @@
+{
+  "title": "Culture Générale - Quiz 8",
+  "category": "Culture Generale",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Le premier e-mail a été envoyé en 1971.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Le miel ne se périme jamais.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Qui a joué le général Aladeen dans le film 'The Dictator' ?",
+      "options": ["Sacha Baron Cohen", "Johnny Depp", "James Franco", "Leonardo DiCaprio"],
+      "answer": "Sacha Baron Cohen"
+    },
+    {
+      "text": "De quel pays européen est originaire la salade de chou (coleslaw) ?",
+      "options": ["Pays-Bas", "Royaume-Uni", "Danemark", "Allemagne"],
+      "answer": "Pays-Bas"
+    },
+    {
+      "text": "Laquelle de ces couleurs ne figure PAS dans le logo de Google ?",
+      "options": ["Rose", "Jaune", "Bleu", "Vert"],
+      "answer": "Rose"
+    },
+    {
+      "text": "Sur un jeu de fléchettes, quel nombre est directement opposé au n°1 ?",
+      "options": ["19", "20", "12", "15"],
+      "answer": "19"
+    },
+    {
+      "text": "Le cœur d'une crevette se trouve dans sa tête.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Quel organe du corps produit la bile ?",
+      "options": ["Le foie", "La vésicule biliaire", "Le pancréas", "L'estomac"],
+      "answer": "Le foie"
+    },
+    {
+      "text": "Quelle est la durée de vie moyenne d'une fourmi de jardin ?",
+      "options": ["15 ans", "2 ans", "6 mois", "5 ans"],
+      "answer": "15 ans"
+    },
+    {
+      "text": "Quelle est la capitale de la France ?",
+      "options": ["Paris", "Lyon", "Marseille", "Bordeaux"],
+      "answer": "Paris"
+    }
+  ]
+}

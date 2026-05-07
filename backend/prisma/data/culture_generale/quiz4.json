@@ -1,0 +1,57 @@
+{
+  "title": "Culture Générale - Quiz 4",
+  "category": "Culture Generale",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Qu'est-ce que la 'néphélococcygie' ?",
+      "options": ["Trouver des formes dans les nuages", "Dormir les yeux ouverts", "Briser du verre avec sa voix", "Nager dans l'eau glacée"],
+      "answer": "Trouver des formes dans les nuages"
+    },
+    {
+      "text": "De quelle ville sud-américaine est originaire le cartel de drogue dirigé par Pablo Escobar ?",
+      "options": ["Medellín", "Bogotá", "Quito", "Cali"],
+      "answer": "Medellín"
+    },
+    {
+      "text": "Francis Bacon est mort d'une pneumonie alors qu'il tentait de conserver de la viande en remplissant un poulet de neige.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Le mot français pour 'fish' est 'poisson'.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Quel prénom représente la lettre 'M' dans l'alphabet phonétique de l'OTAN ?",
+      "options": ["Mike", "Matthew", "Mark", "Max"],
+      "answer": "Mike"
+    },
+    {
+      "text": "Le nom scientifique de l'espèce humaine est Homo Sapiens.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans quel type de produit la société Rolex est-elle spécialisée ?",
+      "options": ["Montres", "Voitures", "Ordinateurs", "Équipement sportif"],
+      "answer": "Montres"
+    },
+    {
+      "text": "Quel type de couvert est le plus adapté pour manger de la soupe ?",
+      "options": ["Cuillère", "Fourchette", "Couteau", "Baguettes"],
+      "answer": "Cuillère"
+    },
+    {
+      "text": "Dans quel pays l'entreprise de pneus Michelin a-t-elle été fondée en 1889 ?",
+      "options": ["France", "Royaume-Uni", "Italie", "Allemagne"],
+      "answer": "France"
+    },
+    {
+      "text": "Lequel de ces fruits est techniquement une baie ?",
+      "options": ["Banane", "Fraise", "Framboise", "Mûre"],
+      "answer": "Banane"
+    }
+  ]
+}

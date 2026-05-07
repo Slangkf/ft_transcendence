@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 3",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Quelle était la religion du célèbre chanteur Freddie Mercury ?",
+      "options": ["Zoroastrisme", "Paganisme", "Ashurisme", "Judaïsme"],
+      "answer": "Zoroastrisme"
+    },
+    {
+      "text": "Dans 'La Servante écarlate' de Margaret Atwood, quel prénom est suggéré comme étant le vrai nom d'Offred ?",
+      "options": ["June", "August", "April", "May"],
+      "answer": "June"
+    },
+    {
+      "text": "Quelle était la monnaie principale dans Club Penguin ?",
+      "options": ["Pièces", "Timbres", "Tickets", "Gemmes"],
+      "answer": "Pièces"
+    },
+    {
+      "text": "Dans 'Rick et Morty', de quelle dimension Rick et Morty sont-ils originaires ?",
+      "options": ["C-137", "J1977", "C-136", "C500-a"],
+      "answer": "C-137"
+    },
+    {
+      "text": "Lequel des films suivants n'est pas basé sur un roman de Stephen King ?",
+      "options": ["The Thing", "Carrie", "Misery", "La Ligne verte"],
+      "answer": "The Thing"
+    },
+    {
+      "text": "Lequel de ces anime Seiji Kishi n'a-t-il PAS réalisé ?",
+      "options": ["Another", "Humanity Has Declined", "Assassination Classroom", "Danganronpa: The Animation"],
+      "answer": "Another"
+    },
+    {
+      "text": "Qui a cofondé la chaîne YouTube de Let's Play 'Game Grumps' aux côtés de l'animateur de Newgrounds, Egoraptor ?",
+      "options": ["JonTron", "Pewdiepie", "Tobuscus", "Markiplier"],
+      "answer": "JonTron"
+    },
+    {
+      "text": "Le vrai nom de Lady Gaga est Stefani Joanne Angelina Germanotta.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Harry Potter est né le 31 juillet 1980.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Roger Federer est un célèbre joueur de football.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    }
+  ]
+}

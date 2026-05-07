@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 10",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Dans la série 'The Office', avec qui Michael Scott finit-il par s'installer ?",
+      "options": ["Holly Flax", "Angela Martin", "Jan Levinson", "Pam Beesly"],
+      "answer": "Holly Flax"
+    },
+    {
+      "text": "Twenty One Pilots a créé la chanson 'The Motion' avec Sampha.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quel album de Coldplay a remporté le Grammy du meilleur album rock en 2009 ?",
+      "options": ["Viva La Vida", "X&Y", "Mylo Xyloto", "A Rush Of Blood"],
+      "answer": "Viva La Vida"
+    },
+    {
+      "text": "Qui a interprété le solo de guitare sur le tube 'Beat It' de Michael Jackson ?",
+      "options": ["Eddie Van Halen", "Steve Vai", "Kirk Hammett", "Zakk Wylde"],
+      "answer": "Eddie Van Halen"
+    },
+    {
+      "text": "Le film d'animation 'Le Voyage de Chihiro' a remporté l'Oscar du meilleur film d'animation.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Qui est l'artiste de l'album 'the Uncanny Valley' ?",
+      "options": ["Perturbator", "Carpenter Brut", "GOST", "Dan Terminus"],
+      "answer": "Perturbator"
+    },
+    {
+      "text": "Quelle chanson de Tina Turner est le thème de Mad Max au-delà du dôme du tonnerre ?",
+      "options": ["We Don't Need Another Hero", "Let's Stay Together", "What's Love Got To Do With It", "I Don't Wanna Lose You"],
+      "answer": "We Don't Need Another Hero"
+    },
+    {
+      "text": "Quel duo français a eu des succès au Royaume-Uni en 1998 avec 'Sexy Boy' ?",
+      "options": ["Air", "Fire", "Earth", "Water"],
+      "answer": "Air"
+    },
+    {
+      "text": "Aziz Ansari est né en Caroline du Sud.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Qui a écrit la composition musicale 'Rhapsody In Blue' ?",
+      "options": ["George Gershwin", "Irving Berlin", "Duke Ellington", "Johnny Mandel"],
+      "answer": "George Gershwin"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 6",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Combien de poids Chris Pratt a-t-il perdu pour son rôle de Star-Lord dans 'Les Gardiens de la Galaxie' ?",
+      "options": ["60 lbs", "30 lbs", "50 lbs", "70 lbs"],
+      "answer": "60 lbs"
+    },
+    {
+      "text": "Le roman 'Des souris et des hommes' a été écrit par quel auteur ?",
+      "options": ["John Steinbeck", "George Orwell", "Mark Twain", "Harper Lee"],
+      "answer": "John Steinbeck"
+    },
+    {
+      "text": "Dans Overwatch, quel âge a Reinhardt Wilhelm ?",
+      "options": ["61", "59", "65", "62"],
+      "answer": "61"
+    },
+    {
+      "text": "TF2 : La réduction des dégâts des roquettes de la sentinelle est calculée en fonction de la distance entre la sentinelle et l'enn.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Dans South Park, quel est le nom de famille de Stan ?",
+      "options": ["Marsh", "Stotch", "Broflovski", "Tweak"],
+      "answer": "Marsh"
+    },
+    {
+      "text": "La Formule E est une série de courses automobiles qui utilise des voitures de course électriques hybrides.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Ce film contient la citation : 'Ce que nous avons ici, c'est un manque de communication.'",
+      "options": ["Cool Hand Luke", "Bonnie and Clyde", "The Graduate", "In the Heat of the Night"],
+      "answer": "Cool Hand Luke"
+    },
+    {
+      "text": "Qui était le réalisateur du film d'animation de 1988 'Le Tombeau des lucioles' ?",
+      "options": ["Isao Takahata", "Hayao Miyazaki", "Satoshi Kon", "Sunao Katabuchi"],
+      "answer": "Isao Takahata"
+    },
+    {
+      "text": "Dans le Star Wars original (Un Nouvel Espoir), Han Solo est le premier à tirer avec son blaster lors d'une conversation avec Greedo.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans la série 'Futurama', quel est le nom complet de Fry ?",
+      "options": ["Philip J. Fry", "Fry J. Philip", "Fry Rodríguez", "Fry Philip"],
+      "answer": "Philip J. Fry"
+    }
+  ]
+}

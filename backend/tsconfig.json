@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020", "dom"],
+    "outDir": "./dist",
+    "rootDir": ".", 
+    //need to active this 3 to check types
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",         // 根目录作为 baseUrl
+    "paths": {
+      "@shared/*": ["./shared/*"],  // 给 shared 目录一个别名
+    },
+    "types": ["node", "express", "cookie-parser"]
+  },
+  "include": [
+    "src/**/*", 
+    "prisma/**/*.ts",
+    "src/types/**/*.d.ts"],
+  "exclude": ["node_modules", "dist", "prisma"]
+}

@@ -1,0 +1,57 @@
+{
+  "title": "Divertissement - Quiz 5",
+  "category": "Divertissement",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Dans le script original de 'Matrix', les machines utilisaient les humains comme puissance de calcul supplémentaire au lieu de piles.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Quelle est la taille de Tom Cruise ?",
+      "options": ["1m70 (5′ 7″)", "1m75 (5′ 9″)", "1m63 (5′ 4″)", "1m65 (5′ 5″)"],
+      "answer": "1m70 (5′ 7″)"
+    },
+    {
+      "text": "Dans le roman 1984, quel est le nom du régime totalitaire qui contrôle l'Océania ?",
+      "options": ["INGSOC", "Néo-Bolchévisme", "Oblitération du Soi", "Alliance Terrestre"],
+      "answer": "INGSOC"
+    },
+    {
+      "text": "De quoi le jeu par navigateur Kantai Collection est-il fortement inspiré ?",
+      "options": ["La Seconde Guerre mondiale", "Un Manga", "World of Warcraft", "Un Anime"],
+      "answer": "La Seconde Guerre mondiale"
+    },
+    {
+      "text": "Qui a prêté sa voix au Génie dans le 'Aladdin' de Disney ?",
+      "options": ["Robin Williams", "Billy Crystal", "Adam Sandler", "Jim Carrey"],
+      "answer": "Robin Williams"
+    },
+    {
+      "text": "David Baszucki était un cofondateur de ROBLOX Corporation.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans le film de Noël de 1974 'The Year Without a Santa Claus', quels sont les noms des deux elfes qui aident Mme Noël à sauver Noël ?",
+      "options": ["Jingle & Jangle", "Buddy & Bobby", "Holly & Jolly", "Snowflake & Icicle"],
+      "answer": "Jingle & Jangle"
+    },
+    {
+      "text": "Dans JoJo's Bizarre Adventure, quel personnage est capable d'accélérer le temps ?",
+      "options": ["Enrico Pucci", "Jotaro Kujo", "Jolyne Cujoh", "Kujo Jotaro"],
+      "answer": "Enrico Pucci"
+    },
+    {
+      "text": "En Rugby à XIII, effectuer un '40-20' est puni par un coup franc pour l'équipe adverse.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quel acteur incarne Hogan 'Wash' Washburne dans la série télévisée Firefly ?",
+      "options": ["Alan Tudyk", "Adam Baldwin", "Nathan Fillion", "Sean Maher"],
+      "answer": "Alan Tudyk"
+    }
+  ]
+}

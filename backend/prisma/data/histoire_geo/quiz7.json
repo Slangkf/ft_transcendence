@@ -1,0 +1,57 @@
+{
+  "title": "Histoire & Géo - Quiz 7",
+  "category": "Histoire & Geographie",
+  "authorId": 1,
+  "questions": [
+    {
+      "text": "Le canal de Panama relie quels océans ?",
+      "options": ["Atlantique et Pacifique", "Atlantique et Indien", "Pacifique et Indien", "Arctique et Atlantique"],
+      "answer": "Atlantique et Pacifique"
+    },
+    {
+      "text": "Quel pays africain était autrefois connu sous le nom d'Abyssinie ?",
+      "options": ["Éthiopie", "Ghana", "Zimbabwe", "République démocratique du Congo"],
+      "answer": "Éthiopie"
+    },
+    {
+      "text": "Quelle est la capitale de la Corée du Sud ?",
+      "options": ["Séoul", "Busan", "Incheon", "Daegu"],
+      "answer": "Séoul"
+    },
+    {
+      "text": "Quel pays est le plus grand d'Amérique du Sud ?",
+      "options": ["Brésil", "Argentine", "Pérou", "Colombie"],
+      "answer": "Brésil"
+    },
+    {
+      "text": "Quelle est la capitale du Canada ?",
+      "options": ["Ottawa", "Toronto", "Montréal", "Vancouver"],
+      "answer": "Ottawa"
+    },
+    {
+      "text": "Abraham Lincoln a été le premier président américain né hors des treize États d'origine.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Vrai"
+    },
+    {
+      "text": "Dans quel pays européen la Renaissance a-t-elle commencé ?",
+      "options": ["Italie", "France", "Espagne", "Allemagne"],
+      "answer": "Italie"
+    },
+    {
+      "text": "La guerre froide s'est terminée avec la mort de Joseph Staline.",
+      "options": ["Vrai", "Faux"],
+      "answer": "Faux"
+    },
+    {
+      "text": "Quel traité a mis fin à la Première Guerre mondiale ?",
+      "options": ["Traité de Versailles", "Traité de Paris", "Traité d'Utrecht", "Traité de Gand"],
+      "answer": "Traité de Versailles"
+    },
+    {
+      "text": "Qui a été la première personne à faire le tour du monde ?",
+      "options": ["Fernand de Magellan", "Christophe Colomb", "Vasco de Gama", "James Cook"],
+      "answer": "Fernand de Magellan"
+    }
+  ]
+}
