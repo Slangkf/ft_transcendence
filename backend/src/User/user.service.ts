@@ -110,7 +110,10 @@ export class UserService{
 
     async update_avatar(userid: number, file?: Express.Multer.File): Promise<UserOutput>{
         if (!file) {
-            throw new AppError("avatar file is required", 400);
+            throw new AppError('avatar file is required',
+                ErrorCode.AVATAR_REQUIRED,
+                400,
+                {});
         }
 
         const user = await this.userrepository.find_by_id(userid);
@@ -124,14 +127,18 @@ export class UserService{
 
         const previousAvatarUrl = user.url;
         const avatarUrl = `/uploads/avatars/${file.filename}`;
-        const updatedUser = await this.userrepository.update_avatar(userid, avatarUrl);
 
-        await this.delete_previous_avatar(previousAvatarUrl);
-
-        return updatedUser;
+        try {
+            const updatedUser = await this.userrepository.update_avatar(userid, avatarUrl);
+            await this.delete_avatar_file(previousAvatarUrl);
+            return updatedUser;
+        } catch (error) {
+            await this.delete_avatar_file(avatarUrl);
+            throw error;
+        }
     }
 
-    private async delete_previous_avatar(avatarUrl?: string | null): Promise<void>{
+    private async delete_avatar_file(avatarUrl?: string | null): Promise<void>{
         if (!avatarUrl || avatarUrl === '/uploads/avatars/default.jpg'){
             return;
         }
@@ -146,16 +153,8 @@ export class UserService{
             await fs.unlink(avatarPath);
         }catch(error: any){
             if (error?.code !== 'ENOENT'){
-                console.log('failed to delete previous avatar:', error);
+                console.log('failed to delete avatar file:', error);
             }
-        }
+         }
     }
-
 }
-
-/****
- * UserService: 
- *  1. get profil: element withou password(User part, friend part later)
- *  2. update profil: change password
- *  3. 
- */
