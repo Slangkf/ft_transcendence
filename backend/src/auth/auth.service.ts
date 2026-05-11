@@ -42,6 +42,7 @@ export  class AuthService{
     const token = jwt.sign(
         {
             id: newuser.id,
+            nickname: newuser.username,
             jti: randomUUID(),
         },
         JWT_SECRET,
@@ -75,6 +76,7 @@ export  class AuthService{
         const token = jwt.sign(
             {
                 id: user.id,
+                nickname: user.username,
                 jti: randomUUID()
             },
             JWT_SECRET,

@@ -1,8 +1,13 @@
 import { io } from "socket.io-client";
-import fetch  from "node-fetch";
+import fetch from "node-fetch";
+import https from "https";
+
+// ================= HTTPS =================
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 // ================= CONFIG =================
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const SERVER_URL = "https://localhost:8888";
 
 // ================= STATE =================
@@ -15,11 +20,12 @@ const State = {
   READY: "READY",
   STARTED: "STARTED",
   PLAYING: "PLAYING",
+  FINISHED: "FINISHED",
 };
 
 // ================= UTILS =================
 function wait(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 // ================= USER CLASS =================
@@ -38,163 +44,293 @@ class TestUser {
     this.gameId = null;
   }
 
+  // ================= FETCH WRAPPER =================
+  async safeFetch(url, options = {}) {
+    const res = await fetch(url, {
+      ...options,
+      agent: httpsAgent,
+    });
+
+    const contentType = res.headers.get("content-type") || "";
+
+    if (!res.ok) {
+      const text = await res.text();
+
+      console.error(`❌ [${this.name}] HTTP ERROR ${res.status}`);
+      console.error(text);
+
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    if (contentType.includes("application/json")) {
+      return await res.json();
+    }
+
+    return await res.text();
+  }
+
+  // ================= AUTH =================
   async auth() {
     console.log(`🔐 [${this.name}] auth...`);
 
-    let res = await fetch(`${SERVER_URL}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: this.email,
-        password: this.password,
-        username: this.name
-      }),
-      credentials: "include"
-    });
-
-    // already exists → login
-    if (res.status === 409) {
-      res = await fetch(`${SERVER_URL}/api/auth/login`, {
+    try {
+      let res = await fetch(`${SERVER_URL}/api/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           email: this.email,
-          password: this.password
+          password: this.password,
+          username: this.name,
         }),
-        credentials: "include"
+        agent: httpsAgent,
       });
+
+      // already exists → login
+      if (res.status === 409) {
+        console.log(`ℹ️ [${this.name}] user already exists → login`);
+
+        res = await fetch(`${SERVER_URL}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password,
+          }),
+          agent: httpsAgent,
+        });
+      }
+
+      if (!res.ok) {
+        const text = await res.text();
+
+        console.error(`❌ [${this.name}] auth failed`);
+        console.error(text);
+
+        throw new Error(`Auth failed: ${res.status}`);
+      }
+
+      const cookieHeader = res.headers.get("set-cookie");
+
+      if (!cookieHeader) {
+        console.error(`❌ [${this.name}] No set-cookie header`);
+
+        const text = await res.text();
+        console.error(text);
+
+        throw new Error("No token");
+      }
+
+      const match = cookieHeader.match(/auth_token=([^;]+)/);
+
+      if (!match) {
+        throw new Error("No auth_token in cookie");
+      }
+
+      this.token = match[1];
+      this.state = State.AUTH;
+
+      console.log(`✅ [${this.name}] authenticated`);
+
+      // cleanup queue
+      await this.cleanupQueue();
+
+    } catch (err) {
+      console.error(`❌ [${this.name}] auth exception`);
+      console.error(err);
+      throw err;
     }
-
-    const cookieHeader = res.headers.get("set-cookie");
-    if (!cookieHeader) {
-      console.error(`❌ [${this.name}] No set-cookie header. Status: ${res.status}`);
-      const body = await res.json();
-      console.error(`❌ [${this.name}] Response:`, body);
-      throw new Error("No token");
-    }
-
-    const match = cookieHeader.match(/auth_token=([^;]+)/);
-
-    if (!match) throw new Error("No token in set-cookie");
-
-    this.token = match[1];
-    this.state = State.AUTH;
-
-    console.log(`✅ [${this.name}] authenticated`);
   }
 
+  // ================= CLEANUP =================
+  async cleanupQueue() {
+    try {
+      await this.safeFetch(`${SERVER_URL}/api/game/leave-queue`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      console.log(`🧹 [${this.name}] queue cleaned`);
+    } catch (e) {
+      console.log(`⚠️ [${this.name}] cleanup skipped`);
+    }
+  }
+
+  // ================= SOCKET =================
   connectWS() {
-    console.log(`🔌 [${this.name}] connecting WS...`);
+    console.log(`🔌 [${this.name}] connecting websocket...`);
 
     this.socket = io(`${SERVER_URL}/game`, {
-       auth: (cb) => {
-        cb({ token: this.token });
-    },
-    rejectUnauthorized: false, // 忽略自签名证书
-    transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
+
+      rejectUnauthorized: false,
+
+      auth: (cb) => {
+        cb({
+          token: this.token,
+        });
+      },
     });
 
     this.socket.on("connect", () => {
-      console.log(`✅ [${this.name}] WS connected, id: ${this.socket.id}`);
+      console.log(`✅ [${this.name}] websocket connected`);
+      console.log(`🆔 socket id: ${this.socket.id}`);
+
       this.state = State.CONNECTED;
     });
 
-    this.socket.on('connect_error', (err) => {
-        console.log(`❌ [${this.name}] connect_error: ${err.message}`);
-        console.log(`❌ [${this.name}] error data:`, err.data); // 服务端传的错误信息
+    this.socket.on("connect_error", (err) => {
+      console.error(`❌ [${this.name}] websocket connect_error`);
+      console.error(err.message);
+
+      if (err.data) {
+        console.error(err.data);
+      }
     });
 
     this.socket.onAny((event, ...args) => {
-        console.log(`📨 [${this.name}] event: ${event}`, JSON.stringify(args));
+      console.log(
+        `📨 [${this.name}] EVENT: ${event}`,
+        JSON.stringify(args, null, 2)
+      );
     });
 
+    // ================= GAME EVENTS =================
+
     this.socket.on("matched", (data) => {
-      console.log(`🎯 [${this.name}] matched`, data);
+      console.log(`🎯 [${this.name}] matched`);
 
       this.roomId = data.roomId;
       this.state = State.MATCHED;
     });
 
+    this.socket.on("player_ready", (data) => {
+      console.log(`🟢 [${this.name}] player_ready`);
+      console.log(data);
+    });
+
     this.socket.on("game_started", (data) => {
-      console.log(`🚀 [${this.name}] game started`, data);
+      console.log(`🚀 [${this.name}] game_started`);
 
       this.gameId = data.gameId;
       this.state = State.STARTED;
     });
 
-    this.socket.on("answer_result", (data) => {
-      console.log(`📊 [${this.name}] answer result`, data);
-      if (data && data.gameresult && data.gameresult.isFinished) {
-        this.state = State.PLAYING;
-      }
+    this.socket.on("answer_submitted", (data) => {
+      console.log(`✅ [${this.name}] answer_submitted`);
+      console.log(data);
     });
 
-    this.socket.on("answer_submitted", (data) => {
-      console.log(`✅ [${this.name}] answer submitted`, data);
+    this.socket.on("answer_result", (data) => {
+      console.log(`📊 [${this.name}] answer_result`);
+      console.log(data);
     });
 
     this.socket.on("game_finished", (data) => {
-      console.log(`🏁 [${this.name}] game finished`, data);
-      this.state = State.PLAYING; // Mark as finished
-    });
+      console.log(`🏁 [${this.name}] game_finished`);
+      console.log(data);
 
-    this.socket.on("player_ready", (data) => {
-      console.log(`🟢 [${this.name}] ready update`, data);
+      this.state = State.FINISHED;
     });
   }
 
+  // ================= MATCHMAKING =================
   async startMatchmaking() {
-    console.log(`🎮 [${this.name}] start matchmaking`);
+  console.log(`🎮 [${this.name}] start matchmaking`);
 
-    const res = await fetch(`${SERVER_URL}/api/game/multiplayer/start`, {
+  const data = await this.safeFetch(
+    `${SERVER_URL}/api/game/multiplayer/start`,
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: JSON.stringify({ mode: "multiplayer" })
-    });
-    console.log(`[${this.name}] response status:`, res.status);
-    const data = await res.json();
-    console.log(`[${this.name}] response data:`, data);
-    if (data.roomId){
-      this.roomId = data.data.roomId;
-      this.state = State.MATCHING;
+      body: JSON.stringify({
+        mode: "multiplayer",
+      }),
     }
-    console.log("state: ", `${this.state}`);
-  }
+  );
 
+  console.log(`📥 [${this.name}] matchmaking response`);
+  console.log(data);
+
+  // backend wrapper
+  const payload = data.data;
+
+  if (payload?.status === "matched") {
+    this.roomId = payload.roomId;
+    this.state = State.MATCHED;
+
+    console.log(`🎯 [${this.name}] already matched from HTTP response`);
+  }
+  else if (this.state !== State.MATCHED) {
+    this.state = State.MATCHING;
+  }
+}
+  // ================= READY =================
   async ready() {
-    if (!this.roomId) throw new Error("No roomId");
+    if (!this.roomId) {
+      throw new Error(`[${this.name}] No roomId`);
+    }
 
     console.log(`🟢 [${this.name}] ready`);
 
-    const res =await fetch(`${SERVER_URL}/api/game/multiplayer/ready/${this.roomId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.token}`
-      },
-      body: JSON.stringify({ isReady: true })
-    });
-    const data = await res.json();
+    const data = await this.safeFetch(
+      `${SERVER_URL}/api/game/multiplayer/ready/${this.roomId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({
+          isReady: true,
+        }),
+      }
+    );
+
+    console.log(`📥 [${this.name}] ready response`);
     console.log(data);
-    if (data.gameId){
+
+    if (data.gameId) {
       this.gameId = data.gameId;
-      this.state = State.READY;}
+    }
+
+    this.state = State.READY;
   }
 
+  // ================= ANSWER =================
   async answer(index = 0) {
-    console.log(`🎯 [${this.name}] answer`);
+    if (!this.gameId) {
+      console.log(`⚠️ [${this.name}] no gameId`);
+      return;
+    }
+
+    console.log(`🎯 [${this.name}] submit answer: ${index}`);
 
     this.socket.emit("submit_answer", {
       gameId: this.gameId,
-      answerIndex: index
+      answerIndex: index,
     });
   }
 
-  async waitForState(target) {
+  // ================= WAIT STATE =================
+  async waitForState(target, timeout = 10000) {
+    const start = Date.now();
+
     while (this.state !== target) {
+      if (Date.now() - start > timeout) {
+        throw new Error(
+          `[${this.name}] timeout waiting for state: ${target}`
+        );
+      }
+
       await wait(50);
     }
   }
@@ -204,64 +340,78 @@ class TestUser {
 async function run() {
   console.log("\n🚀 AUTO STATE MACHINE TEST\n");
 
-  const u1 = new TestUser("user1", "user1@test.com", "123456yhtg4r");
-  const u2 = new TestUser("user2", "user2@test.com", "123456j6hy5t4r3");
+  const timestamp = Date.now();
 
-  // 1. AUTH
+  const u1 = new TestUser(
+    `user1_${timestamp}`,
+    `user1_${timestamp}@test.com`,
+    "123456Aa!"
+  );
+
+  const u2 = new TestUser(
+    `user2_${timestamp}`,
+    `user2_${timestamp}@test.com`,
+    "123456Bb!"
+  );
+
+  // ================= AUTH =================
   await u1.auth();
   await u2.auth();
 
-  // 2. WS CONNECT
+  // ================= WS =================
   u1.connectWS();
   u2.connectWS();
 
   await u1.waitForState(State.CONNECTED);
   await u2.waitForState(State.CONNECTED);
 
-  // 3. START MATCHMAKING
+  // ================= MATCH =================
   await u1.startMatchmaking();
   await u2.startMatchmaking();
 
-  // 4. WAIT MATCH
   await u1.waitForState(State.MATCHED);
   await u2.waitForState(State.MATCHED);
 
-  console.log("\n✅ MATCH CREATED:", u1.roomId);
+  console.log("\n✅ MATCH CREATED");
+  console.log("ROOM:", u1.roomId);
 
-  // 5. READY
+  // ================= READY =================
   await u1.ready();
   await u2.ready();
 
-  // 6. WAIT GAME START
+  // ================= GAME START =================
   await u1.waitForState(State.STARTED);
   await u2.waitForState(State.STARTED);
 
-  console.log("\n🚀 GAME STARTED:", u1.gameId);
+  console.log("\n🚀 GAME STARTED");
+  console.log("GAME:", u1.gameId);
 
-  // 7. PLAY - 持续回答直到游戏结束
-  let gameFinished = false;
-  let answerCount = 0;
-  
-  const maxAnswers = 10; // 最多回答10次
-  
-  while (answerCount < maxAnswers && !gameFinished) {
-    await wait(500);
-    
-    if (u1.gameId && u2.gameId) {
-      console.log(`\n📝 [ROUND ${answerCount + 1}] Players submitting answers...`);
-      await u1.answer(Math.floor(Math.random() * 4));
-      await u2.answer(Math.floor(Math.random() * 4));
-      answerCount++;
-      
-      // 检查是否有任何一个player的state改变了，表示游戏可能结束了
-      // 由于是多人游戏，game_finished可能会通过websocket通知
-      if (u1.state === State.PLAYING && u2.state === State.PLAYING) {
-        console.log("✅ Both players answered");
-      }
-    }
+  // ================= PLAY =================
+  let round = 0;
+
+  while (
+    round < 10 &&
+    u1.state !== State.FINISHED &&
+    u2.state !== State.FINISHED
+  ) {
+    await wait(1000);
+
+    console.log(`\n📝 ROUND ${round + 1}`);
+
+    await u1.answer(Math.floor(Math.random() * 4));
+    await u2.answer(Math.floor(Math.random() * 4));
+
+    round++;
   }
 
-  console.log("\n🎉 TEST FLOW COMPLETED\n");
+  console.log("\n🎉 TEST COMPLETED");
+
+  process.exit(0);
 }
 
-run().catch(console.error);
+run().catch((err) => {
+  console.error("\n💥 TEST FAILED");
+  console.error(err);
+
+  process.exit(1);
+});

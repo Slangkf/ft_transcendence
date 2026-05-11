@@ -9,7 +9,7 @@ import {createServer} from 'http';
 import { AuthRouter } from './auth/auth.router';
 import { UserRouter } from './User/user.router';
 import {createGameRouter} from './game/game.router';
-import friendshipRouter from './friendship/friendship.router';
+import {createFriendshipRouter} from './friendship/friendship.router';
 import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
 import {FriendEmitter, GameEmitter} from './websocket/socket.emitter';
@@ -17,11 +17,13 @@ import { createGameServices,
   roomService,
   matchService,
   gamerepo,
-  createFriendshipService,
+  userrepo,
+  createFriendshipModule,
 } from './container';
 import { GameSocketHandler } from './websocket/socket.gamehandler';
 import { FriendSocketHandler } from './websocket/socket.FriendHandler';
-import { sign } from 'crypto';
+import { SessionService } from './game/session.service';
+import { ClientToServerEvents, ServerToClientEvents } from './websocket/socket.types';
 
 
 const app = express();
@@ -46,39 +48,41 @@ const start = async () => {
     //httpserver 
     const httpserver = createServer(app);
     //socket server 
-    const io = createSocketServer(httpserver, Redis);
+    const {io, gameNs, friendNs, chatNs} = createSocketServer(httpserver, Redis);
 
     //service layer event emitter of gamesocket
     const gameemitter = new GameEmitter(io, Redis)
-    const {gameService, multiPlayer} = createGameServices(gameemitter);
+    const {gameService, multiPlayer} = createGameServices(gameemitter, gameNs, Redis);
 
     const gamehandler = new GameSocketHandler(
-      io.of('/game'),
+      gameNs,
       Redis, 
       roomService, 
       matchService, 
       gamerepo, 
       gameemitter,
-      gameService);
-    io.of('/game').on('connection', socket => gamehandler.onConnection(socket));
+      gameService,
+      new SessionService(),);
+    gameNs.on('connection', socket => gamehandler.onConnection(socket));
 
     //friendsocket
     const friendemitter = new FriendEmitter(io, Redis);
-    const friendshipservice = createFriendshipService(friendemitter);
+    const {friendshipController, friendshipService} = createFriendshipModule(friendemitter);
     const friendhandler = new FriendSocketHandler(
-      io.of('/friendship'),
+      friendNs,
       Redis,
       friendemitter,
-      friendshipservice
+      friendshipService,
+      userrepo
     );
-    io.of('/friendship').on('connection', socket=> friendhandler.onConnection(socket));
-    
+    friendNs.on('connection', socket=> friendhandler.onConnection(socket));
+    const friendshipRouter = createFriendshipRouter(friendshipController);
+
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
     app.use('/api/game', createGameRouter(gameService));
     app.use('/api/friendship', friendshipRouter);
-    //app.use('/api/room', RoomRouter);
 
     // 3. Start server
     httpserver.listen(PORT, () => {

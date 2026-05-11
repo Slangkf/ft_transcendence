@@ -1,5 +1,5 @@
 export type RoomPlayer = {
-    id: string;
+    userId: string;
     nickname: string;
     isReady: boolean;
     joinedAt: number;
@@ -7,12 +7,13 @@ export type RoomPlayer = {
     socketId?: string //for socket 
 }
 
+export type RoomStatus = "waiting" | "active" | "closed" | "starting";
 export type Room = {
     type: 'game' | 'chat';
     roomId: string;
     hostId: string;
     players: Record<string, RoomPlayer>;
-    status: "waiting" | "active" | "closed";
+    status:  RoomStatus;
     createdAt: number;
     maxPlayers: number;
     sessionId?: string; // gameid or userid for friends chat 

@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { GameService } from './game.factory';
+import { GameService } from './game.service';
 import { AppError, ErrorCode } from 'src/error/apperror';
 import { Apiresponse } from 'src/lib/api_response';
+import { GameMode } from './game.types';
 
 export class GameController
 {
@@ -11,10 +12,21 @@ export class GameController
     start = async(req: Request, res: Response)=>
     {
         try{
+            const rawmode = req.params.mode; 
+            const mode = rawmode === 'multiplayer' ? GameMode.MULTIPLAYER
+               : rawmode === 'solo'        ? GameMode.SOLO
+               : null;
+
+            if (!mode) {
+                return res.status(400).json(
+                     Apiresponse.error('INVALID_MODE', 'Invalid game mode')
+                );
+            }
+
             const result = await this.gameService.startGame({
-                mode: req.params.mode,
-                userId: req.user.id,
-                nickname: req.user.username
+                mode,
+                userId: req.user!.id,
+                nickname: req.user!.nickname,
             })
             if (!result) {
                 return res.status(202).json(
@@ -50,13 +62,13 @@ export class GameController
     }
 
     setready = async(req: Request, res: Response) => {
-        const roomId = req.params.roomId;
+        const roomId = req.params.roomId as string;
         const isReady = req.body.isReady;
-        const userId = req.user.id;
+        const userId = req.user!.id;
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);
 
-            if (!result) {
+            if (!result.allReady) {
                 return res.status(200).json(
                     Apiresponse.error(
                         "Waiting for other players",
@@ -81,10 +93,10 @@ export class GameController
         }
     }
 
-    answer = async (req: Request, res: Response): Promise<void> => {
-        const userId = req.user.id;
+    answer = async (req: Request, res: Response)=> {
+        const userId = req.user!.id;
 
-        const gameId = req.params.gameId;
+        const gameId = req.params.gameId as string;
 
         if (!gameId) {
             return res.status(400).json(
@@ -111,7 +123,7 @@ export class GameController
             }
 
             return res.status(200).json(
-                Apiresponse.success(result, result.gameresult.isFinished ? "Game finished." : "Answer submitted.")
+                Apiresponse.success(result, result.status === 'finished' ? "Game finished." : "Answer submitted.")
                 );
         } catch (error) {
             console.error(error);

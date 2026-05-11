@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { RoomPlayer, Room, CreateRoomParams, JoinRoomParams } from "./room.types";
+import type { RoomPlayer, Room, CreateRoomParams, JoinRoomParams, RoomStatus } from "./room.types";
 import { RoomRepository } from './room.repository';
 import { AppError, ErrorCode } from 'src/error/apperror';
 
@@ -13,7 +13,7 @@ export class RoomService{
         const roomId = randomUUID();
 
         const hostPlayer: RoomPlayer = {
-            id: params.hostId,
+            userId: params.hostId,
             nickname: params.hostNickname,
             isReady: false,
             joinedAt: Date.now(),
@@ -24,7 +24,7 @@ export class RoomService{
             params.players.forEach(p => {
                 if (p.userId !== params.hostId) {
                     players[p.userId] = {
-                        id: p.userId,
+                        userId: p.userId,
                         nickname: p.nickname,
                         isReady: false,
                         joinedAt: Date.now(),
@@ -80,7 +80,7 @@ export class RoomService{
         }
 
         const newplayer: RoomPlayer = {
-            id: params.playerId,
+            userId: params.playerId,
             nickname: params.playerNickname,
             isReady: false,
             joinedAt: Date.now(),
@@ -112,7 +112,7 @@ export class RoomService{
         delete room.players[playerId];
 
         await this.roomrepository.update(room);
-        return await this.roomrepository.getroom(roomId);
+        return room;
     }
 
     async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room }>{
@@ -132,6 +132,9 @@ export class RoomService{
         //3. check if everyone is ready
         const allPlayers = Object.values(room.players);
         const allready = allPlayers.every(p => p.isReady);
+        if (allready){
+            room.status = 'starting';
+        }
        
         await this.roomrepository.update(room);
         return { allReady: allready, room };
@@ -147,8 +150,8 @@ export class RoomService{
         return await this.roomrepository.update(room); //????
     }
 
-    async updateStatus(room: Room, action: "active" | "closed"){
-        room.status = action
+    async updateStatus(room: Room, status: RoomStatus): Promise<void>{
+        room.status = status;
         return await this.roomrepository.update(room);
     }
     

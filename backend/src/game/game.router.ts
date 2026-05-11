@@ -1,7 +1,9 @@
-import { Router } from 'express';
-import { GameController } from './game.controller';
-import { verifyToken } from 'src/middleware/verify_token';
-import { GameService } from './game.factory';
+import { Router } from "express";
+import { GameController } from "./game.controller";
+import { GameService } from "./game.service";
+import { verifyToken } from "src/middleware/verify_token";
+
+
 
 export function createGameRouter(gameService: GameService): Router{
 

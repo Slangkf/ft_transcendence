@@ -1,13 +1,15 @@
 import { AppError, ErrorCode } from "src/error/apperror";
 import { MatchRepository } from "./match.repository";
-import { JoinRoomParams } from "../../../room/room.types";
-import { JoinQueueParams, MatchResult, MathQueueResult } from "./match.types";
+import { JoinRoomParams } from "src/room/room.types";
+import { JoinQueueParams, MatchResult, MathQueueResult, QueuePlayer } from "./match.types";
 import { randomUUID } from "crypto";
+import { GameMode, MatchPlayer } from "../game.types";
 
 export class    MatchService{
     constructor(private matchrepository: MatchRepository){}
 
     async joinQueue(params: JoinQueueParams): Promise<MathQueueResult>{
+        console.log("joint mode: ", params.mode);
         const queue = await this.matchrepository.getqueue(params.mode);
         const exist = queue.find(q => q.userId === params.userId);
         if (exist) throw new AppError(
@@ -17,7 +19,8 @@ export class    MatchService{
         await this.matchrepository.enqueue(params.mode, {
             userId: params.userId,
             nickname: params.nickname,
-            jointedAt: Date.now(),
+            joinedAt: Date.now(),
+            mode: params.mode,
         })
         return {
             status: "in queue",
@@ -25,7 +28,7 @@ export class    MatchService{
         }
     }
 
-    async matchPlayers(mode: string): Promise<MatchResult | null>{
+    async matchPlayers(mode: GameMode): Promise<MatchResult | null>{
         const queue = await this.matchrepository.getqueue(mode);
         const maxplayers = this.getmaxplayersfrommode(mode);
 
@@ -36,7 +39,11 @@ export class    MatchService{
         // recupere la queue dans repo
         if (queue.length < maxplayers) //need a systeme to sleep and wait the next time? 
             return null; // Not enough players
-        const matchplayers = queue.slice(0, maxplayers);
+        const matchplayers: MatchPlayer[] = queue.slice(0, maxplayers)
+                                                .map(({userId, nickname})=> ({
+                                                    userId,
+                                                    nickname,
+                                                }));
         const matchId = randomUUID();
 
         //delete in queue
@@ -52,6 +59,7 @@ export class    MatchService{
             mode,
             createdAt: Date.now(),
             maxPlayers: maxplayers,
+            notified: false,
         }
         await this.matchrepository.saveMatch(result);
         return result
@@ -69,11 +77,11 @@ export class    MatchService{
         return await this.matchrepository.saveMatch(match);
     }
 
-    private getmaxplayersfrommode(mode: string):number{
+    private getmaxplayersfrommode(mode: GameMode):number{
         switch(mode){
-            case 'multiplayer':
+            case GameMode.MULTIPLAYER:
                 return 2;
-            case 'tournament': //mode name need to check
+            case GameMode.TOURNAMENT: //mode name need to check
                 return 3;
             default:
                 throw new AppError(
