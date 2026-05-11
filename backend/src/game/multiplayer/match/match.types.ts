@@ -3,6 +3,7 @@ export type JoinQueueParams = {
     mode: string,
     userId: string,
     nickname: string,
+    size: number,
 }
 
 export type QueuePlayer = {

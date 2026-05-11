@@ -3,6 +3,7 @@ import { IModeService, StartGameParms, StartGameResult, GameInfo, StartMultiResu
 import { Multiplayer } from "./multiplayer/multiplayer";
 import { SoloService } from "./solo/solo";
 import { IGameRepository } from "./game.types";
+import { QuestionService } from "src/question/question.service";
 
 /**
  * Simple service router that delegates to appropriate game service based on mode.
@@ -12,15 +13,20 @@ export class GameService {
     constructor(
         private soloService: SoloService,
         private multiplayer: Multiplayer,
-        private gameRepository: IGameRepository
+        private gameRepository: IGameRepository,
+        private questionService: QuestionService
     ){}
+
+    async listCategories(): Promise<string[]> {
+        return this.questionService.getCategories();
+    }
 
     async startGame(params: StartGameParms): Promise<StartGameResult | StartMultiResult | null> {
         const {mode, userId, nickname} = params;
 
         switch(mode){
             case "solo":
-                return this.soloService.startGame(params.userId);
+                return this.soloService.startGame(params.userId, params.category);
             case "multiplayer":
                 return this.multiplayer.joinMatchmaking(params);
             default:

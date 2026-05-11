@@ -24,6 +24,7 @@ export const RedisKeys = {
     queue: (mode: string)=>`matchmaking:v1:queue:${mode}`,
     match: (matchId: string) => `matchmaking:v1:match:${matchId}`,
     player: (userId: string) => `matchmaking:v1:player:${userId}`,
+    queueCtx: (userId: string) => `matchmaking:v1:queueCtx:${userId}`,
   },
 
   game:{

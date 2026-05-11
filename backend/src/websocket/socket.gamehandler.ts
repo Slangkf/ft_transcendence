@@ -29,19 +29,38 @@ export class GameSocketHandler{
     async onConnection(socket: Socket): Promise<void>{
         const userId = socket.data.userId;
 
-        // save in redis 
         await this.redis.set(this.gameuserkey(userId), socket.id);
+
+        // Register listeners first so they're always bound
+        socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
+        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data))
+        socket.on('join_room', (data) => this.onJoinRoom(socket, userId, data))
 
         const room = await this.roomservice.getRoomByPlayerId(userId);
         if (!room) return;
 
         socket.join(room.roomId);
-        console.log(`User ${userId} rejoined room ${room.roomId}`);
-        
         await this.handleReconnect(socket, userId);
+    }
 
-        socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
-        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data))
+    private async onJoinRoom(socket: Socket, userId: string, data: any): Promise<void> {
+        try {
+            const roomId = data?.roomId;
+            if (!roomId) {
+                socket.emit('error', { message: 'Missing roomId' });
+                return;
+            }
+            const room = await this.roomservice.getRoom(roomId);
+            if (!room || !room.players[userId]) {
+                socket.emit('error', { message: 'Not a member of this room' });
+                return;
+            }
+            socket.join(roomId);
+            socket.emit('room_joined', { roomId, players: Object.values(room.players) });
+        } catch (error) {
+            console.error('Error joining room:', error);
+            socket.emit('error', { message: 'Error joining room' });
+        }
     }
 
     private async handleReconnect(socket: Socket, userId: string): Promise<void>{
@@ -83,7 +102,6 @@ export class GameSocketHandler{
             const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
             if (!stillDisconnected) return; // 已重连，不处理
 
-            // 真正离开：从队列和房间里清理
             await this.matchservice.leaveQueue(userId);
 
             const match = await this.matchservice.getMyMatch(userId);

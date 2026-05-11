@@ -5,16 +5,16 @@ import { AppError, ErrorCode } from 'src/error/apperror';
 
 export class SoloService extends GameBaseService implements IModeService
 {
-    async startGame(userId: string): Promise<StartGameResult | null>
+    async startGame(userId: string, category?: string): Promise<StartGameResult | null>
     {
         const players = { [userId]: this.buildPlayer(userId) };
 
-        const state = await this.prepareGame(players, "solo");
+        const state = await this.prepareGame(players, "solo", { category });
         await this.gameRepository.create(state);
         return {gameId: state.gameId,
             question: this.questionService.toPublicQuestion(state.questions[0]),
         }
-    } 
+    }
 
     public async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameInfo | null>
     {

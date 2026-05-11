@@ -34,20 +34,29 @@ export class Multiplayer {
             return {
                 status: "matched",
                 players: exist.players,
+                roomId: exist.roomId || undefined,
             }
+        }
+        const size = params.size ?? 2;
+        if (!Number.isInteger(size) || size < 2 || size > 4){
+            throw new AppError(
+                'Invalid player size, must be between 2 and 4',
+                ErrorCode.GAME_UNKOWN_MODE,
+                400
+            );
         }
         await this.matchservice.joinQueue({
             mode: params.mode,
             userId: params.userId,
-            nickname: params.nickname
+            nickname: params.nickname,
+            size,
         })
-        
-        return await this.tryMatch(params.mode);
+
+        return await this.tryMatch(params.mode, size);
     }
 
-    async tryMatch(mode: string): Promise<StartMultiResult>{
-        const roomId = randomUUID();
-        const match = await this.matchservice.matchPlayers(mode);
+    async tryMatch(mode: string, size: number): Promise<StartMultiResult>{
+        const match = await this.matchservice.matchPlayers(mode, size);
 
         if (!match){
             return {status: "waiting"}
@@ -67,11 +76,10 @@ export class Multiplayer {
 
         //send a message for all user that match successfully
         for(const player of match.players){
-            //await this.emitter.joinRoom(player.userId, room.roomId);
             await this.emitter.toUser(player.userId, 'matched', {
                 roomId: room.roomId,
                 players: match.players,
-            })
+            } as any)
         }
 
         return {
@@ -110,7 +118,7 @@ export class Multiplayer {
 
         await this.roomservice.updateStatus(room, "active");
 
-        await this.emitter.toRoom(room.roomId, 'game_started', result); 
+        await this.emitter.toRoom(room.roomId, 'game_started', result);
 
         return result;
     }

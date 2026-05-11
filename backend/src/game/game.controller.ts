@@ -11,10 +11,25 @@ export class GameController
     start = async(req: Request, res: Response)=>
     {
         try{
+            const rawCategory = req.body?.category;
+            const category = typeof rawCategory === 'string' && rawCategory.trim().length > 0
+                ? rawCategory.trim()
+                : undefined;
+            const rawSize = req.body?.size;
+            const size = rawSize !== undefined ? Number(rawSize) : undefined;
+            if (req.params.mode === 'multiplayer'){
+                if (!Number.isInteger(size) || (size as number) < 2 || (size as number) > 4){
+                    return res.status(400).json(
+                        Apiresponse.error("INVALID_SIZE", "size must be an integer between 2 and 4")
+                    );
+                }
+            }
             const result = await this.gameService.startGame({
                 mode: req.params.mode,
                 userId: req.user.id,
-                nickname: req.user.username
+                nickname: req.user.username ?? `Player ${req.user.id}`,
+                category,
+                size,
             })
             if (!result) {
                 return res.status(202).json(
@@ -46,6 +61,25 @@ export class GameController
             return res.status(500).json(
                 Apiresponse.error("INTERNAL_ERROR", "Internal start game")
             )
+        }
+    }
+
+    categories = async(_req: Request, res: Response) => {
+        try{
+            const categories = await this.gameService.listCategories();
+            return res.status(200).json(
+                Apiresponse.success(categories, "Categories list")
+            );
+        }catch(error){
+            console.error(error);
+            if (error instanceof AppError){
+                return res.status(error.statusCode).json(
+                    Apiresponse.error(error.code, error.message)
+                );
+            }
+            return res.status(500).json(
+                Apiresponse.error("INTERNAL_ERROR", "Internal categories list")
+            );
         }
     }
 

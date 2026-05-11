@@ -8,26 +8,28 @@ export class QuestionService{
     private availableQuizIds: number[] = [];
     constructor(private  repo: QuestionRepository){}
 
-    async getQuestions(total: number = 10): Promise<Question[]> {
-    // 每次调用都从数据库拿所有 id，随机挑一个
-    // 不依赖内存状态，天然无竞争
-    const allIds = await this.repo.get_all_QuizIds();
+    async getQuestions(total: number = 10, category?: string): Promise<Question[]> {
+    const allIds = category
+        ? await this.repo.get_QuizIds_byCategory(category)
+        : await this.repo.get_all_QuizIds();
     if (allIds.length === 0) throw new AppError(
-        'No quiz available', 
+        category ? `No quiz available for category "${category}"` : 'No quiz available',
         ErrorCode.QUESTION_NOT_FOUND);
 
-    // 随机选一个 quizId
     const randomId = allIds[Math.floor(Math.random() * allIds.length)];
     const questions = await this.fetchQuizQuestions(randomId);
     if (!questions) throw new AppError(
         'Quiz not found',
          ErrorCode.QUESTION_NOT_FOUND);
 
-    // 题目数量不够就全拿，够的话随机抽 total 道
     return questions
       .sort(() => Math.random() - 0.5)
       .slice(0, total);
   }
+
+    async getCategories(): Promise<string[]>{
+        return this.repo.get_all_Categories();
+    }
 
     async fetchQuizQuestions(quizId: number): Promise<Question[] | null>
     {
@@ -54,10 +56,3 @@ export class QuestionService{
         };
     }
 }
-
-/***
- *  1. get questions random 
- *  2. get questions random of one category
- *  3. check answer? 
- *  4. 
- */

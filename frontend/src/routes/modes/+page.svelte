@@ -3,7 +3,11 @@
 	import { goto } from '$app/navigation';
 
 	async function handleGameMode() {
-		await goto('/game?mode=solo');
+		await goto('/game/categories');
+	}
+
+	async function handleMultiplayer() {
+		await goto('/game/multiplayer');
 	}
 </script>
 
@@ -27,7 +31,7 @@
 				<p class="text-sm font-semibold text-center">Versus AI</p>
 			</button>
 			<!-- Multiplayer button -->
-			<button disabled={() => handleGameMode("multiplayer")} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
+			<button onclick={handleMultiplayer} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
 				<img src="/images/multiplayer_mode.png" alt="multiplayer mode" class="w-full max-w-180px h-auto object-cover">
 				<p class="text-sm font-semibold text-center">Online multiplayer</p>
 			</button>

@@ -6,7 +6,7 @@ export type GameSocketEvents = {
     //match making before start multiplayer game 
     'matched': {
         roomId: string;
-        players: MatchPlayer;
+        players: MatchPlayer[];
     };
 
     'player_ready':{
@@ -25,7 +25,16 @@ export type GameSocketEvents = {
     'reconnection':{
         roomId: string;
         gameId: string;
-        state: PublicGameState //???? public or no 
+        state: PublicGameState //???? public or no
+    }
+
+    'room_joined':{
+        roomId: string;
+        players: { id: string; nickname: string; isReady: boolean }[];
+    }
+
+    'error':{
+        message: string;
     }
 }
 

@@ -1,57 +1,59 @@
 import { AppError, ErrorCode } from "src/error/apperror";
 import { MatchRepository } from "./match.repository";
-import { JoinRoomParams } from "../../../room/room.types";
 import { JoinQueueParams, MatchResult, MathQueueResult } from "./match.types";
 import { randomUUID } from "crypto";
+
+const MIN_PLAYERS = 2;
+const MAX_PLAYERS = 4;
 
 export class    MatchService{
     constructor(private matchrepository: MatchRepository){}
 
     async joinQueue(params: JoinQueueParams): Promise<MathQueueResult>{
-        const queue = await this.matchrepository.getqueue(params.mode);
+        this.validateSize(params.size);
+        const queue = await this.matchrepository.getqueue(params.mode, params.size);
         const exist = queue.find(q => q.userId === params.userId);
         if (exist) throw new AppError(
             'Player already in queue',
             ErrorCode.MATCH_PLAYER_EXIST,
         )
-        await this.matchrepository.enqueue(params.mode, {
+        await this.matchrepository.enqueue(params.mode, params.size, {
             userId: params.userId,
             nickname: params.nickname,
             jointedAt: Date.now(),
         })
+        await this.matchrepository.setQueueCtx(params.userId, params.mode, params.size);
         return {
             status: "in queue",
             position: queue.length + 1
         }
     }
 
-    async matchPlayers(mode: string): Promise<MatchResult | null>{
-        const queue = await this.matchrepository.getqueue(mode);
-        const maxplayers = this.getmaxplayersfrommode(mode);
+    async matchPlayers(mode: string, size: number): Promise<MatchResult | null>{
+        this.validateSize(size);
+        const queue = await this.matchrepository.getqueue(mode, size);
 
-        if (!maxplayers) throw new AppError(
-                    'Game mode unkown',
-                    ErrorCode.GAME_UNKOWN_MODE,
-                )
-        // recupere la queue dans repo
-        if (queue.length < maxplayers) //need a systeme to sleep and wait the next time? 
-            return null; // Not enough players
-        const matchplayers = queue.slice(0, maxplayers);
+        if (queue.length < size)
+            return null;
+
+        const matchplayers = queue.slice(0, size);
         const matchId = randomUUID();
 
-        //delete in queue
         await this.matchrepository.dequeue(
-            mode, 
+            mode,
+            size,
             matchplayers.map(p=>p.userId))
-        
-        //save the result of matchplayers in database
+        for (const mp of matchplayers){
+            await this.matchrepository.clearQueueCtx(mp.userId);
+        }
+
         const result: MatchResult = {
             players: matchplayers,
             matchId,
-            roomId: '', //need to update after create room
+            roomId: '',
             mode,
             createdAt: Date.now(),
-            maxPlayers: maxplayers,
+            maxPlayers: size,
         }
         await this.matchrepository.saveMatch(result);
         return result
@@ -61,35 +63,29 @@ export class    MatchService{
         return await this.matchrepository.getMatchByPlayer(userId);
     }
 
-    async leaveQueue(userId: string): Promise<void>{
-        return await this.matchrepository.removeFromQueue(userId);
+    async leaveQueue(userId: string, mode?: string, size?: number): Promise<void>{
+        if (mode && size){
+            await this.matchrepository.removeFromQueue(userId, mode, size);
+            await this.matchrepository.clearQueueCtx(userId);
+            return;
+        }
+        const ctx = await this.matchrepository.getQueueCtx(userId);
+        if (!ctx) return;
+        await this.matchrepository.removeFromQueue(userId, ctx.mode, ctx.size);
+        await this.matchrepository.clearQueueCtx(userId);
     }
 
     async updatateMatch(match: MatchResult): Promise<void>{
         return await this.matchrepository.saveMatch(match);
     }
 
-    private getmaxplayersfrommode(mode: string):number{
-        switch(mode){
-            case 'multiplayer':
-                return 2;
-            case 'tournament': //mode name need to check
-                return 3;
-            default:
-                throw new AppError(
-                    'Game mode unkown',
-                    ErrorCode.GAME_UNKOWN_MODE,
-                )
+    private validateSize(size: number){
+        if (!Number.isInteger(size) || size < MIN_PLAYERS || size > MAX_PLAYERS){
+            throw new AppError(
+                `Invalid player size, must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}`,
+                ErrorCode.GAME_UNKOWN_MODE,
+                400,
+            );
         }
     }
 }
-
-/**
- * match service: 
- *  put the players in the systeme of queue to wait
- *  get the maxplayers from the different mode of game
- *  try to match the players for the mode
- * 
- * 
- * 
- */

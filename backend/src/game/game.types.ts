@@ -43,6 +43,8 @@ export type StartGameParms = {
    mode: "solo" | "multiplayer";
    userId: string;
    nickname: string;
+   category?: string;
+   size?: number;
 }
 
 export type MatchPlayer = {

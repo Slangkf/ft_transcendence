@@ -8,8 +8,21 @@ import { AppError, ErrorCode } from "src/error/apperror";
 dotenv.config();
 
 
+function parseAuthTokenFromCookie(cookieHeader?: string): string | null {
+    if (!cookieHeader) return null;
+    const parts = cookieHeader.split(';');
+    for (const part of parts) {
+        const [rawName, ...rest] = part.split('=');
+        if (rawName && rawName.trim() === 'auth_token') {
+            return decodeURIComponent(rest.join('=').trim());
+        }
+    }
+    return null;
+}
+
 export function authMiddleware(socket: any, next: any) {
-    const token = socket.handshake.auth.token;
+    const token = socket.handshake.auth?.token
+        || parseAuthTokenFromCookie(socket.handshake.headers?.cookie);
     if (!token) {
         return next(new AppError('Unauthorized in socket', ErrorCode.AUTH_UNAUTHORIZED));
     }

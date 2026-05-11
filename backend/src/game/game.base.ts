@@ -25,18 +25,18 @@ export class GameBaseService
     protected async prepareGame(
         players: Record<string, Player>,
         mode: 'solo' | 'ia',
-        options?: { totalQuestions?: number }): Promise<SoloGameState>
+        options?: { totalQuestions?: number; category?: string }): Promise<SoloGameState>
 
     protected async prepareGame(
         players: Record<string, Player>,
         mode: 'multiplayer',
-        options: { totalQuestions?: number; roomId: string; hostId: string }): Promise<MultiGameState>
-    
+        options: { totalQuestions?: number; roomId: string; hostId: string; category?: string }): Promise<MultiGameState>
+
     protected async prepareGame(
         players: Record<string, Player>,
         mode: 'solo' | 'ia' | 'multiplayer',
-        options?: { totalQuestions?: number; roomId?: string; hostId?: string }): Promise<GameState> {
-            const questions = await this.questionService.getQuestions(options?.totalQuestions ?? 10);
+        options?: { totalQuestions?: number; roomId?: string; hostId?: string; category?: string }): Promise<GameState> {
+            const questions = await this.questionService.getQuestions(options?.totalQuestions ?? 10, options?.category);
             const base = {
               gameId: randomUUID(),
               players,
@@ -83,22 +83,13 @@ export class GameBaseService
     }
     //advance to the next question
     protected advance(state: GameState): void{
-        if (state.currentQuestionIndex + 1 >= state.questions.length){
-            state.isFinished = true;
-        } else { 
-            state.currentQuestionIndex += 1;
-            Object.values(state.players).forEach(p => {
-                if (p.status !== 'disconnected')
-                    p.status = 'playing'
-            })
-        }
-
         state.currentQuestionIndex += 1;
         state.isFinished = state.currentQuestionIndex >= state.questions.length;
 
         if (!state.isFinished){
             for(const player of Object.values(state.players)){
-                player.status = 'playing'
+                if (player.status !== 'disconnected')
+                    player.status = 'playing'
             }
         }
     }
@@ -143,14 +134,16 @@ export class GameBaseService
     }
     //gamestate information when is playing for front
     protected buildPlayingGameInfo(state: GameState): PlayingGameInfo{
-        const answeredIndex = state.currentQuestionIndex -1;
-        const answeredQuestion = state.questions[answeredIndex];
-        const correctAnswer = answeredQuestion.options[answeredQuestion.correctAnswerIndex];
+        const answeredIndex = state.currentQuestionIndex - 1;
+        const answeredQuestion = answeredIndex >= 0 ? state.questions[answeredIndex] : null;
+        const correctAnswer = answeredQuestion
+            ? answeredQuestion.options[answeredQuestion.correctAnswerIndex]
+            : '';
 
         const nextQuestion = state.isFinished
           ? null
           : this.questionService.toPublicQuestion(state.questions[state.currentQuestionIndex]);
-        
+
         return {
           gameresult: this.toPublicState(state),
           correctAnswer,
