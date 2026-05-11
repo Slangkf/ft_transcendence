@@ -248,34 +248,34 @@ async function run() {
   await wait(1000);
 
   // match
-  //await A.startMatch();
-  //await B.startMatch();
-//
-  //await wait(2000);
-//
-  //console.log("\n✅ MATCH READY");
-//
-  //// ready
-  //await A.ready();
-  //await B.ready();
-//
-  //await wait(2000);
-//
-  //console.log("\n🚀 GAME STARTED");
-//
-  //// play
-  //for (let i = 0; i < 5; i++) {
-  //  await wait(1000);
-//
-  //  A.answer(Math.floor(Math.random() * 4));
-  //  B.answer(Math.floor(Math.random() * 4));
-  //}
-//
-  //await wait(3000);
-//
-  //console.log("\n🏁 TEST DONE");
-//
-  //process.exit(0);
+  await A.startMatch();
+  await B.startMatch();
+
+  await wait(2000);
+
+  console.log("\n✅ MATCH READY");
+
+  // ready
+  await A.ready();
+  await B.ready();
+
+  await wait(2000);
+
+  console.log("\n🚀 GAME STARTED");
+
+  // play
+  for (let i = 0; i < 5; i++) {
+    await wait(1000);
+
+    A.answer(Math.floor(Math.random() * 4));
+    B.answer(Math.floor(Math.random() * 4));
+  }
+
+  await wait(3000);
+
+  console.log("\n🏁 TEST DONE");
+
+  process.exit(0);
 }
 
 run().catch((e) => {

@@ -141,8 +141,8 @@ export class GameBaseService
                 player.score
             ])
         );
-        const sorted = Object.entries(scores)
-        .sort((a, b) => b[1] - a[1]);
+
+        const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
 
         const ranking = sorted.map(([playerId, score], index) => ({
             playerId,
@@ -157,6 +157,7 @@ export class GameBaseService
             scores,
             ranking,
         }
+
     }
 
 }

@@ -1,8 +1,50 @@
-<script>
+<script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
+	import { showToast } from '$lib/toast.svelte';
+	
 	let { data } = $props();
+	let input = $state("")
 
-	async function removeFriend(){
-		return;
+	async function searchContact() {
+		try {
+			const response = await fetch(`/api/user/username/${input}`, {
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				if (!input)
+					showToast("Please enter a username.");
+				else
+					showToast("Sorry, the requested user does not exist.");
+				return;
+			}
+			goto(`/profile/${input}`);
+			showToast("Redirected to the requested profile.");
+		}
+		catch (error) {
+			console.error('Error with the contact search bar: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
+		}
+	}
+
+	async function removeFriend(friend: typeof data.friendsList[number]){
+		try {
+			const response = await fetch(`/api/friendship/friend/${friend.id}`, {
+				method: 'DELETE',
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				console.error('Error in the removeFriend function')
+				showToast("Sorry, an internal error has occurred. Please try again later.");
+				return;
+			}
+			await invalidateAll();
+			showToast("The contact has been successfully deleted.");
+		}
+		catch (error) {
+			console.error('Error with the contact search bar: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
+		}
 	}
 </script>
 
@@ -13,9 +55,21 @@
 	<h2 class="text-2xl font-semibold text-pink-500 text-center">Friends</h2>
 	<p class="mt-1 text-pink-500 text-center">Your friends list</p>
 
+	<!-- Search bar -->
+	<form class="p-4 w-full mt-4">   
+		<label for="search" class ="block mb-2.5 text-sm font-medium text-gray-500 sr-only ">Search</label>
+		<div class="relative">
+			<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+				<svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+			</div>
+			<input onkeydown={(e) => e.key === 'Enter' && searchContact()} type="search" id="search" bind:value={input} class="block w-full p-3 ps-9 bg-slate-900 border border-slate-700 text-sm rounded-md focus:outline-none focus:ring-2 transition focus:ring-indigo-500 focus:border-indigo-500 shadow-sm placeholder:text-gray-500" placeholder="Search a user"/>
+			<button onclick={searchContact} type="button" class="absolute end-1.5 bottom-1.5 text-slate-200 bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-indigo-500 shadow-sm font-medium leading-5 rounded-md text-xs px-3 py-1.5 focus:outline-none cursor-pointer">Search</button>
+		</div>
+	</form>
+
 	<!-- Friends list -->
-	<div class="flex flex-col w-full gap-3 mt-6">
-		{#each data.friends as friend}
+	<div class="flex flex-col w-full gap-3 mt-4">
+		{#each data.friendsList as friend}
 			<div class="flex items-center justify-between w-full px-4 py-3 border border-slate-700 bg-slate-800 rounded-xl">
 				
 				<!-- Avatar + username -->
@@ -24,8 +78,17 @@
 					<span class="text-white font-medium">{friend.username}</span>
 				</div>
 				
+				<!-- Chat with friend button -->
+				<button onclick={() => goto(`/chat/${friend.username}`)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Chat</button>
+
 				<!-- Remove friend button -->
-				<button onclick={removeFriend} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Remove</button>
+				<button onclick={() => removeFriend(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Remove</button>
+			</div>
+		{:else}
+			
+			<!-- No friends message -->
+			<div class="flex items-center justify-center w-full px-4 py-3 border border-slate-700 rounded-xl">
+				<p class="text-pink-500 font-medium">No friends yet</p>
 			</div>
 		{/each}
 	</div>

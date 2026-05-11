@@ -32,7 +32,7 @@
 		// Retrieve the selected file, if any
 		const file = input.files?.[0]
 		if (!file) {
-			showToast("No avatar file selected");
+			showToast("Sorry, you need to select an avatar before continuing.");
 			return;
 		}
 
@@ -41,12 +41,12 @@
 		// Type and size verifications
 		const allowedType = ['image/png', 'image/jpeg']
 		if (!allowedType.includes(file.type)) {
-			showToast("Only .png, or .jpg/jpeg files are allowed");
+			showToast("Sorry, only .png, or .jpg/jpeg files are allowed.");
 			return;
 		}
 		const maxSize = 2 * 1024 * 1024
 		if (file.size > maxSize) {
-			showToast("File size must not exceed 2Mo");
+			showToast("Sorry, the file size cannot exceed 2 MO.");
 			return;
 		}
 
@@ -77,6 +77,7 @@
 		}
 		catch (error){
 			console.error('Exception thrown in the avatar sending function: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
 
@@ -132,7 +133,7 @@
 		}
 		catch (error){
 			console.error('Error login: ', error);
-			showToast("Internal error, please try later");
+			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
 

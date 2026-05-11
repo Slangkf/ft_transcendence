@@ -5,8 +5,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from '$lib/toast.svelte'
 	import { showToast } from '$lib/toast.svelte'
+	import { onMount } from 'svelte'
+	import { connectWS } from '$lib/websocket/friendship'
 
 	let props = $props();
+	let socket;
+
+	onMount(() => {
+		socket = connectWS();
+	});
 
 	async function handleLogout() {
 		// Send logout action to backend API.
@@ -22,10 +29,11 @@
 			// Redirect user after successful logout.
 			await goto('/');
 			await invalidateAll();
-			showToast("Logout successful");
+			showToast("You are now disconnected, see you soon.");
 		}
 		catch (error){
 			console.error('Exception thrown in the handleLogout function: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
   	}
 </script>

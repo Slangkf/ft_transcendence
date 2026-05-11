@@ -6,27 +6,26 @@ export const load: PageServerLoad = async ({ cookies, fetch }) => {
 	// Redirect unauthenticated users to login
 	const token = cookies.get('auth_token');
 	if (!token) {
-		console.error('cookies.get error in the profile section');
+		console.error('No auth token found in cookies — /friends');
 		throw redirect(302, '/login');
 	}
 
 	try {
-		// Fetch current authenticated user using JWT token
-		const response = await fetch('http://backend:3000/api/friendship/friends', {
+		// Fetch the friends list for the current user
+		// If the friends list cannot be retrieved, return an empty list
+		const friendsResponse = await fetch('http://backend:3000/api/friendship/friends', {
 			headers: { Authorization: `Bearer ${token}` }
 		});
-		if (!response.ok) {
-			console.error('fetch error in the friends section');
-			throw redirect(302, '/profil');
+		if (!friendsResponse.ok) {
+			console.error('Failed to fetch friends list — /friends:', friendsResponse.status);
+			return {friendsList: []}
 		}
-		const friends = await response.json();
-		console.error(friends)
-		return { friends };
+		const friendsList = await friendsResponse.json();
+		return { friendsList };
 	}
 	catch (error) {
 		if (isRedirect(error)) throw error;
-		console.error('Error friends list: ', error);
-		return { friends: [] }
+		console.error('Unexpected error in /friends load function:', error);
+		return {friendsList: []};
 	}
-
 };
