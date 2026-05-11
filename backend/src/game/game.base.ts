@@ -141,11 +141,21 @@ export class GameBaseService
                 player.score
             ])
         );
-        const winnerId = Object.entries(scores).reduce((maxId, [id, score]) => score > (scores[maxId] || 0) ? id : maxId, Object.keys(scores)[0]);
+        const sorted = Object.entries(scores)
+        .sort((a, b) => b[1] - a[1]);
+
+        const ranking = sorted.map(([playerId, score], index) => ({
+            playerId,
+            score,
+            rank: index + 1,
+        }));
+
+        const winnerId = ranking[0]?.playerId ?? "";
         return {
             winnerId,
             finishedAt: Date.now(),
-            scores
+            scores,
+            ranking,
         }
     }
 
