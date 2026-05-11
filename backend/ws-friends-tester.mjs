@@ -117,7 +117,6 @@ class TestUser {
 
     this.gameSocket.on("game_started", (d) => {
         console.log("game started res: ", d);
-        const payload = d.
       this.gameId = d.gameId;
     });
 

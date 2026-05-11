@@ -18,6 +18,8 @@ import { UserService } from "./User/user.service";
 import { FriendEmitter, GameEmitter, IEmitter } from "./websocket/socket.emitter";
 import { SessionService } from "./game/session.service";
 import { LocalMultiPlayer } from "./game/game.local";
+import { Namespace } from "socket.io";
+import { Redis } from "./lib/redis";
 
 // repo 
 const questionrepo = new QuestionRepository();
@@ -38,14 +40,19 @@ const soloService = new SoloService(questionService, gamerepo);
 export const userService = new UserService(userrepo);
 export const authService = new AuthService(userrepo);
 
-export function createGameServices(emitter: GameEmitter){
+export function createGameServices(emitter: GameEmitter,
+    gameNs: Namespace,
+    redis: typeof Redis,
+){
 
 const multiPlayer = new MultiPlayerFacade(
     matchService,
     roomService,
     new LocalMultiPlayer(questionService, gamerepo),
     new SessionService(),
-    emitter
+    emitter,
+    gameNs,
+    redis,
 );
 
 const gameService = new GameService(

@@ -52,7 +52,7 @@ const start = async () => {
 
     //service layer event emitter of gamesocket
     const gameemitter = new GameEmitter(io, Redis)
-    const {gameService, multiPlayer} = createGameServices(gameemitter);
+    const {gameService, multiPlayer} = createGameServices(gameemitter, gameNs, Redis);
 
     const gamehandler = new GameSocketHandler(
       gameNs,

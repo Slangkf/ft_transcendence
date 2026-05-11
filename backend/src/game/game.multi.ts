@@ -9,6 +9,8 @@ import { SessionService } from "./session.service";
 import { GameMode, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
 import { AppError, ErrorCode } from "src/error/apperror";
 import { Namespace } from "socket.io";
+import { GameService } from "./game.service";
+import { Redis, RedisKeys } from "src/lib/redis";
 
 
 export class MultiPlayerFacade {
@@ -19,12 +21,12 @@ export class MultiPlayerFacade {
         private sessionService: SessionService, 
         private emitter: GameEmitter,
         private gameNs: Namespace,
+        private redis: typeof Redis,
     ){}
 
     async handleAllReady(roomId: string): Promise<SetReadyResult>{
         const room = await this.roomService.getRoom(roomId);
         if (!room || room.status !== "starting") return {allReady: false};
-        await this.roomService.updateStatus(room, 'starting');
 
         try{
            const response: GameUpdateResponse = await this.multiService.startGame(room); 
@@ -112,22 +114,30 @@ export class MultiPlayerFacade {
         //need to update match with roomid  
         await this.matchService.updatateMatch(match);
 
+
         //send a message for all user that match successfully
         await Promise.all(
-            match.players.map(player => 
-                Promise.all([
-                    this.sessionService.update(player.userId, {
-                status: "matched",
-                matchId: match.matchId,
-                roomId: room.roomId,
-            }),
-                    this.emitter.toUser(player.userId, 'matched', {
-                roomId: room.roomId,
-                players: match.players,
-            }),  
-                ])
-            )
-        ); 
+            match.players.map(async player=> {
+                //1. join socket in room
+                const socketId = await this.redis.get(RedisKeys.socket.gameUser(player.userId));
+                if (socketId)
+                    this.gameNs.sockets.get(socketId)?.join(room.roomId);
+            
+            //session and notify
+            await Promise.all([
+                this.sessionService.update(player.userId, {
+                    status: "matched",
+                    matchId: match.matchId,
+                    roomId: room.roomId
+                }),
+                this.emitter.toUser(player.userId, 'matched', {
+                    roomId: room.roomId,
+                    players: match.players,
+                }
+                )
+            ])
+        }));
+
         return {
             status: 'matched',
             players: match.players,
