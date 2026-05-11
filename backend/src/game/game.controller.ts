@@ -25,7 +25,7 @@ export class GameController
             const result = await this.gameService.startGame({
                 mode,
                 userId: req.user!.id,
-                nickname: req.user!.id
+                nickname: req.user!.nickname,
             })
             if (!result) {
                 return res.status(202).json(

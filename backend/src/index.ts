@@ -23,6 +23,7 @@ import { createGameServices,
 import { GameSocketHandler } from './websocket/socket.gamehandler';
 import { FriendSocketHandler } from './websocket/socket.FriendHandler';
 import { SessionService } from './game/session.service';
+import { ClientToServerEvents, ServerToClientEvents } from './websocket/socket.types';
 
 
 const app = express();
@@ -47,14 +48,14 @@ const start = async () => {
     //httpserver 
     const httpserver = createServer(app);
     //socket server 
-    const io = createSocketServer(httpserver, Redis);
+    const {io, gameNs, friendNs, chatNs} = createSocketServer(httpserver, Redis);
 
     //service layer event emitter of gamesocket
     const gameemitter = new GameEmitter(io, Redis)
     const {gameService, multiPlayer} = createGameServices(gameemitter);
 
     const gamehandler = new GameSocketHandler(
-      io.of('/game'),
+      gameNs,
       Redis, 
       roomService, 
       matchService, 
@@ -62,26 +63,25 @@ const start = async () => {
       gameemitter,
       gameService,
       new SessionService(),);
-    io.of('/game').on('connection', socket => gamehandler.onConnection(socket));
+    gameNs.on('connection', socket => gamehandler.onConnection(socket));
 
     //friendsocket
     const friendemitter = new FriendEmitter(io, Redis);
     const friendshipservice = createFriendshipService(friendemitter);
     const friendhandler = new FriendSocketHandler(
-      io.of('/friendship'),
+      friendNs,
       Redis,
       friendemitter,
       friendshipservice,
       userrepo
     );
-    io.of('/friendship').on('connection', socket=> friendhandler.onConnection(socket));
+    friendNs.on('connection', socket=> friendhandler.onConnection(socket));
     
 
     app.use('/api/auth', AuthRouter);
     app.use('/api/user', UserRouter);
     app.use('/api/game', createGameRouter(gameService));
     app.use('/api/friendship', friendshipRouter);
-    //app.use('/api/room', RoomRouter);
 
     // 3. Start server
     httpserver.listen(PORT, () => {

@@ -7,6 +7,8 @@ import { RoomManager } from "src/room/room.manager";
 import { Room } from "src/room/room.types";
 import { SessionService } from "./session.service";
 import { GameMode, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
+import { AppError, ErrorCode } from "src/error/apperror";
+import { Namespace } from "socket.io";
 
 
 export class MultiPlayerFacade {
@@ -16,6 +18,7 @@ export class MultiPlayerFacade {
         private multiService: LocalMultiPlayer,
         private sessionService: SessionService, 
         private emitter: GameEmitter,
+        private gameNs: Namespace,
     ){}
 
     async handleAllReady(roomId: string): Promise<SetReadyResult>{
@@ -35,6 +38,9 @@ export class MultiPlayerFacade {
                     })
                 })
             )
+            if (!response.nextQuestion){
+                throw new AppError('No first question available', ErrorCode.BAD_REQUEST);
+            }
             
             //notify all players 
             await this.emitter.toRoom(roomId, 'game_started', {

@@ -8,12 +8,16 @@ import { GameState } from "src/game/game.types";
 import { RoomService } from "src/room/room.service";
 import { SessionService } from "src/game/session.service";
 import { GameService } from "src/game/game.service";
+import { ClientToServerEvents, ServerToClientEvents } from "./socket.types";
+
+type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
+type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
 
 export class GameSocketHandler{
     private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     constructor(
-        private io: Namespace,
+        private io: TypedNamespace,
         private redis: typeof Redis,
         private roomservice: RoomService ,
         private matchservice: MatchService,
@@ -30,7 +34,7 @@ export class GameSocketHandler{
         return RedisKeys.socket.disconnect(userId);
     }
 
-    async onConnection(socket: Socket): Promise<void>{
+    async onConnection(socket: TypedSocket): Promise<void>{
         const userId = socket.data.userId;
 
         //delete from disconnect timer if exist
@@ -47,10 +51,10 @@ export class GameSocketHandler{
         await this.handleReconnect(socket, userId);
 
         socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
-        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data))
+        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data));
     }
 
-    private async handleReconnect(socket: Socket, userId: string): Promise<void>{
+    private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{
         const session = await this.sessionService.get(userId);
         if (!session) return ;
 
@@ -111,7 +115,6 @@ export class GameSocketHandler{
                 break;}
                 if (gamestate.isFinished){
                     socket.emit('game_finished', {
-                        type: "game_finished",
                         gameId: gamestate.gameId,
                         state: this.buildPublicGameState(gamestate),
                     });
@@ -130,7 +133,7 @@ export class GameSocketHandler{
         }
     }
 
-    private async onDisconnect(socket: Socket, userId: string): Promise<void>{
+    private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
         await this.redis.del(this.gameuserkey(userId));
 
         // 给 60 秒重连窗口，超时才真正处理离开逻辑
@@ -144,6 +147,19 @@ export class GameSocketHandler{
             await this.matchservice.leaveQueue(userId);
 
             const session = await this.sessionService.get(userId);
+            if (session?.gameId){
+                const gamestate = await this.gamerepos.findById(session.gameId);
+                if (gamestate?.players[userId]){
+                    gamestate.players[userId].status = 'disconnected';
+                    await this.gamerepos.update(gamestate);
+                    if ('roomId' in gamestate && gamestate.roomId){
+                        this.emitter.toRoom(gamestate.roomId, 'player_left', {
+                            playerId: userId,
+                            newHostId: '',
+                        })
+                    }
+                }
+            }
             if (session?.roomId){
                 try{
                     const room = await this.roomservice.leaveRoom(session.roomId, userId);
@@ -164,7 +180,7 @@ export class GameSocketHandler{
     }
     
 
-    private async onSubmitAnswer(socket: Socket, userId: string, data: any): Promise<void> {
+    private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0]): Promise<void> {
         try {
             const { gameId, answerIndex } = data;
             
@@ -188,9 +204,9 @@ export class GameSocketHandler{
                 this.io.to(gamestate.roomId).emit('answer_result', {
                     gameId,
                     status: result.status,
-                    lastAnswerUpdate: result.lastAnswerUpdate,
-                    nextQuestions: result.nextQuestion,
-                    players: Object.values(result.state.player),
+                    lastAnswerUpdate: result.lastAnswerUpdate!,
+                    nextQuestion: result.nextQuestion,
+                    players: result.state.player,
                     finalScore: result.finalScore,
                 })
             }
@@ -201,16 +217,35 @@ export class GameSocketHandler{
     }
 
     private buildPublicGameState(gamestate: GameState){
+        const isFinished = gamestate.isFinished;
+        const currentQuestion = gamestate.questions[gamestate.currentQuestionIndex];
+        const status : 'playing' | 'finished' = isFinished? 'finished' : 'playing';
+
         return {
             gameId: gamestate.gameId,
-            currentQuestionIndex: gamestate.currentQuestionIndex,
-            isFinished: gamestate.isFinished,
-            totalQuestions: gamestate.questions.length,
-            players: Object.values(gamestate.players).map( p =>({
-                id: p.id,
-                score: p.score,
-                status: p.status,
-            }))
-        }
+            status: status,
+            state: {
+                currentQuestionIndex: gamestate.currentQuestionIndex,
+                totalQuestions: gamestate.questions.length,
+                player: Object.fromEntries(
+                    Object.entries(gamestate.players).map(([id, p])=>[
+                        id, 
+                        {
+                            id: p.id,
+                            score: p.score,
+                            status: p.status,
+                            isAI: p.isAI ?? false,
+                            nickname: p.nickname,
+                        }
+                    ])
+                ),
+            },
+            nextQuestion: isFinished ? null : {
+                id: currentQuestion.id,
+                question: currentQuestion.question,
+                options: currentQuestion.options
+            },
+            finalScore: null,
+        };
     }
 }
