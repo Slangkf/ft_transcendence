@@ -27,7 +27,7 @@
 		}
 	}
 
-	async function removeFriend(friend: typeof data.friends[number]){
+	async function removeFriend(friend: typeof data.friendsList[number]){
 		try {
 			const response = await fetch(`/api/friendship/friend/${friend.id}`, {
 				method: 'DELETE',
