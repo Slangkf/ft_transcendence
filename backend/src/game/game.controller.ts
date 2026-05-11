@@ -22,6 +22,7 @@ export class GameController
                      Apiresponse.error('INVALID_MODE', 'Invalid game mode')
                 );
             }
+
             const result = await this.gameService.startGame({
                 mode,
                 userId: req.user!.id,

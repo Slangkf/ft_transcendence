@@ -18,6 +18,7 @@ export class GameBaseService
             status: 'playing',
             Totaltime: 0,
             isAI: false,
+            nickname: nickname,
         }
         return player;
     }
