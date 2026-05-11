@@ -59,15 +59,7 @@ curl -i -b cookies.txt -c cookies.txt -k -X POST https://localhost:8888/api/user
 
 1. Register
 
-curl -i -k -c cookies.txt -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser_cycle",
-    "email": "testcycle@gmail.com",
-    "password": "12345678900"
-  }'
-
-# ou via Nginx
+via Nginx
 
 curl -i -k -c cookies.txt -X POST https://localhost:8888/api/auth/register \
   -H "Content-Type: application/json" \
@@ -79,14 +71,7 @@ curl -i -k -c cookies.txt -X POST https://localhost:8888/api/auth/register \
 
 2. Login
 
-curl -i -k -b cookies.txt -c cookies.txt -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "testcycle@gmail.com",
-    "password": "12345678900"
-  }'
-
-# ou via Nginx
+via Nginx
 
   curl -i -k -b cookies.txt -c cookies.txt -X POST https://localhost:8888/api/auth/login \
   -H "Content-Type: application/json" \
@@ -212,7 +197,7 @@ curl -i -k -b cookies.txt \
 
 
 friendship 
-curl -k -X POST "https://localhost:8888/api/friendship/request" -b cookie0.txt \
+curl -k -X POST "https://localhost:8888/api/friendship/request" -c cookies0.txt \
 -H "Content-Type: application/json" \
 -d '{
   "targetUserId": 8
