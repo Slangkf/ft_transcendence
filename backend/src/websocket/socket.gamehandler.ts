@@ -1,22 +1,30 @@
 import { RedisGameRepository } from "src/game/game.redis.repository";
-import { MatchService } from "src/game/multiplayer/match/match.service";
+import { MatchService } from "src/game/match/match.service";
 //import { RoomManager } from "src/room/room.manager";
 import { GameEmitter } from "./socket.emitter";
 import { Namespace, Socket } from "socket.io";
 import { Redis, RedisKeys } from "../lib/redis"
 import { GameState } from "src/game/game.types";
-import { stat } from "fs";
 import { RoomService } from "src/room/room.service";
+import { SessionService } from "src/game/session.service";
+import { GameService } from "src/game/game.service";
+import { ClientToServerEvents, ServerToClientEvents } from "./socket.types";
+
+type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
+type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
 
 export class GameSocketHandler{
+    private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
     constructor(
-        private io: Namespace,
+        private io: TypedNamespace,
         private redis: typeof Redis,
         private roomservice: RoomService ,
         private matchservice: MatchService,
         private gamerepos: RedisGameRepository,
         private emitter: GameEmitter,
-        private gameService: any
+        private gameService: GameService,
+        private sessionService: SessionService,
     ){}
 
     private gameuserkey(userId: string){
@@ -26,99 +34,162 @@ export class GameSocketHandler{
         return RedisKeys.socket.disconnect(userId);
     }
 
-    async onConnection(socket: Socket): Promise<void>{
+    async onConnection(socket: TypedSocket): Promise<void>{
         const userId = socket.data.userId;
 
+        //delete from disconnect timer if exist
+        const existingTimer = this.disconnectTimers.get(userId);
+        if (existingTimer){
+            clearTimeout(existingTimer);
+            this.disconnectTimers.delete(userId);
+        }
+        await this.redis.del(this.disconnectkey(userId));
+
+        // save in redis
         await this.redis.set(this.gameuserkey(userId), socket.id);
 
-        // Register listeners first so they're always bound
-        socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
-        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data))
-        socket.on('join_room', (data) => this.onJoinRoom(socket, userId, data))
+        // make sure a session exists for this user (otherwise sessionService.update is a no-op
+        // and the room/queue state is never persisted, so reconnect can't restore it)
+        const existingSession = await this.sessionService.get(userId);
+        if (!existingSession) {
+            await this.sessionService.init(userId, socket.id);
+        } else {
+            await this.sessionService.update(userId, { socketId: socket.id });
+        }
 
-        const room = await this.roomservice.getRoomByPlayerId(userId);
-        if (!room) return;
-
-        socket.join(room.roomId);
         await this.handleReconnect(socket, userId);
+
+        socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
+        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data));
     }
 
-    private async onJoinRoom(socket: Socket, userId: string, data: any): Promise<void> {
-        try {
-            const roomId = data?.roomId;
-            if (!roomId) {
-                socket.emit('error', { message: 'Missing roomId' });
-                return;
-            }
-            const room = await this.roomservice.getRoom(roomId);
-            if (!room || !room.players[userId]) {
-                socket.emit('error', { message: 'Not a member of this room' });
-                return;
-            }
-            socket.join(roomId);
-            socket.emit('room_joined', { roomId, players: Object.values(room.players) });
-        } catch (error) {
-            console.error('Error joining room:', error);
-            socket.emit('error', { message: 'Error joining room' });
+    private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{
+        const session = await this.sessionService.get(userId);
+        if (!session) return ;
+
+        const {status} = session;
+        if (session.roomId){
+            socket.join(session.roomId);
         }
-    }
-
-    private async handleReconnect(socket: Socket, userId: string): Promise<void>{
-        const match = await this.matchservice.getMyMatch(userId);
-
-        if (!match) return ;
-
-        const room = await this.roomservice.getRoom(match.roomId);
-        if (!room)  return ;
-
-        socket.join(room.roomId);
-
-        // 只在room是active状态且有sessionId时发送reconnection
-        if (room.status === 'active' && room.sessionId){
-            const gamestate = await this.gamerepos.findById(room.sessionId);
-            if (gamestate){
-                socket.emit('reconnection', {
-                    roomId: room.roomId,
-                    gameId: gamestate.gameId,
-                    state: this.buildPublicGameState(gamestate),
+        switch (status){
+            case "queue":{
+                socket.emit('reconnect', {
+                    type: "queue",
+                    message: "Still in matchmaking queue"
                 })
+                break;
             }
-        } else if (room.status === 'closed') {
-            // 游戏已完成，通知客户端
-            socket.emit('game_finished', {
-                roomId: room.roomId,
-                message: 'Game has finished'
-            });
+            case "matched":{
+                const match = await this.matchservice.getMyMatch(userId);
+                if (!match){
+                    await this.sessionService.update(userId, {
+                        status: "idle"
+                });
+                break;}
+
+                socket.emit('reconnect', {
+                    type: "matched",
+                    players: match.players,
+                    roomId: match.roomId,
+                })
+                break;
+            }
+            case "in_room":{
+                const room = await this.roomservice.getRoom(session.roomId!);
+                if (!room){
+                    await this.sessionService.update(userId, {
+                        status: "idle"
+                });
+                break;}
+                
+                socket.emit('reconnect', {
+                    type: "in_room",
+                    roomId: room.roomId,
+                    players: Object.values(room.players).map(p=>({
+                        id: p.userId,
+                        nickname: p.nickname,
+                        isReady: p.isReady,
+                    })),
+                    roomStatus: room.status
+                })
+                break;
+            }
+            case "in_game":{
+                if (!session.gameId) break;
+                const gamestate = await this.gamerepos.findById(session.gameId);
+                if (!gamestate){
+                    await this.sessionService.update(userId, {
+                        status: "idle"
+                });
+                break;}
+                if (gamestate.isFinished){
+                    socket.emit('game_finished', {
+                        gameId: gamestate.gameId,
+                        state: this.buildPublicGameState(gamestate),
+                    });
+                    break;
+                } else {
+                    socket.emit('reconnect', {
+                        type: "in_game",
+                        gameId: gamestate.gameId,
+                        state: this.buildPublicGameState(gamestate),
+                    })
+                    break; 
+                }
+            }
+            default:
+                socket.emit('reconnect', {type: "idle"});
         }
     }
 
-    private async onDisconnect(socket: Socket, userId: string): Promise<void>{
+    private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
         await this.redis.del(this.gameuserkey(userId));
 
         // 给 60 秒重连窗口，超时才真正处理离开逻辑
         await this.redis.set(this.disconnectkey(userId), '1', {EX: 60});
 
-        setTimeout(async () => {
+        const timer =setTimeout(async () => {
             const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
             if (!stillDisconnected) return; // 已重连，不处理
 
+            // 真正离开：从队列和房间里清理
             await this.matchservice.leaveQueue(userId);
 
-            const match = await this.matchservice.getMyMatch(userId);
-            if (match) {
-                const room = await this.roomservice.leaveRoom(match.roomId, userId);
-                if (room) {
-                    this.emitter.toRoom(room.roomId, 'player_left', {
-                        playerId: userId,
-                        newHostId: room.hostId,
-                    });
+            const session = await this.sessionService.get(userId);
+            if (session?.gameId){
+                const gamestate = await this.gamerepos.findById(session.gameId);
+                if (gamestate?.players[userId]){
+                    gamestate.players[userId].status = 'disconnected';
+                    await this.gamerepos.update(gamestate);
+                    if ('roomId' in gamestate && gamestate.roomId){
+                        this.emitter.toRoom(gamestate.roomId, 'player_left', {
+                            playerId: userId,
+                            newHostId: '',
+                        })
+                    }
                 }
             }
+            if (session?.roomId){
+                try{
+                    const room = await this.roomservice.leaveRoom(session.roomId, userId);
+                    if (room){
+                        this.emitter.toRoom(room.roomId, 'player_left', {
+                            playerId: userId,
+                            newHostId: room.hostId,
+                        });
+                    }
+                }catch (error){
+                    console.error("Error leaving room on disconnect:", error);
+                }
+            }
+            await this.sessionService.update(userId, {
+                status: "idle"});
         }, 60_000);
+        this.disconnectTimers.set(userId, timer);
     }
     
 
-    private async onSubmitAnswer(socket: Socket, userId: string, data: any): Promise<void> {
+    private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0]): Promise<void> {
         try {
             const { gameId, answerIndex } = data;
             
@@ -137,6 +208,17 @@ export class GameSocketHandler{
             // Answer was processed successfully, event will be broadcasted by gameService
             socket.emit('answer_submitted', { success: true });
             
+            const gamestate = await this.gamerepos.findById(gameId);
+            if (gamestate && 'roomId' in gamestate && gamestate.roomId){
+                this.io.to(gamestate.roomId).emit('answer_result', {
+                    gameId,
+                    status: result.status,
+                    lastAnswerUpdate: result.lastAnswerUpdate!,
+                    nextQuestion: result.nextQuestion,
+                    players: result.state.player,
+                    finalScore: result.finalScore,
+                })
+            }
         } catch (error) {
             console.error('Error submitting answer:', error);
             socket.emit('error', { message: 'Error submitting answer' });
@@ -144,16 +226,35 @@ export class GameSocketHandler{
     }
 
     private buildPublicGameState(gamestate: GameState){
+        const isFinished = gamestate.isFinished;
+        const currentQuestion = gamestate.questions[gamestate.currentQuestionIndex];
+        const status : 'playing' | 'finished' = isFinished? 'finished' : 'playing';
+
         return {
             gameId: gamestate.gameId,
-            currentQuestionIndex: gamestate.currentQuestionIndex,
-            isFinished: gamestate.isFinished,
-            totalQuestions: gamestate.questions.length,
-            players: Object.values(gamestate.players).map( p =>({
-                id: p.id,
-                score: p.score,
-                status: p.status,
-            }))
-        }
+            status: status,
+            state: {
+                currentQuestionIndex: gamestate.currentQuestionIndex,
+                totalQuestions: gamestate.questions.length,
+                player: Object.fromEntries(
+                    Object.entries(gamestate.players).map(([id, p])=>[
+                        id, 
+                        {
+                            id: p.id,
+                            score: p.score,
+                            status: p.status,
+                            isAI: p.isAI ?? false,
+                            nickname: p.nickname,
+                        }
+                    ])
+                ),
+            },
+            nextQuestion: isFinished ? null : {
+                id: currentQuestion.id,
+                question: currentQuestion.question,
+                options: currentQuestion.options
+            },
+            finalScore: null,
+        };
     }
 }

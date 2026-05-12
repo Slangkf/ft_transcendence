@@ -1,6 +1,7 @@
+import { GameMode } from "../game.types";
 
 export type JoinQueueParams = {
-    mode: string,
+    mode: GameMode,
     userId: string,
     nickname: string,
     size: number,
@@ -9,7 +10,13 @@ export type JoinQueueParams = {
 export type QueuePlayer = {
     userId: string;
     nickname: string;
-    jointedAt: number;
+    joinedAt: number;
+    mode: GameMode;
+}
+
+export type MatchPlayer = {
+    userId: string;
+    nickname: string;
 }
 
 export type MathQueueResult = {
@@ -17,10 +24,11 @@ export type MathQueueResult = {
     position: number;
 }
 export type MatchResult = {
-    players: QueuePlayer[];
+    players: MatchPlayer[];
     matchId: string;
     roomId: string;
-    mode: string;
+    mode: GameMode;
     maxPlayers: number;
     createdAt: number;
+    notified: boolean;
 }

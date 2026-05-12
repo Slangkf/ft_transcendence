@@ -5,8 +5,8 @@ const MATCH_TTL = 60 * 60; // 1 hour
 
 export class MatchRepository{
 
-    private queuekey(mode: string, size: number){
-        return RedisKeys.matchmaking.queue(`${mode}:${size}`);
+    private queuekey(mode: string){
+        return RedisKeys.matchmaking.queue(mode);
     }
     private matchkey(matchId: string){
         return RedisKeys.matchmaking.match(matchId);
@@ -16,47 +16,29 @@ export class MatchRepository{
         return RedisKeys.matchmaking.player(userId);
     }
 
-    private queueCtxKey(userId: string){
-        return RedisKeys.matchmaking.queueCtx(userId);
-    }
-
-    async setQueueCtx(userId: string, mode: string, size: number): Promise<void>{
-        await Redis.set(this.queueCtxKey(userId), JSON.stringify({mode, size}), {EX: MATCH_TTL});
-    }
-
-    async getQueueCtx(userId: string): Promise<{mode: string; size: number} | null>{
-        const data = await Redis.get(this.queueCtxKey(userId));
-        if (!data) return null;
-        return JSON.parse(data);
-    }
-
-    async clearQueueCtx(userId: string): Promise<void>{
-        await Redis.del(this.queueCtxKey(userId));
-    }
-
-    async getqueue(mode: string, size: number): Promise<QueuePlayer[]>{
-        const data = await Redis.lRange(this.queuekey(mode, size), 0, -1);
+    async getqueue(mode:string): Promise<QueuePlayer[]>{
+        const data = await Redis.lRange(this.queuekey(mode), 0, -1);
         return data.map(item => JSON.parse(item))
     }
 
-    async enqueue(mode: string, size: number, player: QueuePlayer): Promise<void>{
+    async enqueue(mode:string, player: QueuePlayer): Promise<void>{
         await Redis.rPush(
-            this.queuekey(mode, size),
+            this.queuekey(mode),
             JSON.stringify(player)
         )
-
+        
     }
 
-    async   dequeue(mode: string, size: number, userIds: string[]): Promise<void>{
-        const key = this.queuekey(mode, size);
-        const queue = await this.getqueue(mode, size);
+    async   dequeue(mode: string, userIds: string[]): Promise<void>{
+        const key = this.queuekey(mode);
+        const queue = await this.getqueue(mode);
 
         const newQueue = queue.filter(player=> !userIds.includes(player.userId))
         await Redis.del(key);
         if (newQueue.length > 0){
             await Redis.rPush(
                 key,
-                ...newQueue.map(p=>JSON.stringify(p))
+                newQueue.map(p=>JSON.stringify(p))
             )
         }
     }
@@ -86,7 +68,7 @@ export class MatchRepository{
 
     async getMatch(matchId: string): Promise<MatchResult | null>{
         const data = await Redis.get(this.matchkey(matchId));
-        if (!data)
+        if (!data) 
             return null;
         return JSON.parse(data);
     }
@@ -99,18 +81,29 @@ export class MatchRepository{
         }
     }
 
-    async removeFromQueue(userId: string, mode: string, size: number): Promise<void>{
-        const queue = await this.getqueue(mode, size);
-        const filtered = queue.filter(p => p.userId !== userId);
-
-        const key = this.queuekey(mode, size);
-        await Redis.del(key);
-        if (filtered.length > 0){
-            await Redis.rPush(
-                key,
-                ...filtered.map(p => JSON.stringify(p))
-            )
+    async removeFromQueue(userId: string): Promise<void>{
+        // Try to remove from all possible queues since we don't know which mode the player was in
+        const modes = ['multiplayer', 'tournament', 'solo', 'ai'];
+        
+        for (const mode of modes) {
+            const queue = await this.getqueue(mode);
+            const playerInQueue = queue.find(p => p.userId === userId);
+            
+            if (playerInQueue) {
+                const new_queue = queue.filter(p => p.userId !== userId);
+                const key = this.queuekey(mode);
+                await Redis.del(key);
+                if (new_queue.length > 0){
+                    await Redis.rPush(
+                        key,
+                        new_queue.map(p=> JSON.stringify(p))
+                    )
+                }
+                break; // Player was only in one queue
+            }
         }
+        
+        // Also clean up the player key
         await Redis.del(this.playerkey(userId));
     }
 }

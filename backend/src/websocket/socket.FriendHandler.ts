@@ -2,37 +2,64 @@ import { Namespace, Socket } from "socket.io";
 import { FriendEmitter } from "./socket.emitter";
 import { Redis, RedisKeys } from "src/lib/redis";
 import { FriendshipService } from "src/friendship/friendship.service";
+import { UserRepository } from "src/User/user.repository";
+import { FriendSocketEvents } from "./socket.types";
+
+type friendNamespace = Namespace<FriendSocketEvents, FriendSocketEvents>;
+type friendSocket = Socket<FriendSocketEvents, FriendSocketEvents>;
 
 export class FriendSocketHandler{
     constructor(
-        private ns: Namespace,
+        private ns: friendNamespace,
         private redis: typeof Redis,
         private emitter: FriendEmitter,
         private friendshipservice: FriendshipService,
+        private userRepository: UserRepository,
     ){}
 
-    async onConnection(socket: Socket): Promise<void>{
+    async onConnection(socket: friendSocket): Promise<void>{
         const userId = socket.data.userId;
 
         await this.redis.set(RedisKeys.socket.friendUser(userId), socket.id);
 
         //tell friends user is online 
-        await this.notification_friendship(userId, 'friend_online');
+        await this.notification_friendship(userId, socket.data.nickname);
 
-        socket.on('disconnect', async() => {
-            await this.redis.del(RedisKeys.socket.friendUser(userId));
-            await this.notification_friendship(userId, 'friend_offline');
-            await this.friendshipservice.update_online_status(Number(userId), 'OFFLINE');
-        })
+        socket.on('disconnect', () => this.onDisconnect(userId, socket.data.nickname));
     }
 
-    private async   notification_friendship(userId: string, event: 'friend_online' | 'friend_offline'): Promise<void>{
-        const friends = await this.friendshipservice.get_friends(Number(userId));
+    private async notification_friendship(userId: string, nickname: string): Promise<void>{
+        try{
+            const friends = await this.friendshipservice.get_friends(Number(userId));
+            await Promise.all(
+                friends.map(friend => 
+                    this.emitter.toUser(friend.userId, 'friend_online', {
+                        userId,
+                        nickname,
+                    })
+                )
+            )
 
-        for(const F of friends){
-            const friendId = String(F.userId === userId? F.friendId: F.userId);
-            await this.emitter.toUser(friendId, event, {userId, nickname: socket.data.nickname});
+        }catch(error){
+            console.error("error in notify friend: ", error);
         }
     } 
 
+    private async onDisconnect(userId: string, nickname: string): Promise<void>{
+        await this.redis.del(RedisKeys.socket.friendUser(userId));
+
+        try{
+            const friends = await this.friendshipservice.get_friends(Number(userId));
+            await Promise.all(
+                friends.map(friend => 
+                    this.emitter.toUser(userId, 'friend_offline', {
+                        userId,
+                        nickname,
+                    })
+                )
+            )
+        } catch(error){
+            console.error('error notify friends offline: ', error);
+        }
+    }
 }

@@ -10,40 +10,27 @@
     options: string[];
   };
 
-  type PublicGameState = {
+  type PlayerSnapshot = { id: string; nickname?: string; score: number; status: string; isAI?: boolean };
+
+  type GameUpdateResponse = {
     gameId: string;
-    players: Record<string, { id: string; score: number; isAI?: boolean }>;
-    currentQuestionIndex: number;
-    isFinished: boolean;
-    totalQuestions: number;
+    status: 'playing' | 'finished';
+    state: {
+      currentQuestionIndex: number;
+      totalQuestions: number;
+      player: Record<string, PlayerSnapshot>;
+    };
+    lastAnswerUpdate?: {
+      playerId: string;
+      isCorrect: boolean;
+      correctAnswerIndex: number;
+      correctText: string;
+    };
+    nextQuestion?: PublicQuestion | null;
+    finalScore?: { winnerId: string; scores: Record<string, number> } | null;
   };
 
-  type FinalScore = {
-    gameId: string;
-    players: Record<string, { id: string; score: number; isAI?: boolean }>;
-    winner: string;
-    finishedAt: number;
-  };
-
-  type StartGameApiResponse = {
-    success: boolean;
-    message: string;
-    data: {
-      gameId: string;
-      question: PublicQuestion;
-    } | null;
-  };
-
-  type AnswerApiResponse = {
-    success: boolean;
-    message: string;
-    data: {
-      gameresult: PublicGameState;
-      correctAnswer?: string;
-      nextQuestion?: PublicQuestion | null;
-      finalscore?: FinalScore;
-    } | null;
-  };
+  type ApiResponse<T> = { success: boolean; message: string; data: T | null };
 
   const REVEAL_DELAY_MS = 1500;
 
@@ -93,16 +80,19 @@
         body: JSON.stringify(category ? { category } : {})
       });
 
-      const result: StartGameApiResponse = await response.json();
+      const result: ApiResponse<GameUpdateResponse> = await response.json();
 
-      if (!response.ok || !result.success || !result.data) {
+      if (!response.ok || !result.success || !result.data || !result.data.nextQuestion) {
         error = result?.message ?? 'Impossible de démarrer la partie.';
         return;
       }
 
-      gameId = result.data.gameId;
-      currentQuestion = result.data.question;
-      questionNumber = 1;
+      const data = result.data;
+      gameId = data.gameId;
+      currentQuestion = data.nextQuestion;
+      totalQuestions = data.state?.totalQuestions ?? 0;
+      score = extractScore(data.state?.player ?? {});
+      questionNumber = (data.state?.currentQuestionIndex ?? 0) + 1;
     } catch (err) {
       console.error('startGame error:', err);
       error = 'Erreur réseau ou backend inaccessible.';
@@ -130,7 +120,7 @@
         }
       );
 
-      const result: AnswerApiResponse = await response.json();
+      const result: ApiResponse<GameUpdateResponse> = await response.json();
 
       if (!response.ok || !result.success || !result.data) {
         error = result?.message ?? 'Erreur lors de l’envoi de la réponse.';
@@ -138,19 +128,20 @@
       }
 
       const data = result.data;
-      score = extractScore(data.gameresult.players);
-      totalQuestions = data.gameresult.totalQuestions;
+      score = extractScore(data.state?.player ?? {});
+      totalQuestions = data.state?.totalQuestions ?? totalQuestions;
 
-      const correct = data.correctAnswer ?? '';
-      const correctIdx = currentQuestion.options.findIndex(opt => opt === correct);
-      const isCorrect = selectedOptionText === correct;
+      const correct = data.lastAnswerUpdate?.correctText ?? '';
+      const correctIdx = data.lastAnswerUpdate?.correctAnswerIndex
+        ?? currentQuestion.options.findIndex(opt => opt === correct);
+      const isCorrect = data.lastAnswerUpdate?.isCorrect ?? (selectedOptionText === correct);
 
       selectedIndex = answerIndex;
       correctIndex = correctIdx;
       revealing = true;
       feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
 
-      if (data.finalscore) {
+      if (data.status === 'finished' || data.finalScore) {
         setTimeout(() => {
           isFinished = true;
           currentQuestion = null;

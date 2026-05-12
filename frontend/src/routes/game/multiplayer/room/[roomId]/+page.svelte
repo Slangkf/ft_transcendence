@@ -10,6 +10,7 @@
 
   let players = $state<RoomPlayer[]>([]);
   let myReady = $state(false);
+  let readyBusy = $state(false);
   let error = $state('');
   let starting = $state(false);
   let leaving = false;
@@ -17,24 +18,33 @@
   function attachListeners() {
     const socket = getGameSocket();
 
-    socket.off('room_joined');
     socket.off('player_ready');
     socket.off('game_started');
     socket.off('player_left');
+    socket.off('reconnect');
     socket.off('error');
 
-    socket.on('room_joined', (payload: { roomId: string; players: RoomPlayer[] }) => {
-      players = payload.players;
+    socket.on('reconnect', (payload: any) => {
+      if ((payload.type === 'in_room' || payload.type === 'matched') && payload.roomId === roomId) {
+        players = (payload.players ?? []).map((p: any) => ({
+          id: p.id ?? p.userId,
+          nickname: p.nickname,
+          isReady: p.isReady ?? false,
+        }));
+      } else if (payload.type === 'in_game' && payload.gameId) {
+        starting = true;
+        goto(`/game/multiplayer/play/${payload.gameId}`);
+      }
     });
 
     socket.on('player_ready', (payload: { playerId: string; isReady: boolean; allReady: boolean }) => {
       players = players.map(p => p.id === payload.playerId ? { ...p, isReady: payload.isReady } : p);
     });
 
-    socket.on('game_started', (payload: { gameId: string; question: any }) => {
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any }) => {
       starting = true;
       try {
-        sessionStorage.setItem('mp_first_question', JSON.stringify(payload));
+        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players }));
       } catch {}
       goto(`/game/multiplayer/play/${payload.gameId}`);
     });
@@ -48,18 +58,9 @@
     });
   }
 
-  function joinRoomSocket() {
-    const socket = getGameSocket();
-    if (socket.connected) {
-      socket.emit('join_room', { roomId });
-    } else {
-      socket.once('connect', () => {
-        socket.emit('join_room', { roomId });
-      });
-    }
-  }
-
-  async function toggleReady() {
+async function toggleReady() {
+    if (readyBusy) return;
+    readyBusy = true;
     const next = !myReady;
     error = '';
     try {
@@ -81,12 +82,22 @@
     } catch (err) {
       console.error('toggleReady error:', err);
       error = 'Network error.';
+    } finally {
+      readyBusy = false;
     }
   }
 
   onMount(() => {
     attachListeners();
-    joinRoomSocket();
+    // load players from sessionStorage (set by the matched event on the previous page)
+    try {
+      const raw = sessionStorage.getItem('mp_room_players');
+      if (raw) {
+        const matched = JSON.parse(raw);
+        players = matched.map((p: any) => ({ id: p.userId, nickname: p.nickname, isReady: false }));
+        sessionStorage.removeItem('mp_room_players');
+      }
+    } catch {}
   });
 
   onDestroy(() => {
@@ -130,7 +141,8 @@
     <button
       type="button"
       onclick={toggleReady}
-      class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
+      disabled={readyBusy || starting}
+      class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {myReady ? 'Cancel ready' : 'Ready'}
     </button>

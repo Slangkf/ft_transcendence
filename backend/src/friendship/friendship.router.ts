@@ -4,21 +4,25 @@ import { verifyToken } from '../middleware/verify_token';
 import { valideRequest } from "../middleware/zod_check";
 import { Send_Friend_Request_Input, Update_Status_Input } from '@shared/friendship.schema';
 
-const friendshipRouter = Router();
-const friendshipController = new FriendshipController();
 
-friendshipRouter.use(verifyToken);
-friendshipRouter.post('/request', valideRequest(Send_Friend_Request_Input), friendshipController.SendFriendRequest);
+export function createFriendshipRouter(
+    friendshipController: FriendshipController
+){
+    const router = Router();
+    
+    router.use(verifyToken);
+    router.post('/request', valideRequest(Send_Friend_Request_Input), friendshipController.SendFriendRequest);
+    router.put('/request/:friendshipId/accept', friendshipController.AcceptFriendRequest);
+    router.put('/status', valideRequest(Update_Status_Input), friendshipController.UpdateOnlineStatus);
 
-friendshipRouter.put('/request/:friendshipId/accept', friendshipController.AcceptFriendRequest);
-friendshipRouter.put('/status', valideRequest(Update_Status_Input), friendshipController.UpdateOnlineStatus);
+    router.delete('/request/:friendshipId/decline', friendshipController.DeclineFriendRequest);
+    router.delete('/friend/:friendId', friendshipController.RemoveFriend);
 
-friendshipRouter.delete('/request/:friendshipId/decline', friendshipController.DeclineFriendRequest);
-friendshipRouter.delete('/friend/:friendId', friendshipController.RemoveFriend);
+    router.get('/friends', friendshipController.GetFriends);
+    router.get('/requests/pending', friendshipController.GetPendingRequests);
+    router.get('/requests/sent', friendshipController.GetSentRequests);
+    router.get('/status/:userId', friendshipController.GetUserStatus);
 
-friendshipRouter.get('/friends', friendshipController.GetFriends);
-friendshipRouter.get('/requests/pending', friendshipController.GetPendingRequests);
-friendshipRouter.get('/requests/sent', friendshipController.GetSentRequests);
-friendshipRouter.get('/status/:userId', friendshipController.GetUserStatus);
+    return router;
 
-export default friendshipRouter;
+}

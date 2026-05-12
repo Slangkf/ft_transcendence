@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { RoomPlayer, Room, CreateRoomParams, JoinRoomParams } from "./room.types";
+import type { RoomPlayer, Room, CreateRoomParams, JoinRoomParams, RoomStatus } from "./room.types";
 import { RoomRepository } from './room.repository';
 import { AppError, ErrorCode } from 'src/error/apperror';
 
@@ -13,7 +13,7 @@ export class RoomService{
         const roomId = randomUUID();
 
         const hostPlayer: RoomPlayer = {
-            id: params.hostId,
+            userId: params.hostId,
             nickname: params.hostNickname,
             isReady: false,
             joinedAt: Date.now(),
@@ -24,7 +24,7 @@ export class RoomService{
             params.players.forEach(p => {
                 if (p.userId !== params.hostId) {
                     players[p.userId] = {
-                        id: p.userId,
+                        userId: p.userId,
                         nickname: p.nickname,
                         isReady: false,
                         joinedAt: Date.now(),
@@ -80,7 +80,7 @@ export class RoomService{
         }
 
         const newplayer: RoomPlayer = {
-            id: params.playerId,
+            userId: params.playerId,
             nickname: params.playerNickname,
             isReady: false,
             joinedAt: Date.now(),
@@ -112,14 +112,14 @@ export class RoomService{
         delete room.players[playerId];
 
         await this.roomrepository.update(room);
-        return await this.roomrepository.getroom(roomId);
+        return room;
     }
 
-    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room }>{
+    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room; changed: boolean }>{
         //1. get the player in redis
         const room = await this.roomrepository.getroom(roomId);
         if (!room)  throw new AppError(
-            "Room not exist", 
+            "Room not exist",
             ErrorCode.ROOM_NOT_AVAILABLE,
         );
         const player = room.players[playerId];
@@ -127,14 +127,23 @@ export class RoomService{
             "Player not found",
             ErrorCode.PLAYER_NOT_FOUND,
         )
+        const allReadyNow = () => Object.values(room.players).every(p => p.isReady);
+
+        // ignore ready toggles once the game is starting/running (prevents the lobby state from
+        // bouncing on repeated clicks after everyone is already ready)
+        if (room.status !== 'waiting' || player.isReady === isReady){
+            return { allReady: allReadyNow(), room, changed: false };
+        }
         //2. update the status of player
         player.isReady = isReady;
         //3. check if everyone is ready
-        const allPlayers = Object.values(room.players);
-        const allready = allPlayers.every(p => p.isReady);
-       
+        const allready = allReadyNow();
+        if (allready){
+            room.status = 'starting';
+        }
+
         await this.roomrepository.update(room);
-        return { allReady: allready, room };
+        return { allReady: allready, room, changed: true };
     }
 
     async deleteRoom(roomId: string): Promise<void>{
@@ -147,8 +156,8 @@ export class RoomService{
         return await this.roomrepository.update(room); //????
     }
 
-    async updateStatus(room: Room, action: "active" | "closed"){
-        room.status = action
+    async updateStatus(room: Room, status: RoomStatus): Promise<void>{
+        room.status = status;
         return await this.roomrepository.update(room);
     }
     

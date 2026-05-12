@@ -4,30 +4,32 @@
   import { getGameSocket, disconnectGameSocket } from '$lib/gameSocket';
 
   type PublicQuestion = { id: number; question: string; options: string[] };
-  type PublicPlayer = { id: string; score: number; isAI?: boolean };
-  type PublicGameState = {
-    gameId: string;
-    players: Record<string, PublicPlayer>;
-    currentQuestionIndex: number;
-    isFinished: boolean;
-    totalQuestions: number;
-  };
-  type PlayingGameInfo = {
-    gameresult: PublicGameState;
-    correctAnswer: string;
-    nextQuestion: PublicQuestion | null;
-  };
+  type PlayerSnapshot = { id: string; score: number; status: string; isAI: boolean; nickname?: string };
   type FinalScore = {
-    gameId: string;
-    players: Record<string, PublicPlayer>;
-    winner: string;
+    winnerId: string;
     finishedAt: number;
+    scores: Record<string, number>;
+    ranking: Array<{ playerId: string; score: number; rank: number }>;
   };
-  type FinishedGameInfo = {
-    gameresult: PublicGameState;
-    finalscore: FinalScore;
+  type AnswerResultPayload = {
+    gameId: string;
+    status: 'playing' | 'finished';
+    lastAnswerUpdate: {
+      playerId: string;
+      isCorrect: boolean;
+      correctAnswerIndex: number;
+      correctText: string;
+    };
+    nextQuestion?: PublicQuestion | null;
+    players: Record<string, PlayerSnapshot>;
+    finalScore?: FinalScore | null;
   };
-  type GameInfo = PlayingGameInfo | FinishedGameInfo;
+  type ReconnectPayload =
+    | { type: 'idle' }
+    | { type: 'queue'; message: string }
+    | { type: 'matched'; roomId: string; players: any[] }
+    | { type: 'in_room'; roomId: string; players: any[]; roomStatus: string }
+    | { type: 'in_game'; gameId: string; state: any };
 
   const REVEAL_DELAY_MS = 1500;
   const gameId = $derived(page.params.gameId);
@@ -36,14 +38,15 @@
   let pendingNext = $state<PublicQuestion | null>(null);
   let questionNumber = $state(1);
   let totalQuestions = $state(0);
-  let playersState = $state<PublicPlayer[]>([]);
-  let myUserId = $state<string | null>(null);
+  let playersState = $state<PlayerSnapshot[]>([]);
   let isFinished = $state(false);
   let finalScore = $state<FinalScore | null>(null);
   let feedback = $state('');
   let error = $state('');
   let selectedIndex = $state<number | null>(null);
   let correctIndex = $state<number | null>(null);
+
+  const nameOf = (id: string) => playersState.find(p => p.id === id)?.nickname ?? id;
   let revealing = $state(false);
   let answered = $state(false);
 
@@ -68,46 +71,31 @@
     return `${base} bg-gray-500/25 hover:bg-gray-400/35 border-white/20 text-blue-100`;
   }
 
-  function isPlaying(info: GameInfo): info is PlayingGameInfo {
-    return (info as PlayingGameInfo).correctAnswer !== undefined;
-  }
+  function applyAnswerResult(info: AnswerResultPayload) {
+    playersState = Object.values(info.players);
 
-  function applyAnswerResult(info: GameInfo) {
-    const state = info.gameresult;
-    totalQuestions = state.totalQuestions;
-    playersState = Object.values(state.players);
-
-    if (!isPlaying(info)) {
-      // game finished
-      const finished = info as FinishedGameInfo;
+    if (info.status === 'finished') {
       revealing = false;
       answered = false;
       isFinished = true;
-      finalScore = finished.finalscore;
+      finalScore = info.finalScore ?? null;
       currentQuestion = null;
       feedback = '';
       return;
     }
 
-    const correct = info.correctAnswer;
-    if (!correct) {
-      // partial state: another player submitted but round not yet over
-      return;
-    }
+    const correctText = info.lastAnswerUpdate?.correctText;
+    if (!correctText) return; // round not yet complete (partial submit)
 
     if (currentQuestion) {
-      const idx = currentQuestion.options.findIndex(o => o === correct);
-      correctIndex = idx;
+      correctIndex = info.lastAnswerUpdate.correctAnswerIndex;
       revealing = true;
-      const mySelected = selectedIndex !== null
-        ? currentQuestion.options[selectedIndex]
-        : null;
-      feedback = mySelected === null
-        ? `Correct answer: ${correct}`
-        : (mySelected === correct ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`);
+      feedback = selectedIndex === null
+        ? `Correct answer: ${correctText}`
+        : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
     }
 
-    pendingNext = info.nextQuestion;
+    pendingNext = info.nextQuestion ?? null;
     setTimeout(() => {
       currentQuestion = pendingNext;
       pendingNext = null;
@@ -121,18 +109,21 @@
     const socket = getGameSocket();
 
     socket.off('answer_result');
-    socket.off('reconnection');
+    socket.off('reconnect');
     socket.off('error');
 
-    socket.on('answer_result', (info: GameInfo) => {
+    socket.on('answer_result', (info: AnswerResultPayload) => {
       applyAnswerResult(info);
     });
 
-    socket.on('reconnection', (payload: { roomId: string; gameId: string; state: PublicGameState }) => {
-      totalQuestions = payload.state.totalQuestions;
-      playersState = Object.values(payload.state.players);
-      questionNumber = payload.state.currentQuestionIndex + 1;
-      isFinished = payload.state.isFinished;
+    socket.on('reconnect', (payload: ReconnectPayload) => {
+      if (payload.type === 'in_game') {
+        const state = payload.state;
+        totalQuestions = state.state?.totalQuestions ?? 0;
+        playersState = Object.values(state.state?.player ?? {});
+        questionNumber = (state.state?.currentQuestionIndex ?? 0) + 1;
+        isFinished = state.status === 'finished';
+      }
     });
 
     socket.on('error', (payload: { message: string }) => {
@@ -185,7 +176,7 @@
   <div class="grid gap-2 mb-4">
     {#each playersState as p}
       <div class="flex items-center justify-between px-3 py-2 rounded bg-gray-500/20 border border-white/10">
-        <span class="text-blue-100 text-sm">{p.id}</span>
+        <span class="text-blue-100 text-sm">{p.nickname ?? p.id}</span>
         <span class="text-pink-200 font-bold">{p.score}</span>
       </div>
     {/each}
@@ -234,12 +225,12 @@
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         Game finished
       </h2>
-      <p class="text-center text-blue-100 mb-4">Winner: <span class="font-bold text-pink-200">{finalScore.winner}</span></p>
+      <p class="text-center text-blue-100 mb-4">Winner: <span class="font-bold text-pink-200">{nameOf(finalScore.winnerId)}</span></p>
       <div class="grid gap-2">
-        {#each Object.values(finalScore.players) as p}
+        {#each finalScore.ranking as entry}
           <div class="flex items-center justify-between px-3 py-2 rounded bg-gray-500/20 border border-white/10">
-            <span class="text-blue-100">{p.id}</span>
-            <span class="text-pink-200 font-bold">{p.score} / {totalQuestions}</span>
+            <span class="text-blue-100">#{entry.rank} {nameOf(entry.playerId)}</span>
+            <span class="text-pink-200 font-bold">{entry.score} / {totalQuestions}</span>
           </div>
         {/each}
       </div>

@@ -5,8 +5,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from '$lib/toast.svelte'
 	import { showToast } from '$lib/toast.svelte'
+	import { onMount } from 'svelte'
+	import { connectWS } from '$lib/websocket/friendship'
 
 	let props = $props();
+	let socket;
+
+	onMount(() => {
+		socket = connectWS();
+	});
 
 	async function handleLogout() {
 		// Send logout action to backend API.

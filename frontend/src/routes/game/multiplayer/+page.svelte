@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { getGameSocket, disconnectGameSocket } from '$lib/gameSocket';
 
@@ -38,17 +38,35 @@
     const socket = getGameSocket();
 
     socket.off('matched');
+    socket.off('reconnect');
     socket.off('error');
 
     socket.on('matched', (payload: { roomId: string; players: MatchPlayer[] }) => {
       matchedRoomId = payload.roomId;
+      try { sessionStorage.setItem('mp_room_players', JSON.stringify(payload.players)); } catch {}
       goto(`/game/multiplayer/room/${payload.roomId}`);
+    });
+
+    socket.on('reconnect', (payload: any) => {
+      if (payload.type === 'queue') {
+        waiting = true;
+        info = 'Waiting for players...';
+      } else if (payload.type === 'matched' && payload.roomId) {
+        matchedRoomId = payload.roomId;
+        goto(`/game/multiplayer/room/${payload.roomId}`);
+      }
     });
 
     socket.on('error', (payload: { message: string }) => {
       error = payload.message ?? 'Socket error';
     });
   }
+
+  onMount(() => {
+    const socket = getGameSocket();
+    if (!socket.connected) socket.connect();
+    setupSocketListeners();
+  });
 
   async function joinQueue(size: number) {
     error = '';

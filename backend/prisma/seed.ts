@@ -94,6 +94,13 @@ async function main(): Promise<void> {
             // console.log(`good : ${folder}/${file}`);
         }
     }
+
+    // fail loudly instead of leaving an empty database: a multiplayer/solo game can never
+    // start (the lobby stays stuck) if there is no quiz to draw questions from.
+    const quizCount: number = await prisma.quiz.count();
+    if (quizCount === 0) {
+        throw new Error('Seed produced no quizzes — check that prisma/data/<category>/*.json files exist. The game cannot start without questions.');
+    }
 }
 main()
   .catch((e: Error) => {
