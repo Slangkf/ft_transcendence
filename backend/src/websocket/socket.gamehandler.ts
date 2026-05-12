@@ -9,6 +9,7 @@ import { RoomService } from "src/room/room.service";
 import { SessionService } from "src/game/session.service";
 import { GameService } from "src/game/game.service";
 import { ClientToServerEvents, ServerToClientEvents } from "./socket.types";
+import { StatementSync } from "node:sqlite";
 
 type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
@@ -116,14 +117,14 @@ export class GameSocketHandler{
                 if (gamestate.isFinished){
                     socket.emit('game_finished', {
                         gameId: gamestate.gameId,
-                        state: this.buildPublicGameState(gamestate),
+                        state: this.gameService.buildResponseForFront(gamestate),
                     });
                     break;
                 } else {
                     socket.emit('reconnect', {
                         type: "in_game",
                         gameId: gamestate.gameId,
-                        state: this.buildPublicGameState(gamestate),
+                        state: this.gameService.buildResponseForFront(gamestate),
                     })
                     break; 
                 }
@@ -200,52 +201,34 @@ export class GameSocketHandler{
             socket.emit('answer_submitted', { success: true });
             
             const gamestate = await this.gamerepos.findById(gameId);
-            if (gamestate && 'roomId' in gamestate && gamestate.roomId){
-                this.io.to(gamestate.roomId).emit('answer_result', {
-                    gameId,
-                    status: result.status,
-                    lastAnswerUpdate: result.lastAnswerUpdate!,
-                    nextQuestion: result.nextQuestion,
-                    players: result.state.player,
-                    finalScore: result.finalScore,
+            if (!gamestate || !('roomId' in gamestate) || !gamestate.roomId)
+                return ;
+            //calcul finalscore
+            if (gamestate.isFinished)
+            {
+                this.io.to(gamestate.roomId).emit('game_finished', {
+                    gameId: gamestate.gameId,
+                    state: this.gameService.buildResponseForFront(gamestate),
                 })
+                await Promise.all(
+                    Object.keys(gamestate.players).map(p => 
+                        this.sessionService.update(p, {status: 'idle'})
+                    )
+                )
+                return;
             }
+            this.io.to(gamestate.roomId).emit('answer_result', {
+                gameId,
+                status: result.status,
+                lastAnswerUpdate: result.lastAnswerUpdate!,
+                nextQuestion: result.nextQuestion,
+                players: result.state.player,
+                finalScore: result.finalScore,
+            })
         } catch (error) {
             console.error('Error submitting answer:', error);
             socket.emit('error', { message: 'Error submitting answer' });
         }
     }
 
-    private buildPublicGameState(gamestate: GameState){
-        const isFinished = gamestate.isFinished;
-        const currentQuestion = gamestate.questions[gamestate.currentQuestionIndex];
-        const status : 'playing' | 'finished' = isFinished? 'finished' : 'playing';
-
-        return {
-            gameId: gamestate.gameId,
-            status: status,
-            state: {
-                currentQuestionIndex: gamestate.currentQuestionIndex,
-                totalQuestions: gamestate.questions.length,
-                player: Object.fromEntries(
-                    Object.entries(gamestate.players).map(([id, p])=>[
-                        id, 
-                        {
-                            id: p.id,
-                            score: p.score,
-                            status: p.status,
-                            isAI: p.isAI ?? false,
-                            nickname: p.nickname,
-                        }
-                    ])
-                ),
-            },
-            nextQuestion: isFinished ? null : {
-                id: currentQuestion.id,
-                question: currentQuestion.question,
-                options: currentQuestion.options
-            },
-            finalScore: null,
-        };
-    }
 }

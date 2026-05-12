@@ -9,8 +9,13 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
 });
 
-function wait(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ================= EVENT HELPER =================
+function waitFor(socket, event) {
+  return new Promise((resolve) => {
+    socket.once(event, resolve);
+  });
 }
 
 // ================= USER =================
@@ -22,21 +27,21 @@ class TestUser {
 
     this.token = null;
 
-    // sockets
     this.gameSocket = null;
     this.friendSocket = null;
 
-    this.state = "INIT";
-
     this.roomId = null;
     this.gameId = null;
-    this.userId = null; // optional if backend returns it
   }
 
   // ================= FETCH =================
   async fetch(url, options = {}) {
     const res = await fetch(url, {
       ...options,
+      headers:{
+        ...options.headers,
+        cookie: `auth_token=${this.token}`
+      },
       agent: httpsAgent,
     });
 
@@ -85,10 +90,9 @@ class TestUser {
     }
 
     const cookie = res.headers.get("set-cookie");
-    if (!cookie) throw new Error("No cookie");
+    const match = cookie?.match(/auth_token=([^;]+)/);
 
-    const match = cookie.match(/auth_token=([^;]+)/);
-    if (!match) throw new Error("No token");
+    if (!match) throw new Error("No auth token");
 
     this.token = match[1];
 
@@ -100,37 +104,37 @@ class TestUser {
     this.gameSocket = io(`${SERVER_URL}/game`, {
       transports: ["websocket"],
       rejectUnauthorized: false,
-      auth: { token: this.token },
+      extraHeaders:{
+        cookie: `auth_token=${this.token}`
+      }
     });
 
     this.gameSocket.on("connect", () => {
       console.log(`🎮 [${this.name}] GAME connected`);
     });
 
-    this.gameSocket.onAny((event, data) => {
-      console.log(`🎮 [${this.name}] EVENT ${event}`, data);
+    this.gameSocket.onAny((e, d) => {
+      console.log(`🎮 [${this.name}] ${e}`, d);
     });
 
     this.gameSocket.on("matched", (d) => {
       this.roomId = d.roomId;
+      console.log(`🎯 [${this.name}] matched room=${this.roomId}`);
     });
 
     this.gameSocket.on("game_started", (d) => {
-        console.log("game started res: ", d);
       this.gameId = d.gameId;
+      this.roomId = d.roomId || this.roomId;
+
+      console.log(`🚀 [${this.name}] game_started gameId=${this.gameId}`);
     });
 
     this.gameSocket.on("answer_result", (d) => {
-        console.log("in answer: ", this.gameId);
       console.log(`📊 [${this.name}] answer_result`, d);
     });
 
     this.gameSocket.on("game_finished", (d) => {
-      console.log(`🏁 [${this.name}] finished`);
-    });
-
-    this.gameSocket.on("connect_error", (e) => {
-      console.log(`❌ [${this.name}] game error`, e.message);
+      console.log(`🏁 [${this.name}] game finished`);
     });
   }
 
@@ -139,31 +143,13 @@ class TestUser {
     this.friendSocket = io(`${SERVER_URL}/friendship`, {
       transports: ["websocket"],
       rejectUnauthorized: false,
-      auth: { token: this.token },
+      extraHeaders:{
+        cookie: `auth_token=${this.token}`
+      }
     });
 
     this.friendSocket.on("connect", () => {
       console.log(`👥 [${this.name}] FRIEND connected`);
-    });
-
-    this.friendSocket.onAny((event, data) => {
-      console.log(`👥 [${this.name}] EVENT ${event}`, data);
-    });
-
-    this.friendSocket.on("friend_request", (d) => {
-      console.log(`📩 [${this.name}] friend_request`, d);
-    });
-
-    this.friendSocket.on("friend_accept", (d) => {
-      console.log(`✅ [${this.name}] friend_accept`, d);
-    });
-
-    this.friendSocket.on("friend_online", (d) => {
-      console.log(`🟢 [${this.name}] friend_online`, d);
-    });
-
-    this.friendSocket.on("friend_offline", (d) => {
-      console.log(`🔴 [${this.name}] friend_offline`, d);
     });
   }
 
@@ -175,70 +161,71 @@ class TestUser {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({ mode: "multiplayer" }),
       }
     );
 
     console.log(`🎯 [${this.name}] match`, data);
-
-    if (data?.data?.status === "matched") {
-      this.roomId = data.data.roomId;
-    }
   }
 
   // ================= READY =================
   async ready() {
+    if (!this.roomId) {
+      throw new Error(`[${this.name}] roomId not ready`);
+    }
+
     const data = await this.fetch(
       `${SERVER_URL}/api/game/multiplayer/ready/${this.roomId}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({ isReady: true }),
       }
     );
 
     console.log(`🟢 [${this.name}] ready`, data);
-
-    if (data.gameId) this.gameId = data.gameId;
   }
 
   // ================= ANSWER =================
   answer(i) {
+    if (!this.gameId) {
+      console.log(`⚠️ [${this.name}] gameId not ready`);
+      return;
+    }
+
     this.gameSocket.emit("submit_answer", {
       gameId: this.gameId,
       answerIndex: i,
     });
   }
+
+  // ================= FLOW WAIT HELPERS =================
+  waitGameStart() {
+    return waitFor(this.gameSocket, "game_started");
+  }
+
+  waitMatched() {
+    return waitFor(this.gameSocket, "matched");
+  }
 }
 
 // ================= RUN =================
 async function run() {
-  console.log("\n🚀 FULL INTEGRATION TEST\n");
+  console.log("\n🚀 FULL INTEGRATION TEST (FIXED)\n");
 
   const ts = Date.now();
 
-  const A = new TestUser(
-    `userA_${ts}`,
-    `a_${ts}@test.com`,
-    "123456Aa!"
-  );
-
-  const B = new TestUser(
-    `userB_${ts}`,
-    `b_${ts}@test.com`,
-    "123456Bb!"
-  );
+  const A = new TestUser(`A_${ts}`, `a_${ts}@t.com`, "123456Aa!");
+  const B = new TestUser(`B_${ts}`, `b_${ts}@t.com`, "123456Bb!");
 
   // auth
   await A.auth();
   await B.auth();
 
-  // sockets (IMPORTANT: friend + game both)
+  // connect sockets
   A.connectGame();
   B.connectGame();
 
@@ -247,25 +234,33 @@ async function run() {
 
   await wait(1000);
 
-  // match
+  // start match (HTTP)
+  // ✅ 先注册，再发请求
+  const waitBothMatched = Promise.all([A.waitMatched(), B.waitMatched()]);
+
   await A.startMatch();
   await B.startMatch();
 
-  await wait(2000);
+  await waitBothMatched; // 这时候不管事件先来还是后来都能捕到
+  await wait(500);
 
-  console.log("\n✅ MATCH READY");
-
-  // ready
+  const waitBothStarted =  Promise.all([A.waitGameStart(), B.waitGameStart()]);
   await A.ready();
   await B.ready();
 
-  await wait(2000);
+  await waitBothStarted;
 
-  console.log("\n🚀 GAME STARTED");
+  // ready AFTER game started
 
-  // play
-  for (let i = 0; i < 5; i++) {
-    await wait(1000);
+  console.log("\n Game Started");
+
+  await wait(500);
+
+  console.log("\n🎮 PLAYING");
+
+  // play safely
+  for (let i = 0; i < 10; i++) {
+    await wait(1200);
 
     A.answer(Math.floor(Math.random() * 4));
     B.answer(Math.floor(Math.random() * 4));
@@ -274,7 +269,6 @@ async function run() {
   await wait(3000);
 
   console.log("\n🏁 TEST DONE");
-
   process.exit(0);
 }
 

@@ -1,4 +1,4 @@
-import {  GameUpdateResponse, MatchPlayer, PlayerSnapShot, PublicQuestion, StartGameResult } from "src/game/game.types";
+import {  FinalScore, GameUpdateResponse, MatchPlayer, PlayerSnapShot, PublicQuestion, StartGameResult } from "src/game/game.types";
 import {SendFriendRequestInput} from "@shared/friendship.schema";
 import { QueuePlayer } from "src/game/match/match.types";
 import { string } from "zod/v4-mini";

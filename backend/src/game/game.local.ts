@@ -3,7 +3,7 @@ import { IGameRepository } from "src/game/game.redis.repository";
 import { QuestionService } from "src/question/question.service";
 import { Room } from "src/room/room.types";
 import { GameBaseService } from "./game.base";
-import { GameMode, GameUpdateResponse, MultiGameState, Player } from "./game.types";
+import { BaseGameState, GameMode, GameUpdateResponse, MultiGameState, Player } from "./game.types";
 
 export class LocalMultiPlayer extends GameBaseService {
     protected gamerepository: IGameRepository;
@@ -34,19 +34,47 @@ export class LocalMultiPlayer extends GameBaseService {
     }
 
     async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameUpdateResponse>{
-        const state = await this.gamerepository.findById(gameId);
-        if (!state) throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
-        if (state.isFinished) throw new AppError('Game is already finished', ErrorCode.GAME_ALREADY_FINISHED, 400);
-        
-        const lastAnswerUpdate = await this.processAnswer(state, selectedAnswerIndex, userId);
-        const allAnswered = Object.values(state.players)
-            .filter((p: Player) => p.status !== 'disconnected')
-            .every((p: Player) => p.status === 'answered');
-
-        if (allAnswered) this.advanceGame(state);
-        await this.gamerepository.update(state);
+        const state = await this.gamerepository.submitanswerAtomic(
+            gameId,
+            userId,
+            selectedAnswerIndex
+        )
     
-        const response = this.buildResponseForFront(state);
-        return {...response, lastAnswerUpdate};
+        if (!state) throw new AppError(
+            'Game not found', 
+            ErrorCode.GAME_NOT_FOUND,
+            404
+        )
+        
+        const currentQuestion = state.questions[state.isFinished ? state.questions.length - 1 : state.currentQuestionIndex - 1];
+        const lastAnswerUpdate = {
+            playerId: userId,
+            questionId: currentQuestion?.id,
+            isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
+            correctAnswerIndex: currentQuestion?.correctAnswerIndex,
+            correctText: currentQuestion?.options[currentQuestion?.correctAnswerIndex],
+        };
+
+        return { ...this.buildResponseForFront(state), lastAnswerUpdate };
+    }
+
+    override buildResponseForFront(state: BaseGameState): GameUpdateResponse {
+        const base = super.buildResponseForFront(state);
+        return {
+            ...base,
+            state: {
+                ...base.state,
+                player: Object.fromEntries(
+                    Object.entries(state.players).map(([id, p]) => [
+                        id, 
+                        {
+                            ...base.state.player[id],
+                            nickname: p.nickname,
+                        }
+                    ])
+                )
+            }
+        }
     }
 }
+    
