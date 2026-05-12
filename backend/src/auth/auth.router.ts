@@ -2,10 +2,10 @@ import { AuthController } from "./auth.controller";
 import { Router } from "express";
 import { valideRequest } from "../middleware/zod_check";
 import { Register_Input, Login_Input } from "@shared/user.schema"
-import {authService} from 'src/container';
+import { container } from "src/container";
 
 const router = Router();
-const authController = new AuthController(authService);
+const authController = new AuthController(container.authService);
 
 //router.post('/register', authController.register);
 //router.post('/login', authController.login);
