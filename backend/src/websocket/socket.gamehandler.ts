@@ -230,5 +230,4 @@ export class GameSocketHandler{
             socket.emit('error', { message: 'Error submitting answer' });
         }
     }
-
 }
