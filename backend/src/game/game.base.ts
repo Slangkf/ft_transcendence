@@ -97,7 +97,7 @@ export class GameBaseService
         if (state.currentQuestionIndex + 1 >= state.questions.length){
             state.isFinished = true;
         } else {
-            state.currentQuestionIndex += 1;
+            state.currentQuestionIndex++;
             Object.values(state.players).forEach(p => {
                 if (p.status !== 'disconnected')
                     p.status = 'playing';
@@ -105,7 +105,8 @@ export class GameBaseService
         }
     }
 
-    protected buildResponseForFront(state: BaseGameState): GameUpdateResponse{
+    /// prepare the information for front 
+    public buildResponseForFront(state: BaseGameState): GameUpdateResponse{
         const isFinished = state.isFinished;
         const currentQuestion = state.questions[state.currentQuestionIndex];
         return {
@@ -121,7 +122,7 @@ export class GameBaseService
         }
     }
 
-    private buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PlayerSnapShot> {
+    protected buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PlayerSnapShot> {
         return Object.fromEntries(
             Object.entries(players).map(([id, player]: [string, Player]) => [
                 id,
@@ -136,13 +137,14 @@ export class GameBaseService
         )
     }
 
-    private buildFinalScore(players: Record<string, Player>): FinalScore{
+    protected buildFinalScore(players: Record<string, Player>): FinalScore{
         const scores = Object.fromEntries(
             Object.entries(players).map(([id, player]: [string, Player]) => [
                 id,
                 player.score
             ])
         );
+
         const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
 
         const ranking = sorted.map(([playerId, score], index) => ({
@@ -153,11 +155,11 @@ export class GameBaseService
 
         const winnerId = ranking[0]?.playerId ?? "";
         return {
-             winnerId,
-             finishedAt: Date.now(),
+            winnerId,
+            finishedAt: Date.now(),
             scores,
             ranking,
-         }
+        }
 
     }
 

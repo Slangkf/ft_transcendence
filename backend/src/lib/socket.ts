@@ -27,14 +27,16 @@ export function authMiddleware(socket: any, next: any) {
     if (!token) {
         return next(new AppError('Unauthorized in socket', ErrorCode.AUTH_UNAUTHORIZED));
     }
+
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET) as any;
         socket.data.userId = payload.id;
         socket.data.nickname = payload.username ?? payload.nickname;
         next();
     } catch (error) {
-        next(new AppError('Unauthorized in socket', ErrorCode.AUTH_UNAUTHORIZED));
+        next(new AppError('Unauthorized socket', ErrorCode.AUTH_UNAUTHORIZED));
     }
+
 }
 
 export function createSocketServer(httpserver: HttpServer, redis: typeof Redis){

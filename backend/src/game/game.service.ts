@@ -1,6 +1,6 @@
 import { AppError, ErrorCode } from "src/error/apperror";
 import { MultiPlayerFacade } from "./game.multi";
-import { GameMode, GameUpdateResponse, SetReadyResult, StartGameParams, StartMultiResult } from "./game.types";
+import { GameMode, GameState, GameUpdateResponse, SetReadyResult, StartGameParams, StartMultiResult } from "./game.types";
 import { SoloService } from "./solo";
 import { IGameRepository } from "src/game/game.redis.repository";
 import { QuestionService } from "src/question/question.service";
@@ -56,4 +56,19 @@ export class GameService{
     async setReady(roomId: string, userId: string, isReady: boolean): Promise<SetReadyResult>{
         return this.multiplayer.setPlayerReady(roomId, userId, isReady);
     }
+
+    buildResponseForFront(gamestate: GameState): GameUpdateResponse{
+        if (gamestate.mode === GameMode.MULTIPLAYER)
+            return this.multiplayer.buildResponseForFront(gamestate);
+        return this.soloservice.buildResponseForFront(gamestate);
+    }
 }
+
+/***
+ *  the only entry for the game, need the response for the front 
+ * 
+ *  
+ * 
+ * 
+ * 
+ */

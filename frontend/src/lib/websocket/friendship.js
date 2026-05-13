@@ -13,7 +13,7 @@ export function connectWS() {
     });
 
     socket.on('connect_error', (err) => {
-        console.log(`❌ connect_error: ${err.message}`);
+        console.log(`❌ socket connect_error: ${err.message}`);
     });
 
     socket.onAny((event, ...args) => {
@@ -28,13 +28,13 @@ export function connectWS() {
 		showToast(`${data.nickname} accepted your friend request`);
     });
 
-	// socket.on('friend_online', (data) => {
-	// 	showToast(`${data.fromNickname} is online`);
-    // });
+	socket.on('friend_online', (data) => {
+		showToast(`${data.fromNickname} is online`);
+    });
 
-	// socket.on('friend_offline', (data) => {
-	// 	showToast(`${data.nickname} is offline`);
-    // });
+	socket.on('friend_offline', (data) => {
+		showToast(`${data.nickname} is offline`);
+    });
 
 	return socket;
 }

@@ -89,7 +89,7 @@
 
       const data = result.data;
       gameId = data.gameId;
-      currentQuestion = data.nextQuestion;
+      currentQuestion = data.nextQuestion ?? null;
       totalQuestions = data.state?.totalQuestions ?? 0;
       score = extractScore(data.state?.player ?? {});
       questionNumber = (data.state?.currentQuestionIndex ?? 0) + 1;

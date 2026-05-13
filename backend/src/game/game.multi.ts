@@ -6,7 +6,7 @@ import { Session } from "inspector";
 import { RoomManager } from "src/room/room.manager";
 import { Room } from "src/room/room.types";
 import { SessionService } from "./session.service";
-import { GameMode, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
+import { GameMode, GameState, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
 import { AppError, ErrorCode } from "src/error/apperror";
 import { Namespace } from "socket.io";
 import { GameService } from "./game.service";
@@ -201,4 +201,13 @@ export class MultiPlayerFacade {
 
         return { type: "queue" };
     }   
-}   
+    buildResponseForFront(gamestate: GameState): GameUpdateResponse{
+        return this.multiService.buildResponseForFront(gamestate);
+    }
+}
+
+/***
+ *  facade combine all for multiplayer game 
+ * 
+ * 
+ */

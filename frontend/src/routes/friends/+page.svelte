@@ -27,6 +27,46 @@
 		}
 	}
 
+	async function acceptFriendship(request : typeof data.requestList[number]) {
+		try {
+			const response = await fetch(`/api/friendship/request/${request.id}/accept`, {
+				method: 'PUT',
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				console.error('Error in the acceptFriendship function')
+				showToast("Sorry, an internal error has occurred. Please try again later.");
+				return;
+			}
+			await invalidateAll();
+			showToast("The request has been accepted.");
+		}
+		catch (error) {
+			console.error('Error with acceptFriendship: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
+		}
+	}
+
+	async function rejectFriendship(request : typeof data.requestList[number]) {
+		try {
+			const response = await fetch(`/api/friendship/request/${request.id}/decline`, {
+				method: 'DELETE',
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				console.error('Error in the rejectFriendship function')
+				showToast("Sorry, an internal error has occurred. Please try again later.");
+				return;
+			}
+			await invalidateAll();
+			showToast("The request has been rejected.");
+		}
+		catch (error) {
+			console.error('Error with rejectFriendship: ', error);
+			showToast("Sorry, an internal error has occurred. Please try again later.");
+		}
+	}
+
 	async function removeFriend(friend: typeof data.friendsList[number]){
 		try {
 			const response = await fetch(`/api/friendship/friend/${friend.id}`, {
@@ -42,7 +82,7 @@
 			showToast("The contact has been successfully deleted.");
 		}
 		catch (error) {
-			console.error('Error with the contact search bar: ', error);
+			console.error('Error with removeFriend: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
@@ -66,6 +106,32 @@
 			<button onclick={searchContact} type="button" class="absolute end-1.5 bottom-1.5 text-slate-200 bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-indigo-500 shadow-sm font-medium leading-5 rounded-md text-xs px-3 py-1.5 focus:outline-none cursor-pointer">Search</button>
 		</div>
 	</form>
+
+	<!-- Pending invitation list -->
+	<div class="flex flex-col w-full gap-3 mt-4">
+		{#each data.requestList as request}
+			<div class="flex items-center justify-between w-full px-4 py-3 border border-slate-700 bg-slate-800 rounded-xl">
+				
+				<!-- Avatar + username -->
+				<div class="flex items-center gap-3">
+					<img src={request.url ?? "/images/avatar.jpg"} alt="avatar" class="h-12 w-12 rounded-full object-cover"/>
+					<span class="text-white font-medium">{request.username}</span>
+				</div>
+				
+				<!-- Accept friendship request button -->
+				<button onclick={() => acceptFriendship(request)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Accept</button>
+
+				<!-- Denied friendship request button -->
+				<button onclick={() => rejectFriendship(request)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Denied</button>
+			</div>
+		{:else}
+			
+			<!-- No pending friend requests message -->
+			<div class="flex items-center justify-center w-full px-4 py-3 border border-slate-700 rounded-xl">
+				<p class="text-pink-500 font-medium">No pending friend requests</p>
+			</div>
+		{/each}
+	</div>
 
 	<!-- Friends list -->
 	<div class="flex flex-col w-full gap-3 mt-4">
