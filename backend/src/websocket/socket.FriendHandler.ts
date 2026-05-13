@@ -32,14 +32,14 @@ export class FriendSocketHandler{
         try{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
-                friends.map(friend => 
-                    this.emitter.toUser(friend.userId, 'friend_online', {
+                friends.map(friend => {
+                    const friendId = (friend.userId === Number(userId)) ? friend.friendId : friend.userId;
+                    this.emitter.toUser(String(friendId), 'friend_online', {
                         userId,
                         nickname,
                     })
-                )
+                })
             )
-
         }catch(error){
             console.error("error in notify friend: ", error);
         }
@@ -51,12 +51,13 @@ export class FriendSocketHandler{
         try{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
-                friends.map(friend => 
-                    this.emitter.toUser(userId, 'friend_offline', {
+                friends.map(friend => {
+                    const friendId = (friend.userId === Number(userId)) ? friend.friendId : friend.userId;
+                    this.emitter.toUser(String(friendId), 'friend_offline', {
                         userId,
                         nickname,
                     })
-                )
+                })
             )
         } catch(error){
             console.error('error notify friends offline: ', error);
