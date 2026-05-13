@@ -31,13 +31,17 @@ export class FriendSocketHandler{
     private async notification_friendship(userId: string, nickname: string): Promise<void>{
         try{
             const friends = await this.friendshipservice.get_friends(Number(userId));
+            console.log('friends: ', friends);
+            console.log('userId: ', userId, 'nickname: ', nickname);
             await Promise.all(
-                friends.map(friend => 
-                    this.emitter.toUser(friend.userId, 'friend_online', {
+                friends.map(friend => {
+                    // 识别朋友的真实ID：如果当前userId是userId字段，则朋友是friendId；否则朋友是userId
+                    const friendId = friend.userId === Number(userId) ? friend.friendId : friend.userId;
+                    return this.emitter.toUser(String(friendId), 'friend_online', {
                         userId,
                         nickname,
-                    })
-                )
+                    });
+                })
             )
 
         }catch(error){
@@ -51,12 +55,14 @@ export class FriendSocketHandler{
         try{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
-                friends.map(friend => 
-                    this.emitter.toUser(friend.userId, 'friend_offline', {
+                friends.map(friend => {
+                    // 识别朋友的真实ID：如果当前userId是userId字段，则朋友是friendId；否则朋友是userId
+                    const friendId = friend.userId === Number(userId) ? friend.friendId : friend.userId;
+                    return this.emitter.toUser(String(friendId), 'friend_offline', {
                         userId,
                         nickname,
-                    })
-                )
+                    });
+                })
             )
         } catch(error){
             console.error('error notify friends offline: ', error);
