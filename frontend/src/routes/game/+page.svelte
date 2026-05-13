@@ -151,7 +151,7 @@
   <div class="flex justify-center mb-6">
     <button
       type="button"
-      onclick={startGame}
+      onclick={() => startGame()}
       disabled={loading}
       class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
     >

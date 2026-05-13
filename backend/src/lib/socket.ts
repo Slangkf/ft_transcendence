@@ -24,7 +24,7 @@ export function authMiddleware(socket: any, next: any) {
         }
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         socket.data.userId = payload.id;
-        socket.data.nickname = payload.username;
+        socket.data.nickname = payload.nickname;
         next();
     }catch(error){
         next(new AppError('Unauthorized socket', ErrorCode.AUTH_UNAUTHORIZED));

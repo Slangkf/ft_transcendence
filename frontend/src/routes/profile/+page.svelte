@@ -211,7 +211,7 @@
 	<!-- Hidden file input: opens the native file picker when triggered, stores the selected file in fileInput via bind:this, then fires handleFileChange via onchange -->
 	<input type="file" accept=".png, .jpg, .jpeg" hidden bind:this={fileInput} onchange={handleFileChange}/>
 	<!-- Edit avatar button -->
-	<button onclick={openFilePicker} class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Edit</button>
+	<button onclick={() => openFilePicker()} class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Edit</button>
 	
 	<!-- Account information card -->
 	<div class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl">
