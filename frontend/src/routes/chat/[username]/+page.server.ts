@@ -5,7 +5,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 	// Redirect unauthenticated users to login
 	const token = cookies.get('auth_token');
 	if (!token) {
-		console.error('cookies.get error in the profile section')
+		console.error('cookies.get error in the chat section')
 		throw redirect(302, '/login');
 	}
 
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 		});
 		// If the username does not exist, throw a 404 error to the SvelteKit error handler
 		if (!profileResponse.ok) {
-			console.error('fetch error in the /profile/[username] section: ', profileResponse.ok)
+			console.error('fetch error in the /chat/[username] section: ', profileResponse.ok)
 			throw error(404, 'User not found')
 		}
 		// Parse and return the user data to the page component
@@ -29,6 +29,6 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 		if (isRedirect(err) || isHttpError(err))
 			throw err;
 		else
-			console.error('Unexpected error in /profile/[username] load function: ', err);
+			console.error('Unexpected error in /chat/[username] load function: ', err);
 	}
 };

@@ -52,7 +52,7 @@ export class FriendSocketHandler{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
                 friends.map(friend => 
-                    this.emitter.toUser(userId, 'friend_offline', {
+                    this.emitter.toUser(friend.userId, 'friend_offline', {
                         userId,
                         nickname,
                     })

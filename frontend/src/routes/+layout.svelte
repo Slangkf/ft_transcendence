@@ -12,7 +12,9 @@
 	let socket;
 
 	onMount(() => {
-		socket = connectWS();
+		if (props.data.connected) {
+			socket = connectWS();
+		}
 	});
 
 	async function handleLogout() {
@@ -85,14 +87,14 @@
 				{:else}
 					{#if page.url.pathname === '/modes'}
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
-						<button onclick={handleLogout} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else if page.url.pathname === '/profile'}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
-						<button onclick={handleLogout} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
-						<button onclick={handleLogout} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{/if}
 				{/if}
 			</div>

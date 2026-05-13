@@ -4,8 +4,7 @@ import { showToast } from "$lib/toast.svelte";
 export function connectWS() {
 
 	const socket = io('https://localhost:8888/friendship', {
-		withCredentials: true,
-		transports: ['polling']
+		withCredentials: true
     });
 
 	socket.on('connect', () => {
@@ -21,19 +20,19 @@ export function connectWS() {
     });
 
 	socket.on('friend_request', (data) => {
-		showToast(`${data.fromNickname} sent you a friend request`);
+		showToast(`${data.fromNickname} sent you a friend request.`);
     });
 
 	socket.on('friend_accept', (data) => {
-		showToast(`${data.nickname} accepted your friend request`);
+		showToast(`${data.nickname} has accepted your friend request.`); //nope
     });
 
-	socket.on('friend_online', (data) => {
-		showToast(`${data.fromNickname} is online`);
+	socket.on('friend_online', (data) => { 
+		showToast(`${data.nickname} is online`); //nope
     });
 
 	socket.on('friend_offline', (data) => {
-		showToast(`${data.nickname} is offline`);
+		showToast(`${data.nickname} is offline`); //nope
     });
 
 	return socket;

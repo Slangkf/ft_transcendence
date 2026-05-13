@@ -16,9 +16,11 @@
 			const result = await response.json();
 			if (!response.ok) {
 				if (result.error?.code === "FRIEND_SELF_REQUEST")
-					showToast("Sorry, you cannot add yourself as a friend.");
+					showToast("You cannot add yourself as a friend.");
 				else if (result.error?.code === "FRIEND_REQUEST_PENDING")
-					showToast("Your invitation has already been sent.");
+					showToast("An invitation is already awaiting validation.");
+				else if (result.error?.code === "FRIEND_ALREADY_EXISTS")
+					showToast("You are already friends.");
 				return;
 			}
 			await invalidateAll();
@@ -41,7 +43,7 @@
 	<img src={data.user.url ?? "/images/avatar.jpg"} alt="avatar" class="h-37 w-37 rounded-full object-cover mt-8">
 	
 	<!-- Add friend button -->
-	<button onclick={friendAddHandler} type="submit" class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Add as friend</button>
+	<button onclick={() => friendAddHandler()} type="submit" class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Add as friend</button>
 	
 	<!-- Account information card -->
 	<div class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl">
@@ -87,6 +89,10 @@
 			<span>{data.user.friendsNb ?? "Unknown data"}</span>
 		</div>
 		<!-- View username's Friends button -->
-		<button onclick={() => goto(`/friends/${ data.user.username }`)} class="cursor-pointer ursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">View {data.user.username }'s friends</button>
+		<button onclick={() => goto(`/friends/${ data.user.username }`)} class="cursor-pointer ursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">View {data.user.username }'s friends</button>
+	</div>
+	<!-- Go back button -->
+	<div class="flex items-center mt-4">
+		<button onclick={() => goto('/friends')} class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Back</button>
 	</div>
 </div>

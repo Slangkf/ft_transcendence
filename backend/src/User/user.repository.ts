@@ -27,7 +27,8 @@ export class UserRepository{
                 username: input.username,
                 email: input.email,
                 password: hashed_password,
-                url: "/uploads/avatars/default.jpg"
+                url: "/uploads/avatars/default.jpg",
+				status: 'ONLINE',
             }
         })
         return this.toUserOutput(newuser);
