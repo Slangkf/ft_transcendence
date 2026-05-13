@@ -19,6 +19,7 @@ export function createFriendshipRouter(
     router.delete('/friend/:friendId', friendshipController.RemoveFriend);
 
     router.get('/friends', friendshipController.GetFriends);
+    router.get('/friends/:username', friendshipController.GetFriendsForFriend);
     router.get('/requests/pending', friendshipController.GetPendingRequests);
     router.get('/requests/sent', friendshipController.GetSentRequests);
     router.get('/status/:userId', friendshipController.GetUserStatus);

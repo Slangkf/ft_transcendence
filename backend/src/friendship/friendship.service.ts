@@ -115,6 +115,14 @@ export class FriendshipService {
         return await this.friendshipRepository.get_accepted_friendships(userId);
     }
 
+    async get_friends_for_friend(username: string): Promise<FriendshipOutput[]> {
+        const user = await this.userRepository.findByUsername(username); 
+        if (!user) {
+            throw new AppError("User not found", ErrorCode.USER_NOT_FOUND, 404);
+        }
+        return await this.friendshipRepository.get_accepted_friendships(user.id);
+    }
+
     async get_pending_requests(userId: number): Promise<FriendshipOutput[]> {
         return await this.friendshipRepository.get_pending_requests(userId);
     }
