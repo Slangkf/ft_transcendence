@@ -211,7 +211,7 @@
 	<!-- Hidden file input: opens the native file picker when triggered, stores the selected file in fileInput via bind:this, then fires handleFileChange via onchange -->
 	<input type="file" accept=".png, .jpg, .jpeg" hidden bind:this={fileInput} onchange={handleFileChange}/>
 	<!-- Edit avatar button -->
-	<button onclick={openFilePicker} class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Edit</button>
+	<button onclick={openFilePicker} class="cursor-pointer mt-4 px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Edit</button>
 	
 	<!-- Account information card -->
 	<div class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl">
@@ -234,12 +234,12 @@
 		<h3 class="text-lg text-pink-500 mb-4">Change username</h3>
 		<!-- New username shield -->
 		<form onsubmit={handleUsernameSubmission}>
-			<input type="text" name="username" placeholder="New username" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-indigo-500 focus:border-indigo-500" />
+			<input type="text" name="username" placeholder="New username" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-white focus:border-indigo-500" />
 			{#if errors.username}
 				<p class="text-red-500 text-xs mb-2">{errors.username}</p>
 			{/if}
 			<!-- Update button -->
-			<button type="submit" class="cursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Update username</button>
+			<button type="submit" class="cursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Update username</button>
 		</form>
 	</div>
 	
@@ -249,20 +249,20 @@
 		<h3 class="text-lg text-pink-500 mb-4">Change password</h3>
 		<!-- New password shields -->
 		<form onsubmit={handlePasswordSubmission}>
-			<input type="password" name="oldpassword" placeholder="Old password" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-indigo-500 focus:border-indigo-500" />
+			<input type="password" name="oldpassword" placeholder="Old password" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-white focus:border-indigo-500" />
 			{#if errors.oldpassword}
 				<p class="text-red-500 text-xs mb-2">{errors.oldpassword}</p>
 			{/if}
-			<input type="password" name="newpassword" placeholder="New password" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-indigo-500 focus:border-indigo-500" />
+			<input type="password" name="newpassword" placeholder="New password" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-white focus:border-indigo-500" />
 			{#if errors.newpassword}
 				<p class="text-red-500 text-xs mb-2">{errors.newpassword}</p>
 			{/if}
-			<input type="password" name="confirmpassword" placeholder="Confirm new password" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-indigo-500 focus:border-indigo-500" />
+			<input type="password" name="confirmpassword" placeholder="Confirm new password" class="w-full p-2 mb-2 bg-slate-900 border border-slate-700 rounded-md focus:outline-none focus:ring-1 transition focus:ring-white focus:border-indigo-500" />
 			{#if errors.confirmpd}
 				<p class="text-red-500 text-xs mb-2">{errors.confirmpd}</p>
 			{/if}
 			<!-- Update button -->
-			<button type="submit" class="cursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Update password</button>
+			<button type="submit" class="cursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Update password</button>
 		</form>
 	</div>
 	
@@ -295,6 +295,6 @@
 			<span>{ data.user.friendsNb ?? "Unknown data" }</span>
 		</div>
 		<!-- View Friends button -->
-		<button onclick={() => goto('/friends')} class="cursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">View friends</button>
+		<button onclick={() => goto('/friends')} class="cursor-pointer mt-4 w-full font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">View friends</button>
 	</div>
 </div>

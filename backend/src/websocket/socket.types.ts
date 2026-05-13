@@ -109,9 +109,6 @@ export interface ClientToServerEvents {
     //})
 }
 
-
-
-
 export interface FriendSocketEvents {
     'friend_request':(data: {
         fromUserId: string;
