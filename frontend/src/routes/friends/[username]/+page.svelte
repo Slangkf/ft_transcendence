@@ -55,9 +55,9 @@
 				<!-- Buttons -->
 				<div class="flex items-center gap-3">
 					<!-- Profile -->
-					<button onclick={() => goto(`/profile/${ data.user.id === friend.user.id ? friend.friend.username : friend.user.username }`)} type="submit" class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-white">Profile</button>
+					<button onclick={() => goto(`/profile/${ data.user.id === friend.user.id ? friend.friend.username : friend.user.username }`)} type="submit" class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Profile</button>
 					<!-- Add friend -->
-					<button onclick={() => friendAddHandler(friend)} type="submit" class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Add as friend</button>
+					<button onclick={() => friendAddHandler(friend)} type="submit" class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Add as friend</button>
 				</div>
 			</div>
 		{:else}
@@ -69,6 +69,6 @@
 	</div>
 	<!-- Go back button -->
 	<div class="flex items-center mt-4">
-		<button onclick={() => goto(`/profile/${data.user.username}`)} class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Back</button>
+		<button onclick={() => goto(`/profile/${data.user.username}`)} class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Back</button>
 	</div>
 </div>

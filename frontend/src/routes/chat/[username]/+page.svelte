@@ -15,7 +15,7 @@
 	
     <!-- Input zone -->
     <div class="flex items-center w-full px-6 py-4 mt-4 rounded-xl gap-3">
-        <input type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white placeholder:text-gray-500"/>
-        <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-white">Send</button>
+        <input type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
+        <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>
     </div>
 </div>

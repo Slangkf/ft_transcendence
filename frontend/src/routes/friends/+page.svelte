@@ -103,8 +103,8 @@
 			<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
 				<svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
 			</div>
-			<input onkeydown={(e) => e.key === 'Enter' && searchContact()} type="search" id="search" bind:value={input} class="block w-full p-3 ps-9 bg-slate-900 border border-slate-700 text-sm rounded-md focus:outline-none focus:ring-2 transition focus:ring-white focus:border-indigo-500 shadow-sm placeholder:text-gray-500" placeholder="Search a user"/>
-			<button onclick={() => searchContact()} type="button" class="absolute end-1.5 bottom-1.5 text-slate-200 bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-white shadow-sm font-medium leading-5 rounded-md text-xs px-4 py-2 focus:outline-none cursor-pointer">Search</button>
+			<input onkeydown={(e) => e.key === 'Enter' && searchContact()} type="search" id="search" bind:value={input} class="block w-full p-3 ps-9 bg-slate-900 border border-slate-700 text-sm rounded-md focus:outline-none focus:ring-2 transition focus:ring-indigo-500 focus:border-indigo-500 shadow-sm placeholder:text-gray-500" placeholder="Search a user"/>
+			<button onclick={() => searchContact()} type="button" class="absolute end-1.5 bottom-1.5 text-slate-200 bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-indigo-500 shadow-sm font-medium leading-5 rounded-md text-xs px-4 py-2 focus:outline-none cursor-pointer">Search</button>
 		</div>
 	</form>
 
@@ -165,6 +165,6 @@
 	</div>
 	<!-- Go back button -->
 	<div class="flex items-center mt-4">
-		<button onclick={() => goto('/profile')} class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">Back</button>
+		<button onclick={() => goto('/profile')} class="cursor-pointer px-4 py-2 font-medium text-slate-200 bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">Back</button>
 	</div>
 </div>
