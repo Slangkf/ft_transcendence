@@ -4,6 +4,7 @@ export type JoinQueueParams = {
     mode: GameMode,
     userId: string,
     nickname: string,
+    size: number,
 }
 
 export type QueuePlayer = {

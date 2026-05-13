@@ -3,6 +3,7 @@ import { MultiPlayerFacade } from "./game.multi";
 import { GameMode, GameState, GameUpdateResponse, SetReadyResult, StartGameParams, StartMultiResult } from "./game.types";
 import { SoloService } from "./solo";
 import { IGameRepository } from "src/game/game.redis.repository";
+import { QuestionService } from "src/question/question.service";
 
 export type GameStartResult = GameUpdateResponse | {status: 'waiting' | 'matched'; players?: any[]; roomId?: string};
 
@@ -11,16 +12,21 @@ export class GameService{
         private soloservice: SoloService,
         private multiplayer: MultiPlayerFacade,
         private gameRepository: IGameRepository,
+        private questionService: QuestionService,
     ){}
 
+    async listCategories(): Promise<string[]> {
+        return this.questionService.getCategories();
+    }
+
     async startGame(params:StartGameParams): Promise<GameStartResult>{
-        const {mode, userId, nickname} = params;
+        const {mode, userId, nickname, category, size} = params;
 
         switch(mode){
             case GameMode.SOLO:
-                return this.soloservice.startGame(userId, nickname, GameMode.SOLO);
+                return this.soloservice.startGame(userId, nickname, GameMode.SOLO, category);
             case GameMode.MULTIPLAYER:
-                return this.multiplayer.joinMatchmaking(GameMode.MULTIPLAYER, userId, nickname);
+                return this.multiplayer.joinMatchmaking(GameMode.MULTIPLAYER, userId, nickname, size);
             default:
                 throw new AppError(
                     "Unknown game mode",

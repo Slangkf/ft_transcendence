@@ -115,11 +115,11 @@ export class RoomService{
         return room;
     }
 
-    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room }>{
+    async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room; changed: boolean }>{
         //1. get the player in redis
         const room = await this.roomrepository.getroom(roomId);
         if (!room)  throw new AppError(
-            "Room not exist", 
+            "Room not exist",
             ErrorCode.ROOM_NOT_AVAILABLE,
         );
         const player = room.players[playerId];
@@ -127,17 +127,23 @@ export class RoomService{
             "Player not found",
             ErrorCode.PLAYER_NOT_FOUND,
         )
+        const allReadyNow = () => Object.values(room.players).every(p => p.isReady);
+
+        // ignore ready toggles once the game is starting/running (prevents the lobby state from
+        // bouncing on repeated clicks after everyone is already ready)
+        if (room.status !== 'waiting' || player.isReady === isReady){
+            return { allReady: allReadyNow(), room, changed: false };
+        }
         //2. update the status of player
         player.isReady = isReady;
         //3. check if everyone is ready
-        const allPlayers = Object.values(room.players);
-        const allready = allPlayers.every(p => p.isReady);
+        const allready = allReadyNow();
         if (allready){
             room.status = 'starting';
         }
-       
+
         await this.roomrepository.update(room);
-        return { allReady: allready, room };
+        return { allReady: allready, room, changed: true };
     }
 
     async deleteRoom(roomId: string): Promise<void>{

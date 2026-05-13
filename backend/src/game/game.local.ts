@@ -16,7 +16,7 @@ export class LocalMultiPlayer extends GameBaseService {
         this.gamerepository = gamerepo;
     }
 
-    async startGame(room: Room): Promise<GameUpdateResponse>{
+    async startGame(room: Room, category?: string): Promise<GameUpdateResponse>{
         const playerlist = Object.values(room.players);
         if (playerlist.length < 2) throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
         
@@ -25,7 +25,7 @@ export class LocalMultiPlayer extends GameBaseService {
         for(const p of playerlist){
             players[p.userId] = this.initPlayers(p.userId, p.nickname);
         }
-        const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId});
+        const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId, category});
 
         await this.gamerepository.create(state);
         return {
@@ -39,20 +39,23 @@ export class LocalMultiPlayer extends GameBaseService {
             userId,
             selectedAnswerIndex
         )
-    
+
         if (!state) throw new AppError(
-            'Game not found', 
+            'Game not found',
             ErrorCode.GAME_NOT_FOUND,
             404
         )
-        
+
         const currentQuestion = state.questions[state.isFinished ? state.questions.length - 1 : state.currentQuestionIndex - 1];
+        const submitter = state.players[userId] as Player | undefined;
+        const allAnswered = state.isFinished || submitter?.status === 'playing';
+
         const lastAnswerUpdate = {
             playerId: userId,
             questionId: currentQuestion?.id,
             isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
             correctAnswerIndex: currentQuestion?.correctAnswerIndex,
-            correctText: currentQuestion?.options[currentQuestion?.correctAnswerIndex],
+            correctText: allAnswered ? currentQuestion?.options[currentQuestion?.correctAnswerIndex] : undefined,
         };
 
         return { ...this.buildResponseForFront(state), lastAnswerUpdate };

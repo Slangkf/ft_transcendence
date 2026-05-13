@@ -38,7 +38,7 @@ export class MatchRepository{
         if (newQueue.length > 0){
             await Redis.rPush(
                 key,
-                ...newQueue.map(p=>JSON.stringify(p))
+                newQueue.map(p=>JSON.stringify(p))
             )
         }
     }
@@ -95,8 +95,8 @@ export class MatchRepository{
                 await Redis.del(key);
                 if (new_queue.length > 0){
                     await Redis.rPush(
-                        key, 
-                        ...new_queue.map(p=> JSON.stringify(p))
+                        key,
+                        new_queue.map(p=> JSON.stringify(p))
                     )
                 }
                 break; // Player was only in one queue

@@ -124,9 +124,11 @@ export type SetReadyResult = {
     gameresponse?: GameUpdateResponse;
 };
 
-//input 
+//input
 export type StartGameParams = {
    mode: GameMode.SOLO | GameMode.MULTIPLAYER;
    userId: string;
    nickname: string;
+   category?: string;
+   size?: number;
 }

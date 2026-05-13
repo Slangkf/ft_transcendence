@@ -1,9 +1,9 @@
 // socket.emitter.ts
-import type { ServerToClientEvents, FriendSocketEvents, ChatSocketEvents, SocketEvents } from "./socket.types";
+import type { ServerToClientEvents, FriendSocketEvents, ChatSocketEvents } from "./socket.types";
 import { Namespace, Server } from 'socket.io';
 import { Redis, RedisKeys } from 'src/lib/redis';
 
-export interface IEmitter<TEvents extends SocketEvents> {
+export interface IEmitter<TEvents extends Record<string, (...args: any[]) => void>> {
     toUser<K extends keyof TEvents>(
         userId: string,
         event: K,
@@ -16,8 +16,7 @@ export interface IEmitter<TEvents extends SocketEvents> {
     ): void;
 }
 
-// 问题三修复：加 extends SocketEvents 约束，保证 TEvents 的值都是函数
-class BaseSocketEmitter<TEvents extends SocketEvents> implements IEmitter<TEvents> {
+class BaseSocketEmitter<TEvents extends Record<string, (...args: any[]) => void>> implements IEmitter<TEvents> {
     constructor(
         protected ns: Namespace,
         protected redis: typeof Redis,

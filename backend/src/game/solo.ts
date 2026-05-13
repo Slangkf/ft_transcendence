@@ -16,9 +16,9 @@ export class SoloService extends GameBaseService{
         this.gamerepository = gamerepository;
     }
 
-    async startGame(userId: string, nickname: string, mode: GameMode.SOLO | GameMode.AI): Promise<GameUpdateResponse>{
+    async startGame(userId: string, nickname: string, mode: GameMode.SOLO | GameMode.AI, category?: string): Promise<GameUpdateResponse>{
         const players = {[userId]: this.initPlayers(userId, nickname)};
-        const state = await this.prepareGame(players, mode);
+        const state = await this.prepareGame(players, mode, { category });
         await this.gamerepository.create(state);
         return {
             ...this.buildResponseForFront(state)

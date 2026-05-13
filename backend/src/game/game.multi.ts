@@ -28,10 +28,22 @@ export class MultiPlayerFacade {
         const room = await this.roomService.getRoom(roomId);
         if (!room || room.status !== "starting") return {allReady: false};
 
-        try{
-           const response: GameUpdateResponse = await this.multiService.startGame(room); 
+        // short-lived lock so two concurrent "all ready" triggers can't both start the game
+        const lockKey = `lock:game-start:${roomId}`;
+        const acquired = await this.redis.set(lockKey, '1', { NX: true, EX: 10 });
+        if (!acquired) return {allReady: false};
 
-            //session update game status ingame, and gameid 
+        try{
+           const response: GameUpdateResponse = await this.multiService.startGame(room);
+
+            if (!response.nextQuestion){
+                throw new AppError('No first question available', ErrorCode.BAD_REQUEST);
+            }
+
+            // mark the room as running so any further setReady calls bail out
+            await this.roomService.updateStatus(room, 'active');
+
+            //session update game status ingame, and gameid
             await Promise.all(
                 Object.values(room.players).map( p=> {
                     this.sessionService.update(p.userId, {
@@ -40,11 +52,8 @@ export class MultiPlayerFacade {
                     })
                 })
             )
-            if (!response.nextQuestion){
-                throw new AppError('No first question available', ErrorCode.BAD_REQUEST);
-            }
-            
-            //notify all players 
+
+            //notify all players
             await this.emitter.toRoom(roomId, 'game_started', {
                 gameId: response.gameId,
                 firstQuestion: response.nextQuestion,
@@ -56,7 +65,11 @@ export class MultiPlayerFacade {
             }
         }catch (error){
             console.error("Error starting game:", error);
-            await this.roomService.updateStatus(room, 'waiting');
+            // roll back so players can retry: clear ready flags and reopen the room
+            Object.values(room.players).forEach(p => { p.isReady = false; });
+            room.status = 'waiting';
+            await this.roomService.save(room);
+            await this.redis.del(lockKey);
             await this.emitter.toRoom(roomId, 'error', {
                 message: "Failed to start game"
             });
@@ -64,7 +77,10 @@ export class MultiPlayerFacade {
         }
     }
 
-    async joinMatchmaking(mode: GameMode, userId: string, nickname: string): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
+    async joinMatchmaking(mode: GameMode, userId: string, nickname: string, size?: number): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
+        if (size !== undefined && (!Number.isInteger(size) || size < 2 || size > 4)) {
+            throw new AppError('Invalid player size, must be between 2 and 4', ErrorCode.GAME_UNKOWN_MODE, 400);
+        }
         const exist = await this.matchService.getMyMatch(userId);
         
         if (exist){
@@ -92,13 +108,14 @@ export class MultiPlayerFacade {
         await this.matchService.joinQueue({
             mode,
             userId,
-            nickname
+            nickname,
+            size: size ?? 2,
         })
-        return await this.trymatch(mode);
+        return await this.trymatch(mode, size ?? 2);
     }
 
-    async trymatch(mode: GameMode): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
-        const match = await this.matchService.matchPlayers(mode);
+    async trymatch(mode: GameMode, size?: number): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
+        const match = await this.matchService.matchPlayers(mode, size);
 
         if (!match) return {status: "waiting"};
 
@@ -147,15 +164,16 @@ export class MultiPlayerFacade {
 
     async setPlayerReady(roomId: string, userId: string, isReady: boolean): Promise<SetReadyResult> {
         const result = await this.roomService.setPlayerReady(roomId, userId, isReady);
-        
-        //tell every player is ready
-        await this.emitter.toRoom(roomId, 'player_ready', {
-            playerId: userId,
-            isReady,
-            allReady: result.allReady,
-        })
 
-        const room = result.room;
+        //tell every player is ready (only when the state actually changed, to avoid bouncing)
+        if (result.changed){
+            await this.emitter.toRoom(roomId, 'player_ready', {
+                playerId: userId,
+                isReady,
+                allReady: result.allReady,
+            })
+        }
+
         if (!result.allReady) return {allReady: false};
         return await this.handleAllReady(roomId);
     }

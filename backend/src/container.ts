@@ -59,7 +59,8 @@ const multiPlayer = new MultiPlayerFacade(
 const gameService = new GameService(
     soloService,
     multiPlayer,
-    gamerepo
+    gamerepo,
+    questionService,
 );
 return {multiPlayer, gameService};
 }

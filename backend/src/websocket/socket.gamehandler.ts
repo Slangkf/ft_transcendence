@@ -46,8 +46,17 @@ export class GameSocketHandler{
         }
         await this.redis.del(this.disconnectkey(userId));
 
-        // save in redis 
+        // save in redis
         await this.redis.set(this.gameuserkey(userId), socket.id);
+
+        // make sure a session exists for this user (otherwise sessionService.update is a no-op
+        // and the room/queue state is never persisted, so reconnect can't restore it)
+        const existingSession = await this.sessionService.get(userId);
+        if (!existingSession) {
+            await this.sessionService.init(userId, socket.id);
+        } else {
+            await this.sessionService.update(userId, { socketId: socket.id });
+        }
 
         await this.handleReconnect(socket, userId);
 
