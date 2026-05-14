@@ -34,7 +34,6 @@ export class FriendshipService {
         }
 
         const result = await this.friendshipRepository.create_friend_request(userId, input.friendId);
-
         //notification for friend
         await this.emitter.toUser(String(input.friendId), 'friend_request', {
             fromUserId: String(userId),

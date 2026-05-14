@@ -1,6 +1,14 @@
 <script lang="ts">
 	import "../../app.css";
 	import { goto } from '$app/navigation';
+	import { showToast } from '$lib/toast.svelte';
+	import { onMount } from 'svelte'
+	import { page } from '$app/state';
+
+	onMount(() => {
+		page.url.searchParams.get('register') && showToast("Registration successful. Welcome!");
+		page.url.searchParams.get('login') && showToast("Connection successful, welcome back!");
+	});
 
 	async function handleGameMode(_mode: string) {
 		await goto('/game/categories');

@@ -1,7 +1,5 @@
 <!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { invalidateAll } from '$app/navigation';
 	import { Login_Input, type LoginInput } from '$lib/shared/user.schema';
 	import { showToast } from '$lib/toast.svelte'
 
@@ -63,9 +61,7 @@
 				return;
 			}
 			// Redirect user after successful registration.
-			await goto('/modes');
-			await invalidateAll();
-			showToast("Connection successful, welcome back!");
+			window.location.href = '/modes/?login=true';
 		}
 		// Catch and log unexpected errors.
 		catch (error){

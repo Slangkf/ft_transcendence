@@ -1,10 +1,12 @@
 <script lang="ts">
-	// Import navigation helper to redirect user after successful registration.
-	// Import Zod schema to check the format of the form inputs.
-	import { goto } from '$app/navigation';
-	import { invalidateAll } from '$app/navigation';
 	import { Register_Input, type RegisterInput } from '$lib/shared/user.schema';
 	import { showToast } from '$lib/toast.svelte';
+	import { onMount } from 'svelte'
+	import { page } from '$app/state';
+
+	onMount(() => {
+		page.url.searchParams.get('logout') && showToast("You are now disconnected, see you soon.");
+	});
 
 	// Reactive object storing form error messages.
 	let errors = $state({
@@ -67,10 +69,7 @@
 				return;
 			}
 			// Redirect user after successful registration
-			// invalidateAll() will re-run all load functions
-			await goto('/modes');
-			await invalidateAll();
-			showToast("Registration successful. Welcome!");
+			window.location.href = '/modes/?register=true';
 		}
 		// Catch and log unexpected errors.
 		catch (error){

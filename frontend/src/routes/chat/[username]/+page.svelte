@@ -6,7 +6,7 @@
 <div class="flex flex-col items-center justify-center w-full max-w-200 rounded-xl p-4 border border-slate-700 bg-slate-900/90 backdrop-blur-xs text-white text-sm">
 	<!-- Main card title -->
 	<h2 class="text-2xl font-semibold text-pink-500 text-center">Chat</h2>
-	<p class="mt-1 text-pink-500 text-center">Your chat with {data.user.username}</p>
+	<p class="mt-1 text-pink-500 text-center">Your chat with</p>
 	
     <!-- Messages zone -->
     <div class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl h-200 overflow-y-auto gap-3">

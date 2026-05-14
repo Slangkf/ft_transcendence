@@ -31,8 +31,6 @@ export class FriendSocketHandler{
     private async notification_friendship(userId: string, nickname: string): Promise<void>{
         try{
             const friends = await this.friendshipservice.get_friends(Number(userId));
-            console.log('friends: ', friends);
-            console.log('userId: ', userId, 'nickname: ', nickname);
             await Promise.all(
                 friends.map(friend => {
                     // 识别朋友的真实ID：如果当前userId是userId字段，则朋友是friendId；否则朋友是userId
