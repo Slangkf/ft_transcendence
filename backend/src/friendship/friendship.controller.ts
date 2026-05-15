@@ -63,7 +63,7 @@ export class FriendshipController {
             if (!username) {
                 throw new AppError(
                     'username param is required',
-                    ErrorCode.INVALID_INPUT,
+                    ErrorCode.BAD_REQUEST,
                     400
                 );
             }

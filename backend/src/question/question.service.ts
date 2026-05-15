@@ -23,22 +23,8 @@ export class QuestionService{
         'Quiz not found',
          ErrorCode.QUESTION_NOT_FOUND);
 
-    return questions.map((q: PrismaQuestion) => {
-        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-        const correctAnswerIndex = shuffledOptions.findIndex(opt => opt === q.answer);
-        return {
-            id: q.id,
-            question: q.text,
-            options: shuffledOptions,
-            correctAnswerIndex: correctAnswerIndex,
-        };
-    });
-  }
-
-    async getCategories(): Promise<string[]>{
-        return this.repo.get_all_Categories();
+    return questions;
     }
-
     async fetchQuizQuestions(quizId: number): Promise<GameQuestion[] | null>
     {
         const quiz = await this.repo.get_Quiz_withquestions(quizId);

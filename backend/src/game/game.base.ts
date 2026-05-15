@@ -22,7 +22,7 @@ export class GameBaseService
         return player;
     }
 
-    protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId: string, hostId: string, category?: string}): Promise<GameState> {
+    protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string}): Promise<GameState> {
         const questions = await this.questionService.getQuestions(10, extra?.category);
         const gameId = crypto.randomUUID();
         const base = {
