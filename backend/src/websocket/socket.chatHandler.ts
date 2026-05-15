@@ -29,10 +29,10 @@ export class ChatSocketHandler{
             const message = await this.chatservice.sendPrivateMessage(Number(userId), Number(data.toUserId), data.content);
             //wait toUser receive
             socket.emit('message_send', {
-                messageId: message.id,
+                messageId: message.messageId,
                 toUserId: data.toUserId,
                 content: data.content,
-                createdAt: message.createdAt,
+                createdAt: message.createdAt.getTime(),
             })
         }catch(error){
             socket.emit('error', {message: error instanceof AppError? error.message : "failed to send message"})

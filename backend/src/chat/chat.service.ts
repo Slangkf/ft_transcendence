@@ -23,17 +23,21 @@ export class ChatService{
         //save the message in database
         const message = await this.chatrepo.saveMessage(fromId, toUserId, content);
 
-        const payload = {
-            messageId: message.id,
+        const chatMessage = {
+            messageId: String(message.id),
             fromUserId: String(fromId),
             toUserId: String(toUserId),
             content,
             createdAt: message.createdAt,
-        }
-        //tell toUserId a message received
-        await this.emitter.toUser(String(toUserId), 'message_received', payload);
+        } as const;
 
-        return payload;
+        const socketPayload = {
+            ...chatMessage,
+            createdAt: message.createdAt.getTime(),
+        };
+        await this.emitter.toUser(String(toUserId), 'message_received', socketPayload);
+
+        return chatMessage;
     }
 
     async getHistory(userId: number, withUserId: number, limit= 50, before?: Date){

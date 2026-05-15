@@ -1,7 +1,7 @@
 import { 
     PrismaClient, 
     Message, 
-    BatchPayload
+    Prisma
  } from "@prisma/client"
 
 
@@ -40,7 +40,7 @@ export class ChatRepository{
 
     //mark the message has read ， tell the front how many message has read 
     //batchpayload return count 
-    async markAsRead(fromId: number, toUserId: number): Promise<BatchPayload>{
+    async markAsRead(fromId: number, toUserId: number): Promise<Prisma.BatchPayload>{
         return this.prisma.message.updateMany({
             where: {senderId: fromId, receiverId: toUserId, read: false},
             data: {read: true}
