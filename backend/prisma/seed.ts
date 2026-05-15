@@ -52,6 +52,7 @@ async function connectWithRetry(retries = 5) {
 
 
 async function main(): Promise<void> {
+    console.log("database url in env: ", process.env.DATABASE_URL);
     console.log("DB_URL Length:", process.env.DATABASE_URL?.length);
     await connectWithRetry();
     const adminEmail = process.env.ADMIN_EMAIL;

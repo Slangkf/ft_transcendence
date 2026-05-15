@@ -63,7 +63,8 @@ services:
       - REDIS_URL=${REDIS_URL}
     depends_on:
       - redis
-      - db
+      - db:
+        condition: service_healthy
     env_file:
       - .env
 
