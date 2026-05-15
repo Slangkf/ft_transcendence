@@ -22,6 +22,8 @@ WORKDIR /app
 COPY backend/package*.json ./
 RUN npm install
 
+ENV PATH="/app/node_modules/.bin:$PATH"
+
 COPY backend/ .
 COPY shared/ ./shared/
 RUN npx prisma generate --schema=./prisma/schema.prisma

@@ -1,5 +1,4 @@
 #!/bin/sh
-ENV PATH="/app/node_modules/.bin:$PATH"
 
 echo "Waiting for Redis..."
 while ! nc -z redis 6379; do
