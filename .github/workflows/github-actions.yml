@@ -1,16 +1,15 @@
-# Every time a push or a pull-request to the main branch is made, 
-# GitHub Actions will run the "frontend" job in its runner:
-# 1. Checkout the repository code
-# 2. Set up Node.js
-# 3. Install npm dependencies
-# 4. Run Svelte/TypeScript type checks
-# 5. Build the project
+# Full infrastructure CI pipeline
+#
+# - backend and frontend run in parallel
+# - integration waits for both to succeed, then spins up
+#   the full docker-compose stack and smoke-tests it
 
-name: app build test
-run-name: ${{ github.actor }} is testing out GitHub Actions
+name: Infrastructure test
+run-name: ${{ github.actor }} is running the full CI pipeline
 
+# minimum permissions granted to the workflow
 permissions:
-  contents: read # minimum permissions granted to the workflow
+  contents: read
 
 on:
   push:
@@ -33,7 +32,6 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-24.04
-    
     steps:
       - name: checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
@@ -47,6 +45,7 @@ jobs:
         run: npm install
         working-directory: backend
 
+      # build:prod = type-check && tsc — covers both in one shot
       - name: type check and build
         run: npm run build:prod
         working-directory: backend
@@ -66,7 +65,6 @@ jobs:
 
   frontend:
     runs-on: ubuntu-24.04
-    
     steps:
       - name: checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
@@ -103,12 +101,13 @@ jobs:
 
   integration:
     runs-on: ubuntu-24.04
-    needs:  [backend, frontend]
-    
+    needs:  [backend, frontend] # only runs if both jobs above pass
     steps:
       - name: checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-      
+
+      # Reconstruct the .env file from GitHub Secrets
+      # Add this file to .gitignore — never commit real values
       - name: create .env file
         run: |
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"               >> .env
@@ -123,24 +122,20 @@ jobs:
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}"             >> .env
 
       - name: start full stack
-        run: docker compose up --build
+        run: docker compose up --build -d
 
+      # Postgres and Redis need time to initialize before the backend connects to them
       - name: wait for stack to be ready
         run: sleep 20
 
+      # Test the root route
       - name: test via NGINX
         run: |
-          curl -f https://localhost:8888
+          curl -f http://localhost:8888
           curl -o /dev/null -s -w "%{http_code}" http://localhost:8888/api | grep -qE "^(200|401|404)$"
 
-      - name: build Docker image
-        run: |
-          docker build -t frontend:image frontend/
-
-      - name: destroy stack
+      - name: tear down stack
         if: always()
-        run: |
-          docker system prune -a
-          docker compose dwon -v
+        run: docker compose down -v
 
 
