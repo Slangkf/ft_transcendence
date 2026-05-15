@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { FriendshipController } from './friendship.controller';
 import { verifyToken } from '../middleware/verify_token';
 import { valideRequest } from "../middleware/zod_check";
-import { Send_Friend_Request_Input, Update_Status_Input, GetFriendsParam } from '@shared/friendship.schema';
+import { Send_Friend_Request_Input, Update_Status_Input, GetFriends_param } from '@shared/friendship.schema';
 
 
 export function createFriendshipRouter(
@@ -19,7 +19,7 @@ export function createFriendshipRouter(
     router.delete('/friend/:friendId', friendshipController.RemoveFriend);
 
     router.get('/friends', friendshipController.GetFriends);
-	router.get('/friends/:username', valideRequest(GetFriendsParam),friendshipController.GetFriendsForFriend);
+	router.get('/friends/:username', valideRequest(GetFriends_param), friendshipController.GetFriendsForFriend);
     router.get('/requests/pending', friendshipController.GetPendingRequests);
     router.get('/requests/sent', friendshipController.GetSentRequests);
     router.get('/status/:userId', friendshipController.GetUserStatus);

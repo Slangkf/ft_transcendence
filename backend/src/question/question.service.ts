@@ -1,4 +1,4 @@
-import { PrismaQuestion, Question } from '@prisma/client';
+import { Question as PrismaQuestion } from '@prisma/client';
 import { QuestionRepository } from "./question.repository";
 import { AppError, ErrorCode } from '../error/apperror';
 import { PublicQuestion } from '@shared/game.schema';
@@ -39,7 +39,7 @@ export class QuestionService{
         return this.repo.get_all_Categories();
     }
 
-    async fetchQuizQuestions(quizId: number): Promise<Question[] | null>
+    async fetchQuizQuestions(quizId: number): Promise<GameQuestion[] | null>
     {
         const quiz = await this.repo.get_Quiz_withquestions(quizId);
         if (!quiz || quiz.questions.length === 0)
@@ -55,7 +55,7 @@ export class QuestionService{
             };
         });
     }
-    toPublicQuestion(question: Question): PublicQuestion
+    toPublicQuestion(question: GameQuestion): PublicQuestion
     {
         return {
             id: question.id,

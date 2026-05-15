@@ -1,7 +1,50 @@
-import {  FinalScore, GameUpdateResponse, MatchPlayer, PlayerSnapShot, PublicQuestion, StartGameResult } from "../backend/src/game/game.types";
+import { PublicQuestion } from "@shared/game.schema";
 import {SendFriendRequestInput} from "@shared/friendship.schema";
-import { QueuePlayer } from "../backend/src/game/match/match.types";
-import { RoomStatus } from "../backend/src/room/room.types";
+
+export type RoomStatus = "waiting" | "active" | "closed" | "starting";
+
+export type MatchPlayer = {
+    userId: string;
+    nickname: string;
+};
+
+export type PlayerSnapShot = {
+    id: string;
+    nickname?: string;
+    score: number;
+    status: 'playing' | 'answered' | 'disconnected';
+    isAI: boolean;
+};
+
+export type FinalScore = {
+    winnerId: string;
+    finishedAt: number;
+    scores: Record<string, number>;
+    ranking: Array<{playerId: string; score: number; rank: number}>;
+};
+
+export interface GameUpdateResponse {
+    gameId: string;
+    status: "playing" | "finished";
+    state: {
+        currentQuestionIndex: number;
+        totalQuestions: number;
+        player: Record<string, PlayerSnapShot>;
+    };
+    lastAnswerUpdate?: {
+        playerId: string;
+        isCorrect: boolean;
+        correctAnswerIndex: number;
+        correctText: string;
+    };
+    nextQuestion?: PublicQuestion | null;
+    finalScore?: FinalScore | null;
+}
+
+export type StartGameResult = {
+    gameId: string;
+    question: PublicQuestion;
+};
 
 export type RoomPlayerInfo = {
     id: string;
