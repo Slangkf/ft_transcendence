@@ -45,6 +45,9 @@ jobs:
         run: npm install
         working-directory: backend
 
+      - name: copy shared folder
+        run: cp -r shared/ backend/shared/
+
       # build:prod = type-check && tsc — covers both in one shot
       - name: type check and build
         run: npm run build:prod
