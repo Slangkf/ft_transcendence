@@ -50,6 +50,7 @@ services:
       dockerfile: backend/Dockerfile
     volumes:
         - ./backend:/app
+         - /app/node_modules 
         - ./shared:/app/shared
         - ./backend/uploads:/app/uploads
     container_name: backend
