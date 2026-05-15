@@ -25,6 +25,11 @@ export class QuestionService{
 
     return questions;
     }
+
+    async getCategories(): Promise<string[]> {
+        return this.repo.get_all_Categories();
+    }
+
     async fetchQuizQuestions(quizId: number): Promise<GameQuestion[] | null>
     {
         const quiz = await this.repo.get_Quiz_withquestions(quizId);
