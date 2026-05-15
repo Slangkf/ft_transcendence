@@ -60,11 +60,12 @@ jobs:
         run: |
           docker run -d -p 3000:3000 --name backend-container backend:image
 
+      - name: backend logs
+        run: docker logs backend-container
+
       - name: test backend container
         run: |
-          sleep 5
-          curl -f http://localhost:3000
-          curl -o /dev/null -s -w "%{http_code}" http://localhost:3000 | grep -qE "^(200|401|403|404)$"
+          curl -f http://localhost:3000 || exit 1
 
   frontend:
     runs-on: ubuntu-24.04
@@ -130,6 +131,9 @@ jobs:
       # Postgres and Redis need time to initialize before the backend connects to them
       - name: wait for stack to be ready
         run: sleep 20
+
+      - name: show compose logs
+        run: docker compose logs 
 
       # Test the root route
       - name: test via NGINX
