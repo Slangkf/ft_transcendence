@@ -10,7 +10,7 @@ export class UserController{
 
     GetProfil = async(req: Request, res: Response)=>{
         try{
-            const result = await this.userservice.get_profile(Number(req.user.id));
+            const result = await this.userservice.get_profile(req.user.id);
             res.json(result)
         }catch(error) {
             if (error instanceof AppError){
@@ -62,7 +62,7 @@ export class UserController{
 
     ChangePassword = async(req: Request, res: Response) => {
         try{
-            const result = await this.userservice.change_password(Number(req.user.id), req.body);
+            const result = await this.userservice.change_password(req.user.id, req.body);
             if (result){
                 //clear old token 
                 res.clearCookie('auth_token', {
@@ -90,7 +90,7 @@ export class UserController{
 
     ChangeUsername = async (req: Request, res: Response) => {
         try {
-            const result = await this.userservice.change_username(Number(req.user.id), req.body);
+            const result = await this.userservice.change_username(req.user.id, req.body);
             res.json(result);
         }catch(error) {
             if (error instanceof AppError){
@@ -106,7 +106,7 @@ export class UserController{
 
     UpdateAvatar = async(req: Request, res: Response) => {
         try{
-            const result = await this.userservice.update_avatar(Number(req.user.id), req.file);
+            const result = await this.userservice.update_avatar(req.user.id, req.file);
             res.json(result);
         }catch(error) {
             if (error instanceof AppError){
