@@ -54,7 +54,7 @@ jobs:
         working-directory: backend
 
       - name: build Docker image
-        run: docker build -t backend:image backend/
+        run: docker build -t backend:image -f backend/Dockerfile .
 
       - name: run Docker container
         run: |
