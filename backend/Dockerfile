@@ -25,7 +25,6 @@ RUN npm install --include=dev
 
 COPY backend/ .
 COPY shared/ ./shared/
-ENV PATH="/app/node_modules/.bin:$PATH"
 
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
