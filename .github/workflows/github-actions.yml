@@ -108,7 +108,7 @@ jobs:
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}"             >> .env
 
       - name: start full stack
-        run: docker compose up --build -d --wait
+        run: docker compose up --build --no-cache -d --wait
 
       - name: show compose logs on failure
         if: failure()
