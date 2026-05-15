@@ -1,4 +1,8 @@
-import { PrismaClient } from "@prisma/client/extension";
+import { 
+    PrismaClient, 
+    Message, 
+    BatchPayload
+ } from "@prisma/client"
 
 
 export class ChatRepository{
@@ -7,22 +11,20 @@ export class ChatRepository{
     ){}
 
     // save a message
-    async saveMessage(fromId: number, toUserId: number, content: string){
-        await this.prisma.create({
+    async saveMessage(fromId: number, toUserId: number, content: string): Promise<Message>{
+        return await this.prisma.message.create({
             data:{
                 senderId: fromId,
                 receiverId: toUserId,
                 content,
-            },
-            include: {
-                sender: {select: {id: true, username: true}}
             }
         })
+
     }
 
     //get history 
-    async getHistory(userAId: number, userBId: number, limit = 50, before?: Date){
-        return this.prisma.findMany({
+    async getHistory(userAId: number, userBId: number, limit = 50, before?: Date): Promise<Message[]>{
+        return this.prisma.message.findMany({
             where: {
                 OR: [
                     {senderId: userAId, receiverId: userBId},
@@ -32,16 +34,14 @@ export class ChatRepository{
             },
             orderBy: { createdAt: 'desc' },
             take: limit,
-            include: {
-                sender: { select: { id: true, username: true } }
-            }
         });
     }
     
 
-    //mark the message has read 
-    async markAsRead(fromId: number, toUserId: number){
-        return this.prisma.updateMany({
+    //mark the message has read ， tell the front how many message has read 
+    //batchpayload return count 
+    async markAsRead(fromId: number, toUserId: number): Promise<BatchPayload>{
+        return this.prisma.message.updateMany({
             where: {senderId: fromId, receiverId: toUserId, read: false},
             data: {read: true}
         })

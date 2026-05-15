@@ -138,6 +138,7 @@ export type ChatSocketEvents ={
     'message_received': (data: {
         messageId: string;
         fromUserId: string;
+        toUserId: string;
         content: string;
         createdAt: number;
     }) => void;

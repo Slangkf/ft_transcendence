@@ -2,6 +2,7 @@ import { AppError, ErrorCode } from "../error/apperror";
 import { FriendshipService } from "../friendship/friendship.service";
 import { ChatEmitter } from "../websocket/socket.emitter";
 import { ChatRepository } from "./chat.repository";
+import { ChatMessageDTO } from "@shared/chat.schema";
 
 export class ChatService{
     constructor(
@@ -11,7 +12,7 @@ export class ChatService{
     ){}
 
 
-    async sendPrivateMessage(fromId: number, toUserId: number, content: string){
+    async sendPrivateMessage(fromId: number, toUserId: number, content: string): Promise<ChatMessageDTO>{
         
         //check if they are friends 
         const areFriends = await this.friendservice.areFriends(fromId, toUserId);
@@ -22,23 +23,25 @@ export class ChatService{
         //save the message in database
         const message = await this.chatrepo.saveMessage(fromId, toUserId, content);
 
-        //tell toUserId a message received
-        await this.emitter.toUser(String(toUserId), 'message_received', {
-            messageId: String(message.id),
+        const payload = {
+            messageId: message.id,
             fromUserId: String(fromId),
+            toUserId: String(toUserId),
             content,
             createdAt: message.createdAt,
-        });
+        }
+        //tell toUserId a message received
+        await this.emitter.toUser(String(toUserId), 'message_received', payload);
 
-        return message;
+        return payload;
     }
 
-    async getHistory(userId: number, withUserId: number, limite= 50, before?: Data){
+    async getHistory(userId: number, withUserId: number, limit= 50, before?: Date){
         const areFriends = await this.friendservice.areFriends(userId, withUserId);
         if (!areFriends){
             throw new AppError('Not friends', ErrorCode.FRIEND_NOT_FOUND, 403);
         }
-        return this.chatrepo.getHistory(userId, withUserId, limite, before);
+        return this.chatrepo.getHistory(userId, withUserId, limit, before);
     }
 
     async markAsRead(userId: number, fromUserId: number){

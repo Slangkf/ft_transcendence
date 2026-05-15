@@ -26,7 +26,7 @@ export class ChatSocketHandler{
 
     private async onSendMessage(socket: chatSocket, userId: string, data:{toUserId: string; content: string}): Promise<void>{
         try{
-            const message = await this.chatservice.sendPrivateMessage(userId, data.toUserId, data.content);
+            const message = await this.chatservice.sendPrivateMessage(Number(userId), Number(data.toUserId), data.content);
             //wait toUser receive
             socket.emit('message_send', {
                 messageId: message.id,
@@ -39,9 +39,9 @@ export class ChatSocketHandler{
         }
     }
 
-    private async onGetHistory(socket: chatSocket, userId: number, data:{withUserId: string; limit?: number; before?: Data}): Promise<void>{
+    private async onGetHistory(socket: chatSocket, userId: number, data:{withUserId: string; limit?: number; before?: Date}): Promise<void>{
         try{
-            const message = await this.chatservice.getHistory(userId, data.withUserId, data.limit, data.before);
+            const message = await this.chatservice.getHistory(userId, Number(data.withUserId), data.limit, data.before);
             socket.emit('history', {withUserId: data.withUserId, message})
         }catch(error){
             socket.emit('error', {message: error instanceof AppError? error.message : "failed to getHistory socket"});
@@ -50,7 +50,7 @@ export class ChatSocketHandler{
 
     private async onMarkRead(socket: chatSocket, userId: string, data: {fromUserId: string}): Promise<void>{
         try{
-            await this.chatservice.markAsRead(userId, data.fromUserId);
+            await this.chatservice.markAsRead(Number(userId), Number(data.fromUserId));
         }catch (error){
             socket.emit('error', {
                 message: "failed to mark read in socket"
