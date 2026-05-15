@@ -110,6 +110,9 @@ jobs:
       - name: build images
         run: docker compose build --no-cache
 
+      - name: build backend with verbose
+        run: docker build --no-cache --progress=plain -f backend/Dockerfile . 2>&1
+
       - name: start full stack  
         run: docker compose up -d --wait
 
