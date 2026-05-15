@@ -108,19 +108,19 @@ jobs:
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}"             >> .env
 
       - name: start full stack
-        run: docker compose up --build -d
+        run: docker compose up --build -d --wait
 
-      # Postgres and Redis need time to initialize before the backend connects to them
-      - name: wait for stack to be ready
-        run: sleep 20
-
-      - name: show compose logs
-        run: docker compose logs 
+      - name: show compose logs on failure
+        if: failure()
+        run: docker compose logs
 
       # Test the root route
-      - name: test via NGINX
+      - name: test via NGINX front
         run: |
           curl -k -f https://localhost:8888/
+
+      - name: nginx back with health
+        run: |
           curl -k -f https://localhost:8888/api/health
 
       - name: tear down stack
