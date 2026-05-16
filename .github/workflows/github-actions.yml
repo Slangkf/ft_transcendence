@@ -97,6 +97,10 @@ jobs:
       - name: create .env file
         run: |
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5ca891a (merge main)
           {
             echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"
             echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
@@ -111,7 +115,10 @@ jobs:
           } > .env
           ls -la .env
           wc -l .env
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5ca891a (merge main)
 
       - name: build images
         run: docker compose build --no-cache
