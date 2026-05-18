@@ -109,6 +109,7 @@ export class GameBaseService
         const currentQuestion = state.questions[state.currentQuestionIndex];
         return {
             gameId: state.gameId,
+            mode: state.mode,
             status: isFinished? "finished": "playing",
             state: {
                 currentQuestionIndex: state.currentQuestionIndex,
