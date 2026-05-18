@@ -41,5 +41,10 @@ export const RedisKeys = {
 
   session:{
     user: (userId: string)=> `session:v1:user:${userId}`,
+  },
+
+  tournament:{
+    state: (tournamentId: string)=> `tournament:v1:state:${tournamentId}`,
+    user: (userId: string)=> `tournament:v1:user:${userId}`,
   }
 }

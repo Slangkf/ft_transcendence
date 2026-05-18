@@ -49,6 +49,7 @@ const start = async () => {
     app.use('/api/user', container.userRouter);
     app.use('/api/game', container.gameRouter);
     app.use('/api/friendship', container.friendRouter);
+    app.use('/api/tournament', container.tournamentRouter);
 
     // 3. Start server
     httpserver.listen(PORT, () => {

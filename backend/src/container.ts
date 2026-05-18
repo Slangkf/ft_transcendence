@@ -34,6 +34,9 @@ import { createFriendshipRouter } from "./friendship/friendship.router";
 import { createChatRouter } from "./chat/chat.router";
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
+import { TournamentRepository } from "./tournament/tournament.repository";
+import { TournamentService } from "./tournament/tournament.service";
+import { createTournamentRouter } from "./tournament/tournament.router";
 
 
 export class Container{
@@ -47,6 +50,7 @@ export class Container{
     public gameRepo!: RedisGameRepository;
     public friendRepo!: FriendshipRepository;
     public chatRepo!: ChatRepository;
+    public tournamentRepo!: TournamentRepository;
 
     //service 
     public questionService!: QuestionService;
@@ -60,7 +64,8 @@ export class Container{
     public gameService!: GameService;
     public sessionService!: SessionService;
     public friendService!: FriendshipService;
-    public chatService!: ChatService; 
+    public chatService!: ChatService;
+    public tournamentService!: TournamentService;
 
     //controller
     public friendController!: FriendshipController;
@@ -82,6 +87,7 @@ export class Container{
     public gameRouter: any;
     public friendRouter: any;
     public chatRouter: any;
+    public tournamentRouter: any;
 
     private constructor(
         
@@ -103,6 +109,7 @@ export class Container{
         this.gameRepo = new RedisGameRepository();
         this.friendRepo = new FriendshipRepository();
         this.chatRepo = new ChatRepository(this.prisma);
+        this.tournamentRepo = new TournamentRepository();
 
         //initialise services without dependance
         this.questionService = new QuestionService(this.questionRepo);
@@ -136,6 +143,19 @@ export class Container{
             this.gameRepo,
             this.questionService
         )
+
+        //tournament
+        this.tournamentService = new TournamentService(
+            this.tournamentRepo,
+            this.matchService,
+            this.roomService,
+            this.sessionService,
+            this.gameEmitter,
+            gameNs,
+            redis,
+        );
+        // wire tournament back into the multiplayer facade so room→game linking can notify the bracket
+        this.multiplayerFacade.setTournamentService(this.tournamentService);
         
         //friendshipservice
         this.friendService = new FriendshipService(
@@ -159,6 +179,7 @@ export class Container{
         this.gameRouter = createGameRouter(this.gameService);
         this.friendRouter = createFriendshipRouter(this.friendController);
         this.chatRouter = createChatRouter(this.chatController);
+        this.tournamentRouter = createTournamentRouter(this.tournamentService);
 
         //sockethandler
         this.gameSocketHandler = new GameSocketHandler(
@@ -169,7 +190,8 @@ export class Container{
             this.gameRepo,
             this.gameEmitter,
             this.gameService,
-            this.sessionService
+            this.sessionService,
+            this.tournamentService,
         );
 
         this.friendSocketHandler = new FriendSocketHandler(

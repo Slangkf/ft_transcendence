@@ -41,10 +41,10 @@
       players = players.map(p => p.id === payload.playerId ? { ...p, isReady: payload.isReady } : p);
     });
 
-    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any }) => {
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number }) => {
       starting = true;
       try {
-        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players }));
+        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt }));
       } catch {}
       goto(`/game/multiplayer/play/${payload.gameId}`);
     });
@@ -101,7 +101,9 @@ async function toggleReady() {
   });
 
   onDestroy(() => {
-    if (!starting) {
+    let inTournament = false;
+    try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
+    if (!starting && !inTournament) {
       // user navigated away mid-lobby
       disconnectGameSocket();
     }

@@ -22,9 +22,10 @@ export class GameBaseService
         return player;
     }
 
-    protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string}): Promise<GameState> {
+    protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string, tournamentId?: string}): Promise<GameState> {
         const questions = await this.questionService.getQuestions(10, extra?.category);
         const gameId = crypto.randomUUID();
+        const now = Date.now();
         const base = {
             gameId,
             mode: mode,
@@ -32,7 +33,8 @@ export class GameBaseService
             players,
             currentQuestionIndex: 0,
             isFinished: false,
-            startedAt: Date.now()
+            startedAt: now,
+            questionStartedAt: now
         }
         if (mode === GameMode.MULTIPLAYER || mode === GameMode.TOURNAMENT){
             if (!extra){
@@ -48,6 +50,7 @@ export class GameBaseService
                 roomId: extra.roomId,
                 hostId: extra.hostId,
                 status: 'playing',
+                tournamentId: extra.tournamentId,
             } as MultiGameState;
         } 
         return {
@@ -96,6 +99,7 @@ export class GameBaseService
             state.isFinished = true;
         } else {
             state.currentQuestionIndex++;
+            state.questionStartedAt = Date.now();
             Object.values(state.players).forEach(p => {
                 if (p.status !== 'disconnected')
                     p.status = 'playing';
@@ -113,7 +117,9 @@ export class GameBaseService
             state: {
                 currentQuestionIndex: state.currentQuestionIndex,
                 totalQuestions: state.questions.length,
-                player: this.buildPublicPlayerSnapShot(state.players)
+                player: this.buildPublicPlayerSnapShot(state.players),
+                startedAt: state.startedAt,
+                questionStartedAt: state.questionStartedAt
             },
             nextQuestion: isFinished? null : this.questionService.toPublicQuestion(currentQuestion),
             finalScore: isFinished? this.buildFinalScore(state.players) : null
@@ -128,7 +134,8 @@ export class GameBaseService
                     id: player.id,
                     score: player.score,
                     status: player.status,
-                    isAI: player.isAI || false
+                    isAI: player.isAI || false,
+                    totalTime: player.Totaltime || 0
                 }
             ])
         )
@@ -142,12 +149,17 @@ export class GameBaseService
             ])
         );
 
-        const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        const sorted = Object.entries(players).sort((a, b) => {
+            if (b[1].score !== a[1].score) return b[1].score - a[1].score;
+            return (a[1].Totaltime || 0) - (b[1].Totaltime || 0);
+        });
 
-        const ranking = sorted.map(([playerId, score], index) => ({
+        const ranking = sorted.map(([playerId, p], index) => ({
             playerId,
-            score,
+            nickname: p.nickname,
+            score: p.score,
             rank: index + 1,
+            totalTime: p.Totaltime || 0,
         }));
 
         const winnerId = ranking[0]?.playerId ?? "";

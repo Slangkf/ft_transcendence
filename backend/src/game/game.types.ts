@@ -49,6 +49,7 @@ export interface BaseGameState {
     currentQuestionIndex: number;
     isFinished: boolean;
     startedAt: number;
+    questionStartedAt: number;
     roomId?: string;
     hostId?: string;
     status?: "waiting" | "starting" | "playing" | "finished";
@@ -63,6 +64,7 @@ export interface MultiGameState extends BaseGameState {
     roomId: string;
     hostId: string;
     status: "waiting" | "starting" | "playing" | "finished";
+    tournamentId?: string;
 }
 
 export type GameState = SoloGameState | MultiGameState; 
@@ -74,13 +76,14 @@ export interface PlayerSnapShot{
     score: number;
     status: PlayerStatus;
     isAI: boolean;
+    totalTime?: number;
 }
 
 export type FinalScore = {
     winnerId: string;
     finishedAt: number;
     scores: Record<string, number>;
-    ranking: Array<{playerId: string; score: number; rank: number}>;
+    ranking: Array<{playerId: string; nickname?: string; score: number; rank: number; totalTime: number}>;
 }
 
 export interface GameUpdateResponse {
@@ -90,6 +93,8 @@ export interface GameUpdateResponse {
         currentQuestionIndex: number;
         totalQuestions: number;
         player: Record<string, PlayerSnapShot>;
+        startedAt?: number;
+        questionStartedAt?: number;
     };
     lastAnswerUpdate? :{
         playerId: string;

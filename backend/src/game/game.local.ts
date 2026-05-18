@@ -16,16 +16,16 @@ export class LocalMultiPlayer extends GameBaseService {
         this.gamerepository = gamerepo;
     }
 
-    async startGame(room: Room, category?: string): Promise<GameUpdateResponse>{
+    async startGame(room: Room, category?: string, tournamentId?: string): Promise<GameUpdateResponse>{
         const playerlist = Object.values(room.players);
         if (playerlist.length < 2) throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
-        
+
         const players: Record<string, Player> = {};
-        
+
         for(const p of playerlist){
             players[p.userId] = this.initPlayers(p.userId, p.nickname);
         }
-        const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId, category});
+        const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId, category, tournamentId});
 
         await this.gamerepository.create(state);
         return {
