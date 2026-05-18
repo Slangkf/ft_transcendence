@@ -85,6 +85,7 @@ export type FinalScore = {
 
 export interface GameUpdateResponse {
     gameId: string;
+    mode: GameMode;
     status: "playing" | "finished";
     state: {
         currentQuestionIndex: number;
