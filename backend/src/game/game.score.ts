@@ -11,7 +11,7 @@ export class PrismaGameRepository {
             //1. create in matchresult 
             const match = await tx.matchResult.create({
                 data: {
-                    mode: this.mapMode(result.mode),
+                    mode: result.mode,
                     winnerId: result.winnerId ?  parseInt(result.winnerId) : null,
                     players: {
                         create: result.players.map(p=> ({
@@ -75,13 +75,4 @@ export class PrismaGameRepository {
         })
     }
 
-    private mapMode(mode: GameMode): string {
-        const map: Record<GameMode, string> = {
-            [GameMode.SOLO]:        'SOLO',
-            [GameMode.AI]:          'AI',
-            [GameMode.MULTIPLAYER]: 'MULTIPLAYER',
-            [GameMode.TOURNAMENT]:  'TOURNAMENT',
-        }
-        return map[mode]
-    }
 }

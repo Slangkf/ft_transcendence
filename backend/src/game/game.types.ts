@@ -1,3 +1,5 @@
+import {GameMode} from "@prisma/client"
+
 export type GameQuestion = {
     id: number;
     question: string;
@@ -34,12 +36,6 @@ export interface Player{
 }
 
 
-export enum GameMode {
-    SOLO = "solo",
-    AI = "ai",
-    MULTIPLAYER = "multiplayer",
-    TOURNAMENT = "tournament",  
-}
 //runtime gamestate to save in redis 
 export interface BaseGameState {
     gameId: string;
