@@ -135,7 +135,7 @@ enum UserStatus {
 
 enum    GameMode {
     SOLO
-    VS_AI
-    ONE_VS_ONE
+    AI
+    MULTIPLAYER
     TOURNAMENT
 }

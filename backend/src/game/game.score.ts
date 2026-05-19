@@ -1,5 +1,5 @@
-import { PrismaClient, Prisma } from "@prisma/client";
-import { GameMode, GameState, MatchResult } from "./game.types";
+import { PrismaClient, Prisma, GameMode } from "@prisma/client";
+import {  GameState, MatchResult } from "./game.types";
 
 export class PrismaGameRepository {
     constructor(
@@ -78,8 +78,8 @@ export class PrismaGameRepository {
     private mapMode(mode: GameMode): string {
         const map: Record<GameMode, string> = {
             [GameMode.SOLO]:        'SOLO',
-            [GameMode.AI]:          'VS_AI',
-            [GameMode.MULTIPLAYER]: 'ONE_VS_ONE',
+            [GameMode.AI]:          'AI',
+            [GameMode.MULTIPLAYER]: 'MULTIPLAYER',
             [GameMode.TOURNAMENT]:  'TOURNAMENT',
         }
         return map[mode]

@@ -127,7 +127,6 @@ export class MultiPlayerFacade {
             hostNickname: host.nickname,
             players: match.players,
             maxPlayers: match.maxPlayers,
-            type: 'game',
         })
         match.roomId = room.roomId;
         //need to update match with roomid  
