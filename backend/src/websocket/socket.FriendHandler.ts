@@ -5,8 +5,8 @@ import { Redis, RedisKeys } from "../lib/redis";
 import { FriendshipService } from "../friendship/friendship.service";
 import { UserRepository } from "../User/user.repository";
 
-type friendNamespace = Namespace<FriendSocketEvents, FriendSocketEvents>;
-type friendSocket = Socket<FriendSocketEvents, FriendSocketEvents>;
+type friendNamespace = Namespace<{}, FriendSocketEvents>;
+type friendSocket = Socket<{}, FriendSocketEvents>;
 
 export class FriendSocketHandler{
     constructor(

@@ -11,7 +11,8 @@ RUN		mkdir -p /etc/nginx/ssl	&& \
 		openssl req -x509 -nodes \
 		-keyout /etc/nginx/ssl/server.key \
 		-out /etc/nginx/ssl/server.crt \
-		-subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Transcendence/CN=trans.42.fr"
+		-subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Transcendence/CN=trans.42.fr" \
+		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
 # Replaces default NGINX configuration with custom nginx.conf.
 COPY	./conf/nginx.conf /etc/nginx/nginx.conf

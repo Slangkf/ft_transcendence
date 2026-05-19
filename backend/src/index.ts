@@ -51,7 +51,7 @@ const start = async () => {
     app.use('/api/friendship', container.friendRouter);
 
     // 3. Start server
-    httpserver.listen(PORT, () => {
+    httpserver.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
     });
 
