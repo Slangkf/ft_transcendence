@@ -49,6 +49,7 @@ export type AnswerResultPayload = {
         playerId: string;
         isCorrect: boolean;
         correctAnswerIndex: number;
+        correctText: string;
     };
     nextQuestion?: PublicQuestion | null;
     players: Record<string, PlayerSnapShot>;

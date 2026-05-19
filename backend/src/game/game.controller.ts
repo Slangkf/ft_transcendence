@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { GameService } from './game.service';
-import { GameMode } from './game.types';
+import {GameMode} from "@prisma/client";
 import { Apiresponse } from '../lib/api_response';
 import { AppError, ErrorCode } from '../error/apperror';
 

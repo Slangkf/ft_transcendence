@@ -2,7 +2,7 @@ import { LocalMultiPlayer } from "./game.local";
 import { MatchService } from "./match/match.service";
 import { Session } from "inspector";
 import { SessionService } from "./session.service";
-import { GameMode, GameState, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
+import { BaseGameState,  GameState, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
 import { Namespace } from "socket.io";
 import { GameService } from "./game.service";
 import { RoomService } from "../room/room.service";
@@ -10,6 +10,8 @@ import { GameEmitter } from "../websocket/socket.emitter";
 import { Redis, RedisKeys } from "../lib/redis";
 import { AppError, ErrorCode } from "../error/apperror";
 import { Room } from "../room/room.types";
+import { GameMapper } from "./game.mapper";
+import {GameMode} from "@prisma/client"
 
 
 export class MultiPlayerFacade {
@@ -21,6 +23,7 @@ export class MultiPlayerFacade {
         private emitter: GameEmitter,
         private gameNs: Namespace,
         private redis: typeof Redis,
+        private mapper: GameMapper,
     ){}
 
     async handleAllReady(roomId: string): Promise<SetReadyResult>{
@@ -33,7 +36,8 @@ export class MultiPlayerFacade {
         if (!acquired) return {allReady: false};
 
         try{
-           const response: GameUpdateResponse = await this.multiService.startGame(room);
+            const state = await this.multiService.startGame(room);
+           const response = this.mapper.toUpdateResponse(state);
 
             if (!response.nextQuestion){
                 throw new AppError('No first question available', ErrorCode.BAD_REQUEST);
@@ -124,7 +128,6 @@ export class MultiPlayerFacade {
             hostNickname: host.nickname,
             players: match.players,
             maxPlayers: match.maxPlayers,
-            type: 'game',
         })
         match.roomId = room.roomId;
         //need to update match with roomid  
@@ -177,7 +180,8 @@ export class MultiPlayerFacade {
         return await this.handleAllReady(roomId);
     }
 
-    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameUpdateResponse>{
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<{state: BaseGameState, 
+            lastAnswer: { playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string };}> {
         return await this.multiService.submitAnswer(gameId, selectedAnswerIndex, userId);
     }
 
@@ -200,9 +204,6 @@ export class MultiPlayerFacade {
 
         return { type: "queue" };
     }   
-    buildResponseForFront(gamestate: GameState): GameUpdateResponse{
-        return this.multiService.buildResponseForFront(gamestate);
-    }
 }
 
 /***

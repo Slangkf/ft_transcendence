@@ -1,8 +1,9 @@
 import { MatchRepository } from "./match.repository";
 import { JoinQueueParams, MatchResult, MathQueueResult, QueuePlayer } from "./match.types";
 import { randomUUID } from "crypto";
-import { GameMode, MatchPlayer } from "../game.types";
+import { MatchPlayer } from "../game.types";
 import { AppError, ErrorCode } from "../../error/apperror";
+import {GameMode} from "@prisma/client"
 
 export class    MatchService{
     constructor(private matchrepository: MatchRepository){}

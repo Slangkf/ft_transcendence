@@ -1,3 +1,5 @@
+import {GameMode} from "@prisma/client"
+
 export type GameQuestion = {
     id: number;
     question: string;
@@ -34,12 +36,6 @@ export interface Player{
 }
 
 
-export enum GameMode {
-    SOLO = "solo",
-    AI = "ai",
-    MULTIPLAYER = "multiplayer",
-    TOURNAMENT = "tournament",  
-}
 //runtime gamestate to save in redis 
 export interface BaseGameState {
     gameId: string;
@@ -55,11 +51,11 @@ export interface BaseGameState {
 }
 
 export interface SoloGameState extends BaseGameState {
-    mode: GameMode.SOLO | GameMode.AI
+    mode: "SOLO" | "AI"
 }
 
 export interface MultiGameState extends BaseGameState {
-    mode: GameMode.MULTIPLAYER | GameMode.TOURNAMENT;
+    mode: "MULTIPLAYER" | "TOURNAMENT";
     roomId: string;
     hostId: string;
     status: "waiting" | "starting" | "playing" | "finished";
@@ -85,6 +81,7 @@ export type FinalScore = {
 
 export interface GameUpdateResponse {
     gameId: string;
+    mode: GameMode;
     status: "playing" | "finished";
     state: {
         currentQuestionIndex: number;
@@ -126,9 +123,27 @@ export type SetReadyResult = {
 
 //input
 export type StartGameParams = {
-   mode: GameMode.SOLO | GameMode.MULTIPLAYER;
+   mode: "SOLO" | "MULTIPLAYER";
    userId: string;
    nickname: string;
    category?: string;
    size?: number;
-}
+};
+
+//type of elements to save in database 
+export type MatchResult = {
+    gameId: string;
+    mode: GameMode;
+    winnerId?: string;
+
+    startedAt?: number;
+    finishedAt?: number;
+
+    players: {
+        userId: string;
+        score: number;
+        rank: number;
+        correctAnswers: number;
+        totalQuestions: number;
+    }[];
+};

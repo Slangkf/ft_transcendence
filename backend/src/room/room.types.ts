@@ -9,7 +9,6 @@ export type RoomPlayer = {
 
 export type RoomStatus = "waiting" | "active" | "closed" | "starting";
 export type Room = {
-    type: 'game' | 'chat';
     roomId: string;
     hostId: string;
     players: Record<string, RoomPlayer>;
@@ -24,7 +23,6 @@ export type CreateRoomParams = {
     hostNickname: string;
     players?: { userId: string; nickname: string }[];
     maxPlayers?: number;
-    type: 'game'| 'chat';
 }
 
 export type JoinRoomParams = {
