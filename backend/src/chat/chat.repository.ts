@@ -1,6 +1,6 @@
 import { 
     PrismaClient, 
-    Message, 
+     type Message, 
     Prisma
  } from "@prisma/client"
 

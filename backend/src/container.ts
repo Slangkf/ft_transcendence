@@ -34,6 +34,8 @@ import { createFriendshipRouter } from "./friendship/friendship.router";
 import { createChatRouter } from "./chat/chat.router";
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
+import { GameMapper } from "./game/game.mapper";
+import { PrismaGameRepository } from "./game/game.score";
 
 
 export class Container{
@@ -47,6 +49,7 @@ export class Container{
     public gameRepo!: RedisGameRepository;
     public friendRepo!: FriendshipRepository;
     public chatRepo!: ChatRepository;
+    public db!: PrismaGameRepository;
 
     //service 
     public questionService!: QuestionService;
@@ -61,6 +64,7 @@ export class Container{
     public sessionService!: SessionService;
     public friendService!: FriendshipService;
     public chatService!: ChatService; 
+    public gamemapper!: GameMapper;
 
     //controller
     public friendController!: FriendshipController;
@@ -103,6 +107,7 @@ export class Container{
         this.gameRepo = new RedisGameRepository();
         this.friendRepo = new FriendshipRepository();
         this.chatRepo = new ChatRepository(this.prisma);
+        this.db = new PrismaGameRepository(this.prisma);
 
         //initialise services without dependance
         this.questionService = new QuestionService(this.questionRepo);
@@ -119,6 +124,8 @@ export class Container{
         this.friendEmitter = new FriendEmitter(io, redis);
         this.chatEmitter = new ChatEmitter(io, redis);
 
+        this.gamemapper = new GameMapper(this.questionService);
+
         //multigamefacade 
         this.multiplayerFacade = new MultiPlayerFacade(
             this.matchService,
@@ -127,14 +134,17 @@ export class Container{
             this.sessionService,
             this.gameEmitter,
             gameNs,
-            redis
+            redis,
+            this.gamemapper,
         );
         //gameservice
         this.gameService = new GameService(
             this.soloService,
             this.multiplayerFacade,
             this.gameRepo,
-            this.questionService
+            this.questionService,
+            this.db,
+            this.gamemapper,
         )
         
         //friendshipservice
