@@ -93,7 +93,6 @@ model MatchResult {
     winner    User?        @relation("MatchWinner", fields: [winnerId], references: [id])
     
     mode       GameMode
-    quizId     Int?
     quiz       Quiz?    @relation(fields: [quizId], references: [id])
         
     @@index([winnerId])

@@ -1,9 +1,10 @@
 import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
+import { GameMapper } from "./game.mapper";
 import { MultiPlayerFacade } from "./game.multi";
 import { IGameRepository } from "./game.redis.repository";
 import { PrismaGameRepository } from "./game.score";
-import { GameMode, GameState, GameUpdateResponse, SetReadyResult, StartGameParams } from "./game.types";
+import { BaseGameState, GameMode, GameState, GameUpdateResponse, MatchResult, SetReadyResult, StartGameParams } from "./game.types";
 import { SoloService } from "./solo";
 
 export type GameStartResult = GameUpdateResponse | {status: 'waiting' | 'matched'; players?: any[]; roomId?: string};
@@ -15,20 +16,27 @@ export class GameService{
         private gameRepository: IGameRepository,
         private questionService: QuestionService,
         private db: PrismaGameRepository, //save into database
+        private mapper: GameMapper // prepare the response for front and in database 
     ){}
 
     async listCategories(): Promise<string[]> {
         return this.questionService.getCategories();
     }
 
-    async startGame(params:StartGameParams): Promise<GameStartResult>{
+    async startGame(params:StartGameParams): Promise<GameUpdateResponse | { status: 'matched' | 'waiting'; roomId?: string; players?: MatchPlayer[] }>{
         const {mode, userId, nickname, category, size} = params;
 
         switch(mode){
             case GameMode.SOLO:
-                return this.soloservice.startGame(userId, nickname, GameMode.SOLO, category);
+                const state = await this.soloservice.startGame(userId, nickname, GameMode.SOLO, category);
+                return this.mapper.toUpdateResponse(state);
             case GameMode.MULTIPLAYER:
-                return this.multiplayer.joinMatchmaking(GameMode.MULTIPLAYER, userId, nickname, size);
+                const result =  await this.multiplayer.joinMatchmaking(GameMode.MULTIPLAYER, userId, nickname, size);
+                return {
+                    status: result.status,
+                    roomId: result.roomId,
+                    players: result.players,
+                };
             default:
                 throw new AppError(
                     "Unknown game mode",
@@ -39,20 +47,29 @@ export class GameService{
     }
 
     async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameUpdateResponse>{
-            const gameState = await this.gameRepository.findById(gameId);
-            
-            if (!gameState) {
-                throw new AppError(
-                    'Game not found',
-                    ErrorCode.GAME_NOT_FOUND,
-                    404
-                );
-            }
-            if (gameState.mode === GameMode.MULTIPLAYER) {
-                return this.multiplayer.submitAnswer(gameId, selectedAnswerIndex, userId);
-            } else {
-                return this.soloservice.submitAnswer(gameId, selectedAnswerIndex, userId);
-            }
+        const gameState = await this.gameRepository.findById(gameId);
+        
+        if (!gameState) {
+            throw new AppError(
+                'Game not found',
+                ErrorCode.GAME_NOT_FOUND,
+                404
+            );
+        }
+
+        let state: BaseGameState;
+        let lastAnswer: any;
+
+        if (gameState.mode === GameMode.MULTIPLAYER) {
+            ({state, lastAnswer} = await this.multiplayer.submitAnswer(gameId, selectedAnswerIndex, userId));
+        } else {
+            ({state, lastAnswer} = await this.soloservice.submitAnswer(gameId, selectedAnswerIndex, userId));
+        }
+
+        if (state.isFinished){
+            await this.persistAndClean(state);
+        }
+        return this.mapper.toUpdateResponse(state, lastAnswer);
     }
 
     async setReady(roomId: string, userId: string, isReady: boolean): Promise<SetReadyResult>{
@@ -63,16 +80,18 @@ export class GameService{
         const state = await this.gameRepository.findById(gameId);
         if (!state || !state.isFinished)
                 return ;
+        
+        const matchresult: MatchResult = this.mapper.toMatchResult(state);
         await this.db.create(state);
         await this.gameRepository.delete(gameId);
     }
 
-
-    buildResponseForFront(gamestate: GameState): GameUpdateResponse{
-        if (gamestate.mode === GameMode.MULTIPLAYER)
-            return this.multiplayer.buildResponseForFront(gamestate);
-        return this.soloservice.buildResponseForFront(gamestate);
+    private async persistAndClean(state: BaseGameState): Promise<void> {
+        const matchResult = this.mapper.toMatchResult(state);  // ← mapper 负责转换
+        await this.db.create(matchResult);
+        await this.gameRepository.delete(state.gameId);
     }
+
 }
 
 /***

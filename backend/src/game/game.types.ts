@@ -132,4 +132,22 @@ export type StartGameParams = {
    nickname: string;
    category?: string;
    size?: number;
-}
+};
+
+//type of elements to save in database 
+export type MatchResult = {
+    gameId: string;
+    mode: GameMode;
+    winnerId?: string;
+
+    startedAt?: number;
+    finishedAt?: number;
+
+    players: {
+        userId: string;
+        score: number;
+        rank: number;
+        correctAnswers: number;
+        totalQuestions: number;
+    }[];
+};

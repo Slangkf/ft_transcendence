@@ -16,7 +16,7 @@ export class LocalMultiPlayer extends GameBaseService {
         this.gamerepository = gamerepo;
     }
 
-    async startGame(room: Room, category?: string): Promise<GameUpdateResponse>{
+    async startGame(room: Room, category?: string): Promise<BaseGameState>{
         const playerlist = Object.values(room.players);
         if (playerlist.length < 2) throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
         
@@ -28,12 +28,12 @@ export class LocalMultiPlayer extends GameBaseService {
         const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId, category});
 
         await this.gamerepository.create(state);
-        return {
-            ...this.buildResponseForFront(state)
-        }
+        return state;
     }
 
-    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameUpdateResponse>{
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<{state: BaseGameState, 
+        lastAnswer:{playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string }
+    }>{
         const state = await this.gamerepository.submitanswerAtomic(
             gameId,
             userId,
@@ -50,34 +50,15 @@ export class LocalMultiPlayer extends GameBaseService {
         const submitter = state.players[userId] as Player | undefined;
         const allAnswered = state.isFinished || submitter?.status === 'playing';
 
-        const lastAnswerUpdate = {
+        const lastAnswer = {
             playerId: userId,
-            questionId: currentQuestion?.id,
             isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
             correctAnswerIndex: currentQuestion?.correctAnswerIndex,
             correctText: allAnswered ? currentQuestion?.options[currentQuestion?.correctAnswerIndex] : undefined,
         };
 
-        return { ...this.buildResponseForFront(state), lastAnswerUpdate };
+        return { state, lastAnswer };
     }
 
-    override buildResponseForFront(state: BaseGameState): GameUpdateResponse {
-        const base = super.buildResponseForFront(state);
-        return {
-            ...base,
-            state: {
-                ...base.state,
-                player: Object.fromEntries(
-                    Object.entries(state.players).map(([id, p]) => [
-                        id, 
-                        {
-                            ...base.state.player[id],
-                            nickname: p.nickname,
-                        }
-                    ])
-                )
-            }
-        }
-    }
 }
     
