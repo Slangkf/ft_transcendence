@@ -4,8 +4,9 @@ import { GameMapper } from "./game.mapper";
 import { MultiPlayerFacade } from "./game.multi";
 import { RedisGameRepository } from "./game.redis.repository";
 import { PrismaGameRepository } from "./game.score";
-import { BaseGameState, GameMode, GameState, GameUpdateResponse, MatchPlayer, MatchResult, SetReadyResult, StartGameParams } from "./game.types";
+import { BaseGameState, GameState, GameUpdateResponse, MatchPlayer, MatchResult, SetReadyResult, StartGameParams } from "./game.types";
 import { SoloService } from "./solo";
+import {GameMode} from "@prisma/client"
 
 export type GameStartResult = GameUpdateResponse | {status: 'waiting' | 'matched'; players?: any[]; roomId?: string};
 

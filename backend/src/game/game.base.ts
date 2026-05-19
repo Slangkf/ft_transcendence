@@ -5,7 +5,10 @@ import { Player,
     GameUpdateResponse, 
     PlayerSnapShot, 
     FinalScore, 
-    GameMode, MultiGameState, SoloGameState, GameState, MatchResult } from "./game.types";
+    MultiGameState, SoloGameState, GameState, MatchResult } from "./game.types";
+
+import {GameMode} from "@prisma/client";
+
 
 
 export class GameBaseService

@@ -3,7 +3,8 @@ import { QuestionService } from "../question/question.service";
 import { Room } from "../room/room.types";
 import { GameBaseService } from "./game.base";
 import { RedisGameRepository } from "./game.redis.repository";
-import { BaseGameState, GameMode, GameUpdateResponse, MultiGameState, Player } from "./game.types";
+import { BaseGameState, GameUpdateResponse, MultiGameState, Player } from "./game.types";
+import {GameMode} from "@prisma/client"
 
 export class LocalMultiPlayer extends GameBaseService {
     protected gamerepository: RedisGameRepository;

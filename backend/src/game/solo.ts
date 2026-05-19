@@ -1,8 +1,9 @@
-import { GameMode, GameUpdateResponse, Player, BaseGameState } from "./game.types";
+import { GameUpdateResponse, Player, BaseGameState } from "./game.types";
 import { GameBaseService } from "./game.base";
 import { RedisGameRepository } from "./game.redis.repository";
 import { QuestionService } from "../question/question.service";
 import { AppError, ErrorCode } from "../error/apperror";
+import {GameMode} from "@prisma/client"
 
 
 export class SoloService extends GameBaseService{

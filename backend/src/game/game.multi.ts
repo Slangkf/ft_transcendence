@@ -2,7 +2,7 @@ import { LocalMultiPlayer } from "./game.local";
 import { MatchService } from "./match/match.service";
 import { Session } from "inspector";
 import { SessionService } from "./session.service";
-import { BaseGameState, GameMode, GameState, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
+import { BaseGameState,  GameState, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
 import { Namespace } from "socket.io";
 import { GameService } from "./game.service";
 import { RoomService } from "../room/room.service";
@@ -11,6 +11,7 @@ import { Redis, RedisKeys } from "../lib/redis";
 import { AppError, ErrorCode } from "../error/apperror";
 import { Room } from "../room/room.types";
 import { GameMapper } from "./game.mapper";
+import {GameMode} from "@prisma/client"
 
 
 export class MultiPlayerFacade {
