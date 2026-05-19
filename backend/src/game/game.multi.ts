@@ -204,9 +204,6 @@ export class MultiPlayerFacade {
 
         return { type: "queue" };
     }   
-    buildResponseForFront(gamestate: GameState): GameUpdateResponse{
-        return this.multiService.buildResponseForFront(gamestate);
-    }
 }
 
 /***

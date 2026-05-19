@@ -179,7 +179,8 @@ export class Container{
             this.gameRepo,
             this.gameEmitter,
             this.gameService,
-            this.sessionService
+            this.sessionService,
+            this.gamemapper,
         );
 
         this.friendSocketHandler = new FriendSocketHandler(

@@ -2,15 +2,15 @@ import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
 import { Room } from "../room/room.types";
 import { GameBaseService } from "./game.base";
-import { IGameRepository } from "./game.redis.repository";
+import { RedisGameRepository } from "./game.redis.repository";
 import { BaseGameState, GameMode, GameUpdateResponse, MultiGameState, Player } from "./game.types";
 
 export class LocalMultiPlayer extends GameBaseService {
-    protected gamerepository: IGameRepository;
+    protected gamerepository: RedisGameRepository;
 
     constructor(
         questionservice: QuestionService,
-        gamerepo: IGameRepository,
+        gamerepo: RedisGameRepository,
     ){
         super(questionservice);
         this.gamerepository = gamerepo;

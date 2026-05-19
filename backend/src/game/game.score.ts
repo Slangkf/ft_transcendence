@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-import { IGameRepository } from "./game.redis.repository";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { GameMode, GameState, MatchResult } from "./game.types";
 
 export class PrismaGameRepository {
@@ -8,7 +7,7 @@ export class PrismaGameRepository {
     ){}
 
     async create(result: MatchResult): Promise<void>{
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             //1. create in matchresult 
             const match = await tx.matchResult.create({
                 data: {

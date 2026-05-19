@@ -9,6 +9,7 @@ import { MatchService } from "../game/match/match.service";
 import { RedisGameRepository } from "../game/game.redis.repository";
 import { GameService } from "../game/game.service";
 import { SessionService } from "../game/session.service";
+import { GameMapper } from "src/game/game.mapper";
 
 type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
@@ -25,6 +26,7 @@ export class GameSocketHandler{
         private emitter: GameEmitter,
         private gameService: GameService,
         private sessionService: SessionService,
+        private mapper: GameMapper,
     ){}
 
     private gameuserkey(userId: string){
@@ -125,14 +127,14 @@ export class GameSocketHandler{
                 if (gamestate.isFinished){
                     socket.emit('game_finished', {
                         gameId: gamestate.gameId,
-                        state: this.gameService.buildResponseForFront(gamestate),
+                        state: this.mapper.toUpdateResponse(gamestate),
                     });
                     break;
                 } else {
                     socket.emit('reconnect', {
                         type: "in_game",
                         gameId: gamestate.gameId,
-                        state: this.gameService.buildResponseForFront(gamestate),
+                        state: this.mapper.toUpdateResponse(gamestate),
                     })
                     break; 
                 }
@@ -216,7 +218,7 @@ export class GameSocketHandler{
             {
                 this.io.to(gamestate.roomId).emit('game_finished', {
                     gameId: gamestate.gameId,
-                    state: this.gameService.buildResponseForFront(gamestate),
+                    state: this.mapper.toUpdateResponse(gamestate),
                 })
                 await Promise.all(
                     Object.keys(gamestate.players).map(p => 

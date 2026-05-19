@@ -2,9 +2,9 @@ import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
 import { GameMapper } from "./game.mapper";
 import { MultiPlayerFacade } from "./game.multi";
-import { IGameRepository } from "./game.redis.repository";
+import { RedisGameRepository } from "./game.redis.repository";
 import { PrismaGameRepository } from "./game.score";
-import { BaseGameState, GameMode, GameState, GameUpdateResponse, MatchResult, SetReadyResult, StartGameParams } from "./game.types";
+import { BaseGameState, GameMode, GameState, GameUpdateResponse, MatchPlayer, MatchResult, SetReadyResult, StartGameParams } from "./game.types";
 import { SoloService } from "./solo";
 
 export type GameStartResult = GameUpdateResponse | {status: 'waiting' | 'matched'; players?: any[]; roomId?: string};
@@ -13,7 +13,7 @@ export class GameService{
     constructor(
         private soloservice: SoloService,
         private multiplayer: MultiPlayerFacade,
-        private gameRepository: IGameRepository,
+        private gameRepository: RedisGameRepository,
         private questionService: QuestionService,
         private db: PrismaGameRepository, //save into database
         private mapper: GameMapper // prepare the response for front and in database 
@@ -82,7 +82,7 @@ export class GameService{
                 return ;
         
         const matchresult: MatchResult = this.mapper.toMatchResult(state);
-        await this.db.create(state);
+        await this.db.create(matchresult);
         await this.gameRepository.delete(gameId);
     }
 
