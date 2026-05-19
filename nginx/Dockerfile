@@ -15,10 +15,12 @@ RUN		mkdir -p /etc/nginx/ssl	&& \
 		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
 # Replaces default NGINX configuration with custom nginx.conf.
-COPY	./conf/nginx.conf /etc/nginx/nginx.conf
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf.template
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Exposes HTTPS port.
 EXPOSE	8888
 
 # Starts the NGINX server in the foreground.
-CMD	["nginx", "-g", "daemon off;"]
+CMD	["/docker-entrypoint.sh"]
