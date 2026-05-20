@@ -64,7 +64,6 @@ export class UserController{
 
     ChangePassword = async(req: Request, res: Response) => {
         try{
-            console.log("body recu in changepassword: ", req.body);
             const { oldpassword, newpassword, confirmpd } = req.validatedBody; // ← pas .input
             const result = await this.userservice.change_password(Number(req.user!.id), { oldpassword, newpassword, confirmpd })
             if (result){
@@ -94,11 +93,11 @@ export class UserController{
 
     ChangeUsername = async (req: Request, res: Response) => {
         try {
-            const {newUsername} = req.validatedBody; 
-            const result = await this.userservice.change_username(Number(req.user!.id), {newUsername});
+            const {username} = req.validatedBody; 
+            const result = await this.userservice.change_username(Number(req.user!.id), {username});
             res.json(result);
         }catch(error) {
-            console.error();
+            console.error("change username error: ", error);
             if (error instanceof AppError){
                 return res.status(error.statusCode).json(
                     Apiresponse.error(error.code, error.message)

@@ -93,7 +93,7 @@
 
 		// Validate input data using Zod schema.
 		const validation = Change_Username_Input.safeParse({
-			newUsername: username
+			username
 		});
 		// If input, map Zod errors to corresponding form fields.
 		if (!validation.success) {
@@ -113,7 +113,7 @@
 				method: 'POST',
 				headers: {'Content-Type': 'application/json' },
 				credentials: 'include',
-				body: JSON.stringify({ newUsername: username })
+				body: JSON.stringify({username })
 			});
 			// Parse backend response as JSON.
 			const result = await response.json();

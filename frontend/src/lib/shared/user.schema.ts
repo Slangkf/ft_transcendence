@@ -86,7 +86,7 @@ export const Change_pd_request = z.object({
 });
 
 export const Change_Username_Input = z.object({
-   newUsername: z.string().min(3, "Must be at least 3 characters").max(20, "Must not exceed 20 characters")
+   username: z.string().min(3, "Must be at least 3 characters").max(20, "Must not exceed 20 characters")
 })
 export type ChangeUsernameInput = z.infer<typeof Change_Username_Input>;
 
