@@ -26,7 +26,7 @@ export class LocalMultiPlayer extends GameBaseService {
         for(const p of playerlist){
             players[p.userId] = this.initPlayers(p.userId, p.nickname);
         }
-        const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId, category});
+        const state = await this.prepareGame(players, "MULTIPLAYER", {roomId: room.roomId, hostId: room.hostId, category});
 
         await this.gamerepository.create(state);
         return state;

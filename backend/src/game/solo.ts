@@ -37,7 +37,7 @@ export class SoloService extends GameBaseService{
 
         const lastAnswer = await this.processAnswer(state, selectedAnswerIndex, userId);
         const allAnswered = Object.values(state.players)
-            .filter((p: Player) => !p.isAI || state.mode === GameMode.AI)
+            .filter((p: Player) => !p.isAI || state.mode === "AI")
             .every((p: Player) => p.status === 'answered');
 
         if (allAnswered) this.advanceGame(state);
