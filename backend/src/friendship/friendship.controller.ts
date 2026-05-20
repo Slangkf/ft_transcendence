@@ -14,6 +14,7 @@ export class FriendshipController {
             const result = await this.friendshipService.send_friend_request(Number(req.user!.id), input);
             res.json(Apiresponse.success(result, "Friend request sent"));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal send friend request error");
         }
     };
@@ -24,6 +25,7 @@ export class FriendshipController {
             const result = await this.friendshipService.accept_friend_request(Number(req.user!.id), friendshipId);
             res.json(Apiresponse.success(result, "Friend request accepted"));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal accept friend request error");
         }
     };
@@ -34,6 +36,7 @@ export class FriendshipController {
             await this.friendshipService.decline_friend_request(Number(req.user!.id), friendshipId);
             res.json(Apiresponse.success(null, "Friend request declined"));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal decline friend request error");
         }
     };
@@ -44,6 +47,7 @@ export class FriendshipController {
             await this.friendshipService.remove_friend(Number(req.user!.id), friendId);
             res.json(Apiresponse.success(null, "Friend removed"));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal remove friend error");
         }
     };
@@ -53,6 +57,7 @@ export class FriendshipController {
             const result = await this.friendshipService.get_friends(Number(req.user!.id));
             res.json(Apiresponse.success(result));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal get friends error");
         }
     };
@@ -70,6 +75,7 @@ export class FriendshipController {
             const result = await this.friendshipService.get_friends_for_friend(username);
             res.json(Apiresponse.success(result));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal get friends for friend error");
         }
     };
@@ -79,6 +85,7 @@ export class FriendshipController {
             const result = await this.friendshipService.get_pending_requests(Number(req.user!.id));
             res.json(Apiresponse.success(result));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal get pending requests error");
         }
     };
@@ -88,26 +95,29 @@ export class FriendshipController {
             const result = await this.friendshipService.get_sent_requests(Number(req.user!.id));
             res.json(Apiresponse.success(result));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal get sent requests error");
         }
     };
 
     UpdateOnlineStatus = async (req: Request, res: Response) => {
         try {
-            const input: UpdateStatusInput = req.body;
+            const {input}: UpdateStatusInput = req.body;
             await this.friendshipService.update_online_status(Number(req.user!.id), input.status);
             res.json(Apiresponse.success(null, "Status updated"));
         } catch (error) {
+            console.error();
             this.handleError(res, error, "Internal update status error");
         }
     };
 
     GetUserStatus = async (req: Request, res: Response) => {
         try {
-            const userId = req.validatedBody;
+            const {userId} = req.validatedBody;
             const result = await this.friendshipService.get_user_status(userId);
             res.json(Apiresponse.success(result));
         } catch (error) {
+            console.error()
             this.handleError(res, error, "Internal get user status error");
         }
     };

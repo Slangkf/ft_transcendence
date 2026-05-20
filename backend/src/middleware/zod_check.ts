@@ -9,6 +9,7 @@ export const valideRequest = (schema: ZodSchema) => {
             ...req.query,
         })
         if (!result.success){
+            console.log(result.error.format())
             return res.status(400).json({errors: result.error.flatten()})
         }
         req.validatedBody = result.data

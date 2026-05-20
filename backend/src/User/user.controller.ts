@@ -26,7 +26,7 @@ export class UserController{
     
     GetProfilById = async(req: Request, res: Response)=>{
         try{
-            const userId = Number(req.user!.id);
+            const {userId} = req.validatedBody;
             const result = await this.userservice.get_profile(userId);
             res.json(result)
 
@@ -37,14 +37,15 @@ export class UserController{
                     )
             }
             res.status(500).json(
-                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfil controler error")
+                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfilbyId controler error")
                 )
         }
     }
 
     GetProfilByUsername = async(req: Request, res: Response)=>{
         try{
-            const username = req.validatedBody;
+            const {username} = req.validatedBody;
+            
             const result = await this.userservice.get_profile_by_username(username);
             res.json(result)
 
@@ -56,14 +57,16 @@ export class UserController{
                     )
             }
             res.status(500).json(
-                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfil controler error")
+                Apiresponse.error("INTERNAL_ERROR", "Internal GetProfilByUsername controler error")
                 )
         }
     }
 
     ChangePassword = async(req: Request, res: Response) => {
         try{
-            const result = await this.userservice.change_password(Number(req.user!.id), req.body);
+            console.log("body recu in changepassword: ", req.body);
+            const { oldpassword, newpassword, confirmpd } = req.validatedBody; // ← pas .input
+            const result = await this.userservice.change_password(Number(req.user!.id), { oldpassword, newpassword, confirmpd })
             if (result){
                 //clear old token 
                 res.clearCookie('auth_token', {
@@ -91,9 +94,11 @@ export class UserController{
 
     ChangeUsername = async (req: Request, res: Response) => {
         try {
-            const result = await this.userservice.change_username(Number(req.user!.id), req.body);
+            const {newUsername} = req.validatedBody; 
+            const result = await this.userservice.change_username(Number(req.user!.id), {newUsername});
             res.json(result);
         }catch(error) {
+            console.error();
             if (error instanceof AppError){
                 return res.status(error.statusCode).json(
                     Apiresponse.error(error.code, error.message)
