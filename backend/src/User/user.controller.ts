@@ -42,7 +42,7 @@ export class UserController{
         }
     }
 
-    GetProfilByUsername = async(req: Request, res: Response)=>{
+    GetProfilByUsername = async(req: Request<{ username: string }>, res: Response)=>{
         try{
             const username = req.params.username;
             const result = await this.userservice.get_profile_by_username(username);
