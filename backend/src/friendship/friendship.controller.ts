@@ -22,7 +22,7 @@ export class FriendshipController {
     AcceptFriendRequest = async (req: Request, res: Response) => {
         try {
 
-            const friendshipId = parseInt(req.params.friendshipId) ;
+            const friendshipId = parseInt(req.params.friendshipId as string) ;
             const result = await this.friendshipService.accept_friend_request(Number(req.user!.id), friendshipId);
             res.json(Apiresponse.success(result, "Friend request accepted"));
         } catch (error) {
@@ -33,7 +33,7 @@ export class FriendshipController {
 
     DeclineFriendRequest = async (req: Request, res: Response) => {
         try {
-           const friendshipId = parseInt(req.params.friendshipId);
+           const friendshipId = parseInt(req.params.friendshipId as string);
             await this.friendshipService.decline_friend_request(Number(req.user!.id), friendshipId);
             res.json(Apiresponse.success(null, "Friend request declined"));
         } catch (error) {
@@ -44,7 +44,7 @@ export class FriendshipController {
 
     RemoveFriend = async (req: Request, res: Response) => {
         try {
-            const friendId = parseInt(req.params.friendId);
+            const friendId = parseInt(req.params.friendId as string);
             await this.friendshipService.remove_friend(Number(req.user!.id), friendId);
             res.json(Apiresponse.success(null, "Friend removed"));
         } catch (error) {
@@ -103,7 +103,7 @@ export class FriendshipController {
 
     UpdateOnlineStatus = async (req: Request, res: Response) => {
         try {
-            const {input}: UpdateStatusInput = req.body;
+            const input: UpdateStatusInput = req.body;
             await this.friendshipService.update_online_status(Number(req.user!.id), input.status);
             res.json(Apiresponse.success(null, "Status updated"));
         } catch (error) {
@@ -114,7 +114,7 @@ export class FriendshipController {
 
     GetUserStatus = async (req: Request, res: Response) => {
         try {
-            const userId = parseInt(req.params.userId);
+            const userId = parseInt(req.params.userId as string);
             const result = await this.friendshipService.get_user_status(userId);
             res.json(Apiresponse.success(result));
         } catch (error) {
