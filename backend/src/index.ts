@@ -25,7 +25,7 @@ const start = async () => {
     app.use(cookieParser());
     app.use(express.json());
     app.use(cors({
-      origin: 'https://localhost:8888', // must match the Origin header sent by the browser (protocol + host + port)
+      origin: '*', // must match the Origin header sent by the browser (protocol + host + port)
       credentials: true
     }));
     app.use('/uploads', express.static('uploads'));
