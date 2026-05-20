@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   seed.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ikayiban <ikayiban@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jmen <jmen@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 18:30:48 by ikayiban          #+#    #+#             */
-/*   Updated: 2026/04/13 15:52:54 by ikayiban         ###   ########.fr       */
+/*   Updated: 2026/05/18 11:11:10 by jmen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ import { fileURLToPath } from 'url';
 import 'dotenv/config';
 
 const prisma: PrismaClient = new PrismaClient();
-const __filename: string = fileURLToPath(import.meta.url);
-const __dirname: string = path.dirname(__filename);
+//const __filename: string = fileURLToPath(import.meta.url);
+//const __dirname: string = path.dirname(__filename);
 
 interface Question
 {
@@ -35,7 +35,24 @@ interface Quiz
     questions:  Question[];
 }
 
+async function connectWithRetry(retries = 5) {
+  while (retries > 0) {
+    try {
+      await prisma.$connect();
+      const result = await prisma.$queryRaw`SELECT current_user, current_database();`;
+      console.log('Database connected:', result);
+      return;
+    } catch (err) {
+      console.log(`Failed to connecte database, retries reste: ${retries--}`);
+      await new Promise(res => setTimeout(res, 2000));
+    }
+  }
+  throw new Error('Cannot to connecte Prisma');
+}
+
+
 async function main(): Promise<void> {
+    await connectWithRetry();
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
 

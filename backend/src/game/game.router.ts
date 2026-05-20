@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { GameController } from "./game.controller";
 import { GameService } from "./game.service";
-import { verifyToken } from "src/middleware/verify_token";
+import { verifyToken } from "../middleware/verify_token";
 
 
 

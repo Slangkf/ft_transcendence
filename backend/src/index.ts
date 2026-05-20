@@ -6,24 +6,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import {createServer} from 'http';
 
-import { AuthRouter } from './auth/auth.router';
-import { UserRouter } from './User/user.router';
-import {createGameRouter} from './game/game.router';
-import {createFriendshipRouter} from './friendship/friendship.router';
 import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
-import {FriendEmitter, GameEmitter} from './websocket/socket.emitter';
-import { createGameServices,
-  roomService,
-  matchService,
-  gamerepo,
-  userrepo,
-  createFriendshipModule,
-} from './container';
-import { GameSocketHandler } from './websocket/socket.gamehandler';
-import { FriendSocketHandler } from './websocket/socket.FriendHandler';
-import { SessionService } from './game/session.service';
-import { ClientToServerEvents, ServerToClientEvents } from './websocket/socket.types';
+import { container } from './container';
 
 
 const app = express();
@@ -45,47 +30,28 @@ const start = async () => {
     }));
     app.use('/uploads', express.static('uploads'));
 
+    app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
     //httpserver 
     const httpserver = createServer(app);
     //socket server 
     const {io, gameNs, friendNs, chatNs} = createSocketServer(httpserver, Redis);
 
-    //service layer event emitter of gamesocket
-    const gameemitter = new GameEmitter(io, Redis)
-    const {gameService, multiPlayer} = createGameServices(gameemitter, gameNs, Redis);
+    //initialise container with all dependances
+    await container.initialize(io, gameNs, friendNs, chatNs, Redis);
 
-    const gamehandler = new GameSocketHandler(
-      gameNs,
-      Redis, 
-      roomService, 
-      matchService, 
-      gamerepo, 
-      gameemitter,
-      gameService,
-      new SessionService(),);
-    gameNs.on('connection', socket => gamehandler.onConnection(socket));
-
-    //friendsocket
-    const friendemitter = new FriendEmitter(io, Redis);
-    const {friendshipController, friendshipService} = createFriendshipModule(friendemitter);
-    const friendhandler = new FriendSocketHandler(
-      friendNs,
-      Redis,
-      friendemitter,
-      friendshipService,
-      userrepo
-    );
-    friendNs.on('connection', socket=> friendhandler.onConnection(socket));
-    const friendshipRouter = createFriendshipRouter(friendshipController);
+    //socket handler
+    gameNs.on('connection', socket => container.gameSocketHandler.onConnection(socket));
+    friendNs.on('connection', socket => container.friendSocketHandler.onConnection(socket));
 
 
-    app.use('/api/auth', AuthRouter);
-    app.use('/api/user', UserRouter);
-    app.use('/api/game', createGameRouter(gameService));
-    app.use('/api/friendship', friendshipRouter);
+    app.use('/api/auth', container.authRouter);
+    app.use('/api/user', container.userRouter);
+    app.use('/api/game', container.gameRouter);
+    app.use('/api/friendship', container.friendRouter);
 
     // 3. Start server
-    httpserver.listen(PORT, () => {
+    httpserver.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
     });
 

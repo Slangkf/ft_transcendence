@@ -1,9 +1,9 @@
 import { UserRepository } from './user.repository'
 import type {UserOutput, ChangePdInput, ChangeUsernameInput} from '@shared/user.schema'
-import { AppError, ErrorCode } from 'src/error/apperror';
 import bcrypt from 'bcrypt';
 import fs from 'fs/promises';
 import path from 'path';
+import { AppError, ErrorCode } from '../error/apperror';
 
 export class UserService{
     constructor(private userrepository: UserRepository)
@@ -85,24 +85,24 @@ export class UserService{
 		
         }
 
-        if (user.username === input.newUsername) {
+        if (user.username === input.username) {
 			throw new AppError(
 				'The new username cannot be the same as the old one', 
 				ErrorCode.SAME_NEW_OLD_USERNAME,
 				400,
-				{newusername: input.newUsername});
+				{newusername: input.username});
         }
 
-        const existingUser = await this.userrepository.find_by_username(input.newUsername);
+        const existingUser = await this.userrepository.find_by_username(input.username);
         if (existingUser) {
 			throw new AppError(
 				'Username already taken', 
 				ErrorCode.AUTH_USERNAME_ALREADY_EXIST,
 				409,
-				{newusername: input.newUsername});
+				{newusername: input.username});
         }
 
-        await this.userrepository.update_username(userid, input.newUsername);
+        await this.userrepository.update_username(userid, input.username);
         return await this.get_profile(userid);
     }
 

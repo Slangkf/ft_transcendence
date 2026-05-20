@@ -5,11 +5,11 @@
 
 via Nginx
 
-curl -i -k -c cookies.txt -X POST https://localhost:8888/api/auth/register \
+curl -i -k -c cookies1.txt -X POST https://localhost:8888/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser_cycl1",
-    "email": "1testcycl@gmail.com",
+    "username": "testuser1_cycl1",
+    "email": "1testcyc1l@gmail.com",
     "password": "12345678900"
   }'
 
@@ -17,10 +17,10 @@ curl -i -k -c cookies.txt -X POST https://localhost:8888/api/auth/register \
 
 via Nginx
 
-  curl -i -k -b cookies.txt -c cookies.txt -X POST https://localhost:8888/api/auth/login \
+  curl -i -k -b cookies.txt -c cookies1.txt -X POST https://localhost:8888/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "testcycle@gmail.com",
+    "email": "1testcyc1l@gmail.com",
     "password": "12345678900"
   }'
 
@@ -146,3 +146,21 @@ curl -k -X POST "https://localhost:8888/api/friendship/request" -c cookies0.txt 
 -d '{
   "targetUserId": 8
 }'
+
+--- start multigame 
+-b cookie.txt => send with the cookie
+-c cookie.txt => create a cookie 
+
+curl -k -X POST "https://localhost:8888/api/game/multiplayer/start" -b cookies1.txt \
+-H "Content-Type: application/json" \
+
+
+---- roomId: 0626a4cc-9f5c-49de-972d-11c3d7467228  
+set ready in multigame 
+curl -k -X POST "https://localhost:8888/api/game/multiplayer/ready/roomId" \
+-b cookies1.txt \
+-H "Content-Type: application/json" \
+-d '{
+  "isReady": true
+}'
+

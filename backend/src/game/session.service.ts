@@ -1,4 +1,4 @@
-import { Redis, RedisKeys} from "src/lib/redis";
+import { Redis, RedisKeys } from "../lib/redis";
 
 
 export class SessionService {

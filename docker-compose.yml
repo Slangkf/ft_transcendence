@@ -1,5 +1,11 @@
 services:
   db:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
     image: postgres:15-bookworm
     container_name: postgres_db
     restart: always
@@ -15,6 +21,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
     image: redis:7-alpine
     container_name: redis
     networks: ["transcendence_network"]
@@ -25,11 +37,19 @@ services:
       - net.core.somaxconn=511
 
   backend:
+    healthcheck:
+      test:  ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
     build: 
       context: .
       dockerfile: backend/Dockerfile
     volumes:
-        - ./backend:/app/backend
+        - ./backend:/app
+        - /app/node_modules 
         - ./shared:/app/shared
         - ./backend/uploads:/app/uploads
     container_name: backend
@@ -42,12 +62,21 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - REDIS_URL=${REDIS_URL}
     depends_on:
-      - redis
-      - db
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     env_file:
       - .env
 
   frontend:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5500"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+
     build: 
       context: ./frontend
       dockerfile: Dockerfile
@@ -63,6 +92,7 @@ services:
   nginx:
     depends_on:
       - backend
+    #     condition: service_healthy
     build: ./nginx
     image: nginx:custom
     container_name: nginx

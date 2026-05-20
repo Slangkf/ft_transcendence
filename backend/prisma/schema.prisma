@@ -27,6 +27,9 @@ model User {
     
     playerMatches      PlayerMatch[]
     matchesWon         MatchResult[] @relation("MatchWinner")
+
+    sentMessages        Message[] @relation("SentMessages")
+    receivedMessages    Message[] @relation("ReceivedMessages")
 }
 
 model Quiz {
@@ -37,6 +40,8 @@ model Quiz {
   
   author      User       @relation(fields: [authorId], references: [id])
   authorId    Int
+
+  matchResults  MatchResult[]
 }
 
 model Question {
@@ -64,6 +69,22 @@ model Friendship {
   @@unique([userId, friendId])
 }
 
+model Message {
+    id          Int         @id @default(autoincrement())
+    createdAt   DateTime    @default(now())
+
+    senderId    Int         
+    receiverId  Int
+    content     String      @db.VarChar(2000)
+    read        Boolean     @default(false)
+
+    sender      User        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+    receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+    
+    @@index([senderId, receiverId])
+    @@index([receiverId, senderId])
+}
+
 model MatchResult {
     id        Int          @id @default(autoincrement())
     createdAt DateTime     @default(now())
@@ -73,15 +94,21 @@ model MatchResult {
     winnerId  Int?
     winner    User?        @relation("MatchWinner", fields: [winnerId], references: [id])
     
-    scores    Json?
+    mode       GameMode
+    quizId     Int?
+    quiz       Quiz?    @relation(fields: [quizId], references: [id])
         
     @@index([winnerId])
+    @@index([mode])
 }
 
 model PlayerMatch {
     id        Int         @id @default(autoincrement())
     userId    Int
     matchId   Int
+    score     Int   @default(0)
+    correctAnswers  Int     @default(0)
+    rank        Int     @default(0)
     
     user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     match     MatchResult @relation(fields: [matchId], references: [id], onDelete: Cascade)
@@ -104,4 +131,11 @@ enum Role {
 enum UserStatus {
     ONLINE
     OFFLINE
+}
+
+enum    GameMode {
+    SOLO
+    AI
+    MULTIPLAYER
+    TOURNAMENT
 }

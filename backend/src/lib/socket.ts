@@ -4,36 +4,30 @@ import {Server as HttpServer} from 'http';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { AppError, ErrorCode } from "src/error/apperror";
-import { ChatSocketEvents, ClientToServerEvents, FriendSocketEvents, ServerToClientEvents } from "src/websocket/socket.types";
+import cookie from 'cookie';
+import { AppError, ErrorCode } from "../error/apperror";
+import { ChatSocketEvents, ClientToServerEvents, FriendSocketEvents, ServerToClientEvents } from "../websocket/socket.types";
+import { UserPayload } from "../types/express";
 dotenv.config();
 
 
-function parseAuthTokenFromCookie(cookieHeader?: string): string | null {
-    if (!cookieHeader) return null;
-    const parts = cookieHeader.split(';');
-    for (const part of parts) {
-        const [rawName, ...rest] = part.split('=');
-        if (rawName && rawName.trim() === 'auth_token') {
-            return decodeURIComponent(rest.join('=').trim());
-        }
-    }
-    return null;
-}
-
 export function authMiddleware(socket: any, next: any) {
-    const token = socket.handshake.auth?.token
-        || parseAuthTokenFromCookie(socket.handshake.headers?.cookie);
-    if (!token) {
+    const rawcookie = socket.handshake.headers.cookie;
+    if (!rawcookie){
         return next(new AppError('Unauthorized in socket', ErrorCode.AUTH_UNAUTHORIZED));
     }
 
     try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET) as any;
+        const parsed = cookie.parse(rawcookie);
+        const token = parsed.auth_token;
+        if (!token){
+            return next(new AppError('Unauthorized token in socket', ErrorCode.AUTH_UNAUTHORIZED));
+        }
+        const payload = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
         socket.data.userId = payload.id;
-        socket.data.nickname = payload.nickname;
+        socket.data.nickname = payload.username;
         next();
-    } catch (error) {
+    }catch(error){
         next(new AppError('Unauthorized socket', ErrorCode.AUTH_UNAUTHORIZED));
     }
 

@@ -1,5 +1,8 @@
-import {  GameUpdateResponse, MatchPlayer, PlayerSnapShot, PublicQuestion } from "src/game/game.types";
-import { RoomStatus } from "src/room/room.types";
+import {SendFriendRequestInput} from "@shared/friendship.schema";
+import { string } from "zod/v4-mini";
+import { RoomStatus } from "../room/room.types";
+import { GameUpdateResponse, MatchPlayer, PlayerSnapShot } from "../game/game.types";
+import { PublicQuestion } from "@shared/game.schema";
 
 export type RoomPlayerInfo = {
     id: string;
@@ -46,6 +49,7 @@ export type AnswerResultPayload = {
         playerId: string;
         isCorrect: boolean;
         correctAnswerIndex: number;
+        correctText: string;
     };
     nextQuestion?: PublicQuestion | null;
     players: Record<string, PlayerSnapShot>;
@@ -73,7 +77,7 @@ export type AnswerSubmitPayload = {
 
 export type SocketEvents = Record<string, (data: any) => void>;
 
-export interface ServerToClientEvents extends SocketEvents {
+export type ServerToClientEvents = {
     //match making before start multiplayer game 
     'matched': (data: MatchPayload) => void;
 
@@ -94,7 +98,7 @@ export interface ServerToClientEvents extends SocketEvents {
     }) => void;
 }
 
-export interface ClientToServerEvents {
+export type ClientToServerEvents = {
     submit_answer:(data: {
         gameId: string;
         answerIndex: number;
@@ -109,7 +113,7 @@ export interface ClientToServerEvents {
 
 
 
-export interface FriendSocketEvents extends SocketEvents {
+export type FriendSocketEvents = {
     'friend_request':(data: {
         fromUserId: string;
         fromNickname: string;
@@ -132,5 +136,27 @@ export interface FriendSocketEvents extends SocketEvents {
 }
 
 export type ChatSocketEvents ={
+    'message_received': (data: {
+        messageId: string;
+        fromUserId: string;
+        toUserId: string;
+        content: string;
+        createdAt: number;
+    }) => void;
 
+    'message_send': (data:{
+        messageId: string;
+        toUserId: string;
+        content: string;
+        createdAt: number;
+    }) => void;
+
+    'history': (data:{
+        withUserId: string;
+        message: any[];
+    }) => void;
+
+    'error': (data: {
+        message: string;
+    }) => void;
 }

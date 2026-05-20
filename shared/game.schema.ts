@@ -93,6 +93,44 @@ export const StartGameResultSchema = z.object({
 });
 export type StartGameResult = z.infer<typeof StartGameResultSchema>;
 
+export type MatchPlayer = {
+    userId: string;
+    nickname: string;
+};
+
+export type PlayerSnapShot = {
+    id: string;
+    nickname?: string;
+    score: number;
+    status: 'playing' | 'answered' | 'disconnected';
+    isAI: boolean;
+};
+
+export type FinalScore = {
+    winnerId: string;
+    finishedAt: number;
+    scores: Record<string, number>;
+    ranking: Array<{playerId: string; score: number; rank: number}>;
+};
+
+export interface GameUpdateResponse {
+    gameId: string;
+    status: 'playing' | 'finished';
+    state: {
+        currentQuestionIndex: number;
+        totalQuestions: number;
+        player: Record<string, PlayerSnapShot>;
+    };
+    lastAnswerUpdate?: {
+        playerId: string;
+        isCorrect: boolean;
+        correctAnswerIndex: number;
+        correctText: string;
+    };
+    nextQuestion?: PublicQuestion | null;
+    finalScore?: FinalScore | null;
+}
+
 // Backend/Frontend: Game info union
 export const PlayingGameInfoSchema = z.object({
     gameresult: PublicGameStateSchema,

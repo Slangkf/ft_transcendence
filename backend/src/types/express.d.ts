@@ -1,15 +1,19 @@
-import type { UserOutput } from '@shared/user.schema';
 
-declare global {
-    namespace Express {
-        interface UserPayload {
-            id: string;
-            username: string;
-        }
+import 'express'
 
-        interface Request {
-            user: UserPayload;
-        }
-    }
+export interface UserPayload {
+    id: string
+    username: string
+    jti: string
 }
-export {}
+
+declare module 'express-serve-static-core' {
+   
+    interface Request {
+        user?: UserPayload;
+        validatedBody?: any;
+    }
+  
+}
+
+export{}

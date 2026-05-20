@@ -1,14 +1,13 @@
-import {  FinalScore, GameUpdateResponse, MatchPlayer, PlayerSnapShot, PublicQuestion, StartGameResult } from "src/game/game.types";
-import {SendFriendRequestInput} from "@shared/friendship.schema";
-import { QueuePlayer } from "src/game/match/match.types";
-import { string } from "zod/v4-mini";
-import { RoomStatus } from "src/room/room.types";
+import { FinalScore, GameUpdateResponse, MatchPlayer, PlayerSnapShot, PublicQuestion } from "@shared/game.schema";
+
+export type RoomStatus = "waiting" | "active" | "closed" | "starting";
 
 export type RoomPlayerInfo = {
     id: string;
     nickname: string;
     isReady: boolean;
 };
+
 export type ReconnectLoad = 
     | {type: 'idle'}
     | {type: 'queue'; message: string}
@@ -77,28 +76,28 @@ export type AnswerSubmitPayload = {
 export type SocketEvents = Record<string, (data: any) => void>;
 
 export interface ServerToClientEvents {
-    //match making before start multiplayer game 
+    // match making before start multiplayer game 
     'matched': (data: MatchPayload) => void;
 
-    'player_ready':(data:PlayerReadyPayload) => void;
+    'player_ready': (data: PlayerReadyPayload) => void;
 
     'game_started': (data: GameStartedPayload) => void;
 
     'answer_submitted': (data: AnswerSubmitPayload) => void;
-    'answer_result':(data: AnswerResultPayload) => void;
+    'answer_result': (data: AnswerResultPayload) => void;
 
-    'game_finished':(data: GameFinishedPayload) => void;
+    'game_finished': (data: GameFinishedPayload) => void;
 
-    'player_left':(data: PlayerLeftPayload) => void;
+    'player_left': (data: PlayerLeftPayload) => void;
 
-    'reconnect': (data: ReconnectLoad)=> void;
+    'reconnect': (data: ReconnectLoad) => void;
     'error': (data: {
         message: string;
     }) => void;
 }
 
 export interface ClientToServerEvents {
-    submit_answer:(data: {
+    submit_answer: (data: {
         gameId: string;
         answerIndex: number;
     }) => void;
@@ -109,26 +108,23 @@ export interface ClientToServerEvents {
     //})
 }
 
-
-
-
 export interface FriendSocketEvents {
-    'friend_request':(data: {
+    'friend_request': (data: {
         fromUserId: string;
         fromNickname: string;
     }) => void;
 
-    'friend_accept':(data: {
+    'friend_accept': (data: {
         userId: string;
         nickname: string;
     }) => void;
 
-    'friend_online':(data: {
+    'friend_online': (data: {
         userId: string;
         nickname: string;
     }) => void;
 
-    'friend_offline':(data: {
+    'friend_offline': (data: {
         userId: string;
         nickname: string;
     }) => void;
@@ -142,14 +138,14 @@ export interface ChatSocketEvents {
         createdAt: number;
     }) => void;
 
-    'message_send': (data:{
+    'message_send': (data: {
         messageId: string;
         toUserId: string;
         content: string;
         createdAt: number;
     }) => void;
 
-    'history': (data:{
+    'history': (data: {
         withUserId: string;
         message: any[];
     }) => void;

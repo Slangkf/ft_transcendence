@@ -2,8 +2,8 @@ import {UserRepository} from '../User/user.repository';
 import type { LoginInput, RegisterInput, UserOutput, AuthResult } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AppError, ErrorCode } from 'src/error/apperror';
 import {randomUUID} from 'crypto';
+import { AppError, ErrorCode } from '../error/apperror';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -46,7 +46,7 @@ export  class AuthService{
             nickname: newuser.username,
             jti: randomUUID(),
         },
-        JWT_SECRET,
+        JWT_SECRET!,
         {expiresIn: '7d'}
     )
     return {
@@ -81,7 +81,7 @@ export  class AuthService{
                 nickname: user.username,
                 jti: randomUUID()
             },
-            JWT_SECRET,
+            JWT_SECRET!,
             {expiresIn: '7d'}
         )
         //return data with token
@@ -92,10 +92,11 @@ export  class AuthService{
                 username: user.username,
                 email: user.email,
                 url: user.url,
+                score: user.score,
                 wins: user.wins,
-                losses: user.losses,
                 friendsNb: user.friendsNb,
-                status: 'ONLINE'
+                status: 'ONLINE',
+                createdAt: user.createdAt
             }
         }
     }

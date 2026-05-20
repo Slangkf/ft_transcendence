@@ -1,4 +1,4 @@
-import { Redis, RedisKeys } from "src/lib/redis";
+import { Redis, RedisKeys } from "../../lib/redis"
 
 import { JoinQueueParams, MatchResult, QueuePlayer } from "./match.types";
 const MATCH_TTL = 60 * 60; // 1 hour
@@ -94,10 +94,9 @@ export class MatchRepository{
                 const key = this.queuekey(mode);
                 await Redis.del(key);
                 if (new_queue.length > 0){
-                    await Redis.rPush(
-                        key,
-                        new_queue.map(p=> JSON.stringify(p))
-                    )
+                    for(const item of new_queue){
+                        await Redis.rPush(key, JSON.stringify(item))
+                    }
                 }
                 break; // Player was only in one queue
             }

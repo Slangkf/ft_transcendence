@@ -1,10 +1,11 @@
 import { AuthService } from "./auth.service";
 import type { Request, Response } from "express";
-import { AppError } from "src/error/apperror";
+import { AppError } from "../error/apperror";
 import {valideRequest} from "../middleware/zod_check"
-import { Apiresponse } from "src/lib/api_response";
+import { Apiresponse } from "../lib/api_response";
 import jwt from "jsonwebtoken";
 import { Redis } from "../lib/redis";
+import { CookieOptions } from "express";
 
 //version for middleware of zod, add token in cookie 
 export class AuthController{
@@ -12,7 +13,7 @@ export class AuthController{
     constructor(private authservice: AuthService)
     {}
 
-    private cookieOptions = {
+    private cookieOptions : CookieOptions = {
         httpOnly: true,
         // secure: process.env.NODE_ENV === 'production',	// JIANXIN
         sameSite: 'none',									// JIANXIN
@@ -23,7 +24,8 @@ export class AuthController{
 
     register = async(req: Request, res: Response) =>{
         try{
-            const {token, user} = await this.authservice.register(req.valideBody)
+            const {username, email, password } = req.validatedBody;
+            const {token, user} = await this.authservice.register({username, email, password});
             res.cookie('auth_token', token, this.cookieOptions);
             res.status(201).json(
                 Apiresponse.success(user, "success to register")
@@ -42,7 +44,8 @@ export class AuthController{
 
     login = async(req: Request, res: Response) =>{
         try{
-            const {token, user} = await this.authservice.login(req.valideBody)
+            const {email, password} = req.validatedBody;
+            const {token, user} = await this.authservice.login({email, password})
             res.cookie('auth_token', token, this.cookieOptions);
             res.json(user);
             
@@ -63,7 +66,7 @@ export class AuthController{
 
         try {
             if (token) {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
+                const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
                 const jti = decoded.jti;
                 const exp = decoded.exp;
 

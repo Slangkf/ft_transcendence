@@ -1,12 +1,12 @@
 import { Namespace, Socket } from "socket.io";
 import { FriendEmitter } from "./socket.emitter";
-import { Redis, RedisKeys } from "src/lib/redis";
-import { FriendshipService } from "src/friendship/friendship.service";
-import { UserRepository } from "src/User/user.repository";
 import { FriendSocketEvents } from "./socket.types";
+import { Redis, RedisKeys } from "../lib/redis";
+import { FriendshipService } from "../friendship/friendship.service";
+import { UserRepository } from "../User/user.repository";
 
-type friendNamespace = Namespace<FriendSocketEvents, FriendSocketEvents>;
-type friendSocket = Socket<FriendSocketEvents, FriendSocketEvents>;
+type friendNamespace = Namespace<{}, FriendSocketEvents>;
+type friendSocket = Socket<{}, FriendSocketEvents>;
 
 export class FriendSocketHandler{
     constructor(
@@ -33,15 +33,13 @@ export class FriendSocketHandler{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
                 friends.map(friend => {
-                    // 识别朋友的真实ID：如果当前userId是userId字段，则朋友是friendId；否则朋友是userId
-                    const friendId = friend.userId === Number(userId) ? friend.friendId : friend.userId;
-                    return this.emitter.toUser(String(friendId), 'friend_online', {
+                    const friendId = (friend.userId === Number(userId)) ? friend.friendId : friend.userId;
+                    this.emitter.toUser(String(friendId), 'friend_online', {
                         userId,
                         nickname,
-                    });
+                    })
                 })
             )
-
         }catch(error){
             console.error("error in notify friend: ", error);
         }
@@ -54,12 +52,11 @@ export class FriendSocketHandler{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
                 friends.map(friend => {
-                    // 识别朋友的真实ID：如果当前userId是userId字段，则朋友是friendId；否则朋友是userId
-                    const friendId = friend.userId === Number(userId) ? friend.friendId : friend.userId;
-                    return this.emitter.toUser(String(friendId), 'friend_offline', {
+                    const friendId = (friend.userId === Number(userId)) ? friend.friendId : friend.userId;
+                    this.emitter.toUser(String(friendId), 'friend_offline', {
                         userId,
                         nickname,
-                    });
+                    })
                 })
             )
         } catch(error){

@@ -1,7 +1,7 @@
 // socket.emitter.ts
 import type { ServerToClientEvents, FriendSocketEvents, ChatSocketEvents } from "./socket.types";
 import { Namespace, Server } from 'socket.io';
-import { Redis, RedisKeys } from 'src/lib/redis';
+import { Redis, RedisKeys } from '../lib/redis';
 
 export interface IEmitter<TEvents extends Record<string, (...args: any[]) => void>> {
     toUser<K extends keyof TEvents>(

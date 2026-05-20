@@ -1,31 +1,65 @@
-# Every time a push or a pull-request to the main branch is made, 
-# GitHub Actions will run the "frontend" job in its runner:
-# 1. Checkout the repository code
-# 2. Set up Node.js
-# 3. Install npm dependencies
-# 4. Run Svelte/TypeScript type checks
-# 5. Build the project
+# Full infrastructure CI pipeline
+#
+# - backend and frontend run in parallel
+# - integration waits for both to succeed, then spins up
+#   the full docker-compose stack and smoke-tests it
 
-name: Frontend build test
-run-name: ${{ github.actor }} is testing out GitHub Actions
+name: Infrastructure test
+run-name: ${{ github.actor }} is running the full CI pipeline
 
+# minimum permissions granted to the workflow
 permissions:
-  contents: read # minimum permissions granted to the workflow
+  contents: read
 
 on:
   push:
     branches: [ "**" ]
     paths:
+      - "backend/**"
       - "frontend/**"
+      - "nginx/**"
+      - "shared/**"
+      - "docker-compose.yml"
   pull_request:
     branches: [ "main" ]
     paths:
+      - "backend/**"
       - "frontend/**"
+      - "nginx/**"
+      - "shared/**"
+      - "docker-compose.yml"
 
 jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+      
+      - name: setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #v6.2.0
+        with:
+          node-version:  24
+
+      - name: install dependencies
+        run: npm install
+        working-directory: backend
+
+      - name: copy shared folder
+        run: cp -r shared/ backend/shared/
+
+      # build:prod = type-check && tsc — covers both in one shot
+      - name: type check and build
+        run: npm run build:prod
+        working-directory: backend
+
+      - name: build Docker image
+        run: docker build -t backend:image -f backend/Dockerfile .
+
+
+
   frontend:
     runs-on: ubuntu-24.04
-    
     steps:
       - name: checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
@@ -51,12 +85,58 @@ jobs:
         run: |
           docker build -t frontend:image frontend/
 
-      - name: run Docker container
-        run: |
-          docker run -d -p 5500:5500 --name frontend-container frontend:image
+  integration:
+    runs-on: ubuntu-24.04
+    needs:  [backend, frontend] # only runs if both jobs above pass
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
-      - name: test website
+      # Reconstruct the .env file from GitHub Secrets
+      # Add this file to .gitignore — never commit real values
+      - name: create .env file
         run: |
-          sleep 5
-          curl -f http://localhost:5500
+
+          {
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"
+            echo "POSTGRES_INITDB_ARGS=${{ secrets.POSTGRES_INITDB_ARGS }}"
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}"
+            echo "DATABASE_URL_DOCKER=${{ secrets.DATABASE_URL_DOCKER }}"
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
+            echo "REDIS_URL=${{ secrets.REDIS_URL }}"
+            echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}"
+            echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}"
+          } > .env
+          ls -la .env
+          wc -l .env
+
+      - name: build images
+        run: docker compose build --no-cache
+
+      - name: start full stack  
+        run: docker compose up -d --wait
+
+      - name: show compose logs on failure
+        if: failure()
+        run: docker compose logs frontend
+
+      - name: backe logs
+        if: failure()
+        run: docker compose logs backend
+
+      # Test the root route
+      - name: test via NGINX front
+        run: |
+          curl -k -f https://localhost:8888/
+
+      - name: nginx back with health
+        run: |
+          curl -k -f https://localhost:8888/api/health
+
+      - name: tear down stack
+        if: always()
+        run: docker compose down -v
+
 

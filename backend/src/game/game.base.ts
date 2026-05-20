@@ -1,8 +1,14 @@
-import { randomUUID } from "crypto";
-import { QuestionService } from "src/question/question.service";
-import { Player, BaseGameState, GameUpdateResponse, PlayerSnapShot, FinalScore, GameMode, MultiGameState, SoloGameState, GameState } from "./game.types";
-import { AppError, ErrorCode } from "src/error/apperror";
-import { IGameRepository } from "src/game/game.redis.repository";
+import { AppError, ErrorCode } from "../error/apperror";
+import { QuestionService } from "../question/question.service";
+import { Player, 
+    BaseGameState, 
+    GameUpdateResponse, 
+    PlayerSnapShot, 
+    FinalScore, 
+    MultiGameState, SoloGameState, GameState, MatchResult } from "./game.types";
+
+import {GameMode} from "@prisma/client";
+
 
 
 export class GameBaseService
@@ -26,7 +32,7 @@ export class GameBaseService
 
     protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string}): Promise<GameState> {
         const questions = await this.questionService.getQuestions(10, extra?.category);
-        const gameId = randomUUID();
+        const gameId = crypto.randomUUID();
         const base = {
             gameId,
             mode: mode,
@@ -103,64 +109,6 @@ export class GameBaseService
                     p.status = 'playing';
             })
         }
-    }
-
-    /// prepare the information for front 
-    public buildResponseForFront(state: BaseGameState): GameUpdateResponse{
-        const isFinished = state.isFinished;
-        const currentQuestion = state.questions[state.currentQuestionIndex];
-        return {
-            gameId: state.gameId,
-            status: isFinished? "finished": "playing",
-            state: {
-                currentQuestionIndex: state.currentQuestionIndex,
-                totalQuestions: state.questions.length,
-                player: this.buildPublicPlayerSnapShot(state.players)
-            },
-            nextQuestion: isFinished? null : this.questionService.toPublicQuestion(currentQuestion),
-            finalScore: isFinished? this.buildFinalScore(state.players) : null
-        }
-    }
-
-    protected buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PlayerSnapShot> {
-        return Object.fromEntries(
-            Object.entries(players).map(([id, player]: [string, Player]) => [
-                id,
-                {
-                    id: player.id,
-                    nickname: player.nickname,
-                    score: player.score,
-                    status: player.status,
-                    isAI: player.isAI || false
-                }
-            ])
-        )
-    }
-
-    protected buildFinalScore(players: Record<string, Player>): FinalScore{
-        const scores = Object.fromEntries(
-            Object.entries(players).map(([id, player]: [string, Player]) => [
-                id,
-                player.score
-            ])
-        );
-
-        const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-
-        const ranking = sorted.map(([playerId, score], index) => ({
-            playerId,
-            score,
-            rank: index + 1,
-        }));
-
-        const winnerId = ranking[0]?.playerId ?? "";
-        return {
-            winnerId,
-            finishedAt: Date.now(),
-            scores,
-            ranking,
-        }
-
     }
 
 }

@@ -1,4 +1,4 @@
-import { Redis, RedisKeys } from "src/lib/redis";
+import { Redis, RedisKeys } from "../lib/redis";
 import { Room } from "./room.types";
 
 const ROOM_TTL = 60 * 60 *1;

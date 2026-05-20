@@ -13,17 +13,19 @@
 
 FROM node:24-bookworm
 
-RUN apt-get update \ 
-    && apt-get install -y netcat-openbsd \
+RUN apt-get update \
+    && apt-get install -y netcat-openbsd curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY backend/package*.json ./
-RUN npm install
+RUN npm install --include=dev
+
 
 COPY backend/ .
 COPY shared/ ./shared/
+
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
 #RUN npm run build

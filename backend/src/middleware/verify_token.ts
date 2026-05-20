@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { Redis } from '../lib/redis';
-import { AppError, ErrorCode } from 'src/error/apperror';
+import { User } from '@prisma/client';
+import { AppError, ErrorCode } from '../error/apperror';
+import { UserPayload } from '../types/express';
 
 export const verifyToken = async(req: Request, res: Response, next: NextFunction)=>{
 	// check either the cookie or the Authorization header
@@ -18,7 +20,7 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
     }
 
     try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload
         
         const exist = await Redis.get(`blacklist:${decoded.jti}`);
         if (exist){

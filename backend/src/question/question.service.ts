@@ -1,14 +1,15 @@
 import { Question as PrismaQuestion } from '@prisma/client';
-import { PublicQuestion, Question } from "game/game.types";
 import { QuestionRepository } from "./question.repository";
-import { AppError, ErrorCode } from 'src/error/apperror';
+import { AppError, ErrorCode } from '../error/apperror';
+import { PublicQuestion } from '@shared/game.schema';
+import { GameQuestion } from '../game/game.types';
 
 
 export class QuestionService{
     private availableQuizIds: number[] = [];
     constructor(private  repo: QuestionRepository){}
 
-    async getQuestions(total: number = 10, category?: string): Promise<Question[]> {
+    async getQuestions(total: number = 10, category?: string): Promise<GameQuestion[]> {
     const allIds = category
         ? await this.repo.get_QuizIds_byCategory(category)
         : await this.repo.get_all_QuizIds();
@@ -22,16 +23,14 @@ export class QuestionService{
         'Quiz not found',
          ErrorCode.QUESTION_NOT_FOUND);
 
-    return questions
-      .sort(() => Math.random() - 0.5)
-      .slice(0, total);
-  }
+    return questions;
+    }
 
-    async getCategories(): Promise<string[]>{
+    async getCategories(): Promise<string[]> {
         return this.repo.get_all_Categories();
     }
 
-    async fetchQuizQuestions(quizId: number): Promise<Question[] | null>
+    async fetchQuizQuestions(quizId: number): Promise<GameQuestion[] | null>
     {
         const quiz = await this.repo.get_Quiz_withquestions(quizId);
         if (!quiz || quiz.questions.length === 0)
@@ -47,7 +46,7 @@ export class QuestionService{
             };
         });
     }
-    toPublicQuestion(question: Question): PublicQuestion
+    toPublicQuestion(question: GameQuestion): PublicQuestion
     {
         return {
             id: question.id,

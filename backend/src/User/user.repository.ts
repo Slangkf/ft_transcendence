@@ -15,7 +15,6 @@ export class UserRepository{
             played: user.played,
             friendsNb: user.friendsNb,
             status: user.status,
-            role: user.role
         };
     }
 

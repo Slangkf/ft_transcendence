@@ -15,13 +15,13 @@
     "skipLibCheck": true,
     "baseUrl": ".",         // 根目录作为 baseUrl
     "paths": {
-      "@shared/*": ["./shared/*"],  // 给 shared 目录一个别名
+      "@shared/*": ["shared/*"],  // 给 shared 目录一个别名
     },
-    "types": ["node", "express", "cookie-parser"]
   },
   "include": [
     "src/**/*", 
     "prisma/**/*.ts",
-    "src/types/**/*.d.ts"],
+    "src/types/**/*.d.ts",
+    "shared/**/*"],
   "exclude": ["node_modules", "dist", "prisma"]
 }

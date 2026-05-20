@@ -31,3 +31,8 @@ export const Update_Status_Input = z.object({
     status: z.enum(['ONLINE', 'OFFLINE'])
 });
 export type UpdateStatusInput = z.infer<typeof Update_Status_Input>;
+
+export const GetFriends_param = z.object({
+    Username: z.string(),
+})
+export type GetFriendsParam = z.infer<typeof GetFriends_param>;

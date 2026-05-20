@@ -1,10 +1,8 @@
-import { FriendshipRepository } from "src/friendship/friendship.repository";
-import { FriendshipService } from "src/friendship/friendship.service";
-import { RoomService } from "src/room/room.service";
-import { ChatEmitter } from "src/websocket/socket.emitter";
+import { AppError, ErrorCode } from "../error/apperror";
+import { FriendshipService } from "../friendship/friendship.service";
+import { ChatEmitter } from "../websocket/socket.emitter";
 import { ChatRepository } from "./chat.repository";
-import { AppError, ErrorCode } from "src/error/apperror";
-import { ErrorReply } from "redis";
+import { ChatMessageDTO } from "@shared/chat.schema";
 
 export class ChatService{
     constructor(
@@ -13,7 +11,8 @@ export class ChatService{
         private chatrepo: ChatRepository,
     ){}
 
-    async sendPrivateMessage(fromId: number, toUserId: number, content: string){
+
+    async sendPrivateMessage(fromId: number, toUserId: number, content: string): Promise<ChatMessageDTO>{
         
         //check if they are friends 
         const areFriends = await this.friendservice.areFriends(fromId, toUserId);
@@ -24,30 +23,38 @@ export class ChatService{
         //save the message in database
         const message = await this.chatrepo.saveMessage(fromId, toUserId, content);
 
-        //tell toUserId a message received
-        await this.emitter.toUser(String(toUserId), 'message_received', {
-            messageId: message.id,
+        const chatMessage = {
+            messageId: String(message.id),
             fromUserId: String(fromId),
+            toUserId: String(toUserId),
             content,
             createdAt: message.createdAt,
-        });
+        } as const;
 
-        return message;
+        const socketPayload = {
+            ...chatMessage,
+            createdAt: message.createdAt.getTime(),
+        };
+        await this.emitter.toUser(String(toUserId), 'message_received', socketPayload);
+
+        return chatMessage;
     }
 
-    async getHistory(userId: number, withUserId: number, limite= 50, before?: Data){
+    async getHistory(userId: number, withUserId: number, limit= 50, before?: Date){
         const areFriends = await this.friendservice.areFriends(userId, withUserId);
         if (!areFriends){
             throw new AppError('Not friends', ErrorCode.FRIEND_NOT_FOUND, 403);
         }
-        return this.chatrepo.getHistory(userId, withUserId, limite, before);
+        return this.chatrepo.getHistory(userId, withUserId, limit, before);
     }
 
     async markAsRead(userId: number, fromUserId: number){
         return await this.chatrepo.markAsRead(fromUserId, userId);
     }
 
-    
+    async getUnreadCount(userId: number) {
+        return this.chatrepo.getUnreadCount(userId);
+    }
 }
 
 

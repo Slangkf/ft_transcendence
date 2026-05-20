@@ -55,10 +55,16 @@ export type AuthResult = z.infer<typeof Auth_result>;
 
 //type input for change password, only oldpassword and 2 new password
 export const Change_Pd_Input = z.object({
+    oldpassword: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters"),
     newpassword: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters"),
     confirmpd: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters")
 })
-.refine((data) => data.newpassword === data.confirmpd, {
+.refine(
+    (data:{
+        oldpassword: string
+        newpassword: string
+        confirmpd: string
+}) => data.newpassword === data.confirmpd, {
 	path: ["confirmpd"],
 	message: "Passwords do not match",
 });
@@ -68,3 +74,4 @@ export const Change_Username_Input = z.object({
    username: z.string().min(3, "Must be at least 3 characters").max(20, "Must not exceed 20 characters")
 })
 export type ChangeUsernameInput = z.infer<typeof Change_Username_Input>;
+
