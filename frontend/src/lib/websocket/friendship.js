@@ -3,7 +3,7 @@ import { showToast } from "$lib/toast.svelte";
   
 export function connectWS() {
 
-	const socket = io('https://localhost:8888/friendship', {
+	const socket = io('https://trans.42.fr/friendship', {
 		withCredentials: true,
         reconnection: true,
     });
