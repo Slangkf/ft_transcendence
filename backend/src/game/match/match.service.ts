@@ -74,9 +74,9 @@ export class    MatchService{
 
     private getmaxplayersfrommode(mode: GameMode):number{
         switch(mode){
-            case GameMode.MULTIPLAYER:
+            case "MULTIPLAYER":
                 return 2;
-            case GameMode.TOURNAMENT: //mode name need to check
+            case "TOURNAMENT": //mode name need to check
                 return 3;
             default:
                 throw new AppError(

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { GameService } from './game.service';
-import {GameMode} from "@prisma/client";
 import { Apiresponse } from '../lib/api_response';
 import { AppError, ErrorCode } from '../error/apperror';
 
@@ -13,8 +12,8 @@ export class GameController
     {
         try{
             const rawmode = req.params.mode; 
-            const mode = rawmode === 'multiplayer' ? GameMode.MULTIPLAYER
-               : rawmode === 'solo'        ? GameMode.SOLO
+            const mode = rawmode === 'multiplayer' ? "MULTIPLAYER"
+               : rawmode === 'solo'        ? "SOLO"
                : null;
 
             if (!mode) {

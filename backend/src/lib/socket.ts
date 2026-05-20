@@ -36,7 +36,7 @@ export function authMiddleware(socket: any, next: any) {
 export function createSocketServer(httpserver: HttpServer, redis: typeof Redis){
     const io = new Server(httpserver, {
         cors:{ 
-            origin: 'https://localhost:8888', 
+            origin: true, 
             credentials: true,
             methods:['GET', 'POST']},
     })

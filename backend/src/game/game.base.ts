@@ -42,7 +42,7 @@ export class GameBaseService
             isFinished: false,
             startedAt: Date.now()
         }
-        if (mode === GameMode.MULTIPLAYER || mode === GameMode.TOURNAMENT){
+        if (mode === "MULTIPLAYER" || mode === "TOURNAMENT"){
             if (!extra){
                 throw new AppError(
                     'roomId and hostId required for multiplayer',
