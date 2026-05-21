@@ -26,13 +26,13 @@ export class ChatSocketHandler{
         socket.on('disconnect', ()=> socket.leave(`user:${userId}`))
     }
 
-    private async onSendMessage(socket: chatSocket, userId: string, data:{toUserId: string; content: string}): Promise<void>{
+    private async onSendMessage(socket: chatSocket, userId: string, data:{receiverId: string; content: string}): Promise<void>{
         try{
-            const message = await this.chatservice.sendPrivateMessage(Number(userId), Number(data.toUserId), data.content);
+            const message = await this.chatservice.sendPrivateMessage(Number(userId), Number(data.receiverId), data.content);
             //wait toUser receive
             socket.emit('message_send', {
                 messageId: message.messageId,
-                toUserId: data.toUserId,
+                receiverId: data.receiverId,
                 content: data.content,
                 createdAt: message.createdAt.getTime(),
             })
@@ -50,9 +50,9 @@ export class ChatSocketHandler{
         }
     }
 
-    private async onMarkRead(socket: chatSocket, userId: string, data: {fromUserId: string}): Promise<void>{
+    private async onMarkRead(socket: chatSocket, userId: string, data: {senderId: string}): Promise<void>{
         try{
-            await this.chatservice.markAsRead(Number(userId), Number(data.fromUserId));
+            await this.chatservice.markAsRead(Number(userId), Number(data.senderId));
         }catch (error){
             socket.emit('error', {
                 message: "failed to mark read in socket"

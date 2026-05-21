@@ -11,24 +11,11 @@ export class GameController
     start = async(req: Request, res: Response)=>
     {
         try{
-            const rawmode = req.params.mode; 
-            const mode = rawmode === 'multiplayer' ? "MULTIPLAYER"
-               : rawmode === 'solo'        ? "SOLO"
-               : null;
-
-            if (!mode) {
-                return res.status(400).json(
-                     Apiresponse.error('INVALID_MODE', 'Invalid game mode')
-                );
-            }
-
-            const rawCategory = req.body?.category;
-            const category = typeof rawCategory === 'string' && rawCategory.trim().length > 0
-                ? rawCategory.trim()
-                : undefined;
-            const rawSize = req.body?.size;
-            const size = rawSize !== undefined ? Number(rawSize) : undefined;
-
+            console.log("mode in params: ", req.params);
+            const {category, size, mode: gamemode} = req.validatedBody;
+            console.log("mode in start game: ", gamemode);
+            const mode = gamemode === 'multiplayer' ? "MULTIPLAYER"
+               : 'SOLO';
             const result = await this.gameService.startGame({
                 mode,
                 userId: req.user!.id,
@@ -48,14 +35,12 @@ export class GameController
                     return res.status(200).json(
                     Apiresponse.success(result, 'Match found and game started')
                 )}
-
             }
             res.status(200).json(
                 Apiresponse.success(result, "Solo game start")
             );
         }catch(error){
             console.error(error);
-
             if (error instanceof AppError){
                 return res.status(error.statusCode).json(
                     Apiresponse.error(error.code, error.message)
@@ -81,8 +66,7 @@ export class GameController
     }
 
     setready = async(req: Request, res: Response) => {
-        const roomId = req.params.roomId as string;
-        const isReady = req.body.isReady;
+        const {roomId, isReady} = req.validatedBody;
         const userId = req.user!.id;
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);

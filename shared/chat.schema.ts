@@ -1,7 +1,7 @@
 import {z} from 'zod'
 
 export const sendMessageSchema = z.object({
-    toUserId: z.coerce.number().int().positive(),
+    receiverId: z.coerce.number().int().positive(),
     contentn: z.string().min(1, "message connot be empty").max(2000, "message too long"),
 })
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
@@ -14,14 +14,14 @@ export const getHistorySchema = z.object({
 export type GetHistoryInput = z.infer<typeof getHistorySchema>;
 
 export const markReadSchema = z.object({
-    fromUserId: z.coerce.number().int().positive(),
+    senderId: z.coerce.number().int().positive(),
 })
 export type MarkReadInput = z.infer<typeof markReadSchema>;
 
 export const ChatMessage = z.object({
     messageId: z.string(),
-    fromUserId: z.string(),
-    toUserId: z.string(),
+    senderId: z.string(),
+    receiverId: z.string(),
     content: z.string().min(1, "message connot be empty").max(2000, "message too large"),
     createdAt: z.date()
 })

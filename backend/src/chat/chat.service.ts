@@ -12,21 +12,21 @@ export class ChatService{
     ){}
 
 
-    async sendPrivateMessage(fromId: number, toUserId: number, content: string): Promise<ChatMessageDTO>{
+    async sendPrivateMessage(fromId: number, receiverId: number, content: string): Promise<ChatMessageDTO>{
         
         //check if they are friends 
-        const areFriends = await this.friendservice.areFriends(fromId, toUserId);
+        const areFriends = await this.friendservice.areFriends(fromId, receiverId);
         if (!areFriends){
             throw new AppError('Not friends', ErrorCode.FRIEND_NOT_FOUND, 403);
         }
 
         //save the message in database
-        const message = await this.chatrepo.saveMessage(fromId, toUserId, content);
+        const message = await this.chatrepo.saveMessage(fromId, receiverId, content);
 
         const chatMessage = {
             messageId: String(message.id),
-            fromUserId: String(fromId),
-            toUserId: String(toUserId),
+            senderId: String(fromId),
+            receiverId: String(receiverId),
             content,
             createdAt: message.createdAt,
         } as const;
@@ -35,7 +35,7 @@ export class ChatService{
             ...chatMessage,
             createdAt: message.createdAt.getTime(),
         };
-        await this.emitter.toUser(String(toUserId), 'message_received', socketPayload);
+        await this.emitter.toUser(String(receiverId), 'message_received', socketPayload);
 
         return chatMessage;
     }
@@ -48,8 +48,8 @@ export class ChatService{
         return this.chatrepo.getHistory(userId, withUserId, limit, before);
     }
 
-    async markAsRead(userId: number, fromUserId: number){
-        return await this.chatrepo.markAsRead(fromUserId, userId);
+    async markAsRead(userId: number, senderId: number){
+        return await this.chatrepo.markAsRead(senderId, userId);
     }
 
     async getUnreadCount(userId: number) {

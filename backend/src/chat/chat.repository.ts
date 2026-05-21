@@ -11,11 +11,11 @@ export class ChatRepository{
     ){}
 
     // save a message
-    async saveMessage(fromId: number, toUserId: number, content: string): Promise<Message>{
+    async saveMessage(senderId: number, receiverId: number, content: string): Promise<Message>{
         return await this.prisma.message.create({
             data:{
-                senderId: fromId,
-                receiverId: toUserId,
+                senderId: senderId,
+                receiverId: receiverId,
                 content,
             }
         })
@@ -40,9 +40,9 @@ export class ChatRepository{
 
     //mark the message has read ， tell the front how many message has read 
     //batchpayload return count 
-    async markAsRead(fromId: number, toUserId: number): Promise<Prisma.BatchPayload>{
+    async markAsRead(fromId: number, receiverId: number): Promise<Prisma.BatchPayload>{
         return this.prisma.message.updateMany({
-            where: {senderId: fromId, receiverId: toUserId, read: false},
+            where: {senderId: fromId, receiverId: receiverId, read: false},
             data: {read: true}
         })
     }

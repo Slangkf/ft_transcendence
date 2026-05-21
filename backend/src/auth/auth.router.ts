@@ -11,7 +11,6 @@ export function createAuthRouter(authService: AuthService): Router {
 
     router.post('/register', valideRequest(Register_Input), authController.register);
     router.post('/login', valideRequest(Login_Input), authController.login);
-    router.get('/logout', authController.logout);
     router.post('/logout', authController.logout);
 
     return router;

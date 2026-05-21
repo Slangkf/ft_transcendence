@@ -110,7 +110,7 @@ export interface ClientToServerEvents {
 
 export interface FriendSocketEvents {
     'friend_request': (data: {
-        fromUserId: string;
+        senderId: string;
         fromNickname: string;
     }) => void;
 
@@ -133,14 +133,14 @@ export interface FriendSocketEvents {
 export interface ChatSocketEvents {
     'message_received': (data: {
         messageId: string;
-        fromUserId: string;
+        senderId: string;
         content: string;
         createdAt: number;
     }) => void;
 
     'message_send': (data: {
         messageId: string;
-        toUserId: string;
+        receiverId: string;
         content: string;
         createdAt: number;
     }) => void;
