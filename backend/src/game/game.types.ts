@@ -48,6 +48,7 @@ export interface BaseGameState {
     roomId?: string;
     hostId?: string;
     status?: "waiting" | "starting" | "playing" | "finished";
+    category?: string;
 }
 
 export interface SoloGameState extends BaseGameState {
