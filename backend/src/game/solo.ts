@@ -30,7 +30,7 @@ export class SoloService extends GameBaseService{
         
         if (mode === "AI") {
             const aiId = "brain";
-            players[aiId] = this.initPlayers(aiId, "Bot AI");
+            players[aiId] = this.initPlayers(aiId, "brain");
             players[aiId].isAI = true;
         }
         

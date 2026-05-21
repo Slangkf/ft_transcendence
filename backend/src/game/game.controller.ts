@@ -34,6 +34,8 @@ export class GameController
                 mode,
                 userId: req.user!.id,
                 nickname: req.user!.username,
+                category: category,
+                size: size
             })
             if (!result) {
                 return res.status(202).json(
