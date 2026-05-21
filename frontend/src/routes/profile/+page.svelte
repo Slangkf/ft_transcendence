@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { Change_Username_Input, type ChangeUsernameInput } from '$lib/shared/user.schema';
 	import { Change_Pd_Input, type ChangePdInput } from '$lib/shared/user.schema';
-	import { showToast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 
 	let { data } = $props();
 	let fileInput = $state<HTMLInputElement | null>(null)

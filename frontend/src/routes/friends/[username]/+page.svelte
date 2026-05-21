@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
-	import { showToast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 
 	let { data } = $props();
 

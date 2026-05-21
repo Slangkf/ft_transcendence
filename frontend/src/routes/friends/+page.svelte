@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
-	import { showToast } from '$lib/toast.svelte';
+	import { showToast } from '$lib/shared/toast.svelte';
 	
 	let { data } = $props();
 	let input = $state("")
@@ -65,6 +65,11 @@
 			console.error('Error with rejectFriendship: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
+	}
+
+	async function openConversation(friend: typeof data.friendsList[number]) {
+		const target = friend.friend.id === data.user.id ? friend.user.id : friend.friend.id;
+		goto(`/chat/${friend.friend.id === data.user.id ? friend.user.username : friend.friend.username}?with=${target}`);
 	}
 
 	async function removeFriend(friend: typeof data.friendsList[number]){
@@ -150,7 +155,7 @@
 					<!-- Profile -->
 					<button onclick={() => goto(`/profile/${ friend.friend.id === data.user.id ? friend.user.username : friend.friend.username }`)} type="submit" class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Profile</button>
 					<!-- Chat -->
-					<button onclick={() => goto(`/chat/${friend.friend.id === data.user.id ? friend.user.username : friend.friend.username}`)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Chat</button>
+					<button onclick={() => openConversation(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Chat</button>
 					<!-- Remove -->
 					<button onclick={() => removeFriend(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Remove</button>
 				</div>

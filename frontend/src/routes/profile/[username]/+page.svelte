@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
-	import { showToast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 
 	const { data } = $props();
 

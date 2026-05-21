@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
-  import { getGameSocket, disconnectGameSocket } from '$lib/gameSocket';
+  import { getGameSocket, disconnectGameSocket } from '$lib/shared/gameSocket';
 
   type RoomPlayer = { id: string; nickname: string; isReady: boolean };
 

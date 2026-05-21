@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Register_Input, type RegisterInput } from '$lib/shared/user.schema';
-	import { showToast } from '$lib/toast.svelte';
+	import { showToast } from '$lib/shared/toast.svelte';
 	import { onMount } from 'svelte'
 	import { page } from '$app/state';
 

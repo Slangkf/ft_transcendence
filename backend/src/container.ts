@@ -191,10 +191,11 @@ export class Container{
             this.userRepo
         );
 
-        this.chatSocketHandler = new ChatSocketHandler(
-            chatNs,
-            this.chatService
-        )
+		this.chatSocketHandler = new ChatSocketHandler(
+			chatNs,
+			this.chatService,
+			redis
+		);
     }
 }
 export const container = Container.getInstance();

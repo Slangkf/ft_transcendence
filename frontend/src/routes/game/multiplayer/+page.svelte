@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { getGameSocket, disconnectGameSocket } from '$lib/gameSocket';
+  import { getGameSocket, disconnectGameSocket } from '$lib/shared/gameSocket';
 
   type MatchPlayer = { userId: string; nickname: string };
   type StartApiResponse = {

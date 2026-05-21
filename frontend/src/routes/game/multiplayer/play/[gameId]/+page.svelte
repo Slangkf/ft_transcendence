@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/state';
-  import { getGameSocket, disconnectGameSocket } from '$lib/gameSocket';
+  import { getGameSocket, disconnectGameSocket } from '$lib/shared/gameSocket';
 
   type PublicQuestion = { id: number; question: string; options: string[] };
   type PlayerSnapshot = { id: string; score: number; status: string; isAI: boolean; nickname?: string };

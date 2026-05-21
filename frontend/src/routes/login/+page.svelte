@@ -1,7 +1,7 @@
 <!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
 	import { Login_Input, type LoginInput } from '$lib/shared/user.schema';
-	import { showToast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 
 	// Reactive object storing form error messages.
 	let errors = $state({

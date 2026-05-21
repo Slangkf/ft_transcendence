@@ -1,7 +1,8 @@
-import { io } from "socket.io-client";
-import { showToast } from "$lib/toast.svelte";
-  
-export function connectWS() {
+import { io, Socket } from "socket.io-client";
+import { showToast } from "$lib/shared/toast.svelte";
+import type { FriendSocketEvents } from "$lib/shared/socket.types";
+
+export function connectWS(): Socket<FriendSocketEvents> {
 
 	const socket = io('/friendship', {
 		withCredentials: true,
@@ -13,7 +14,7 @@ export function connectWS() {
     });
 
     socket.on('connect_error', (err) => {
-        console.log(`❌ socket connect_error: ${err.message}`);
+        console.log(`❌ friendship WS connect_error: ${err.message}`);
     });
 
     socket.onAny((event, ...args) => {
@@ -25,15 +26,15 @@ export function connectWS() {
     });
 
 	socket.on('friend_accept', (data) => {
-		showToast(`${data.nickname} has accepted your friend request.`); //nope
+		showToast(`${data.nickname} has accepted your friend request.`);
     });
 
 	socket.on('friend_online', (data) => { 
-		showToast(`${data.nickname} is online`); //nope
+		showToast(`${data.nickname} is online`);
     });
 
 	socket.on('friend_offline', (data) => {
-		showToast(`${data.nickname} is offline`); //nope
+		showToast(`${data.nickname} is offline`);
     });
 
 	return socket;

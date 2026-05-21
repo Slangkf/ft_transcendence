@@ -2,6 +2,7 @@ import { Namespace, Socket } from "socket.io";
 import { ChatSocketEvents } from "./socket.types";
 import { ChatService } from "../chat/chat.service";
 import { AppError } from "../error/apperror";
+import { Redis, RedisKeys } from "../lib/redis";
 
 
 type chatNamespace = Namespace<Record<string, never>, ChatSocketEvents>;
@@ -11,11 +12,12 @@ export class ChatSocketHandler{
     constructor(
         private ns: chatNamespace,
         private chatservice: ChatService,
+		private redis: typeof Redis
     ){}
 
     async   onConnection(socket: chatSocket): Promise<void>{
         const userId = socket.data.userId;
-
+		await this.redis.set(RedisKeys.socket.chatUser(userId), socket.id);
         socket.join(`user:${userId}`);
 
         socket.on('send_message', (data)=> this.onSendMessage(socket, userId, data));

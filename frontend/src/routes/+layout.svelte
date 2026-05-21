@@ -1,8 +1,8 @@
 <script lang="ts">
 	import "../app.css";
 	import { page } from '$app/state';
-	import { toast } from '$lib/toast.svelte'
-	import { showToast } from '$lib/toast.svelte'
+	import { toast } from '$lib/shared/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 	import { onMount } from 'svelte'
 	import { connectWS } from '$lib/websocket/friendship'
 	import type { Socket } from "socket.io-client";
