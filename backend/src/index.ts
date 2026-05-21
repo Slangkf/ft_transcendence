@@ -30,7 +30,7 @@ const start = async () => {
     }));
     app.use('/uploads', express.static('uploads'));
 
-    app.get('/api/health', (_req, res) => res.json({ ok: true }));
+    app.get('/api/health', (req, res) => res.json({ ok: true }));
 
     //httpserver 
     const httpserver = createServer(app);
