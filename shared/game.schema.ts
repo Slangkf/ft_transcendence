@@ -152,15 +152,17 @@ export const GameInfoSchema = z.union([PlayingGameInfoSchema, FinishedGameInfoSc
 export type GameInfo = z.infer<typeof GameInfoSchema>;
 
 
+// export const SubmitAnswerReq = z.object({
+//     selectedAnswerIndex: z.coerce.number().positive().min(0),
+//     mode: z.enum(['solo', 'ai','multiplayer', 'tournament']),
+//     gameId: z.string().min(1),
+// })
+
 export const SubmitAnswerReq = z.object({
-    selectedAnswerIndex: z.coerce.number().positive().min(0),
+    selectedAnswerIndex: z.coerce.number().int().min(0),
     mode: z.enum(['solo', 'ai','multiplayer', 'tournament']),
     gameId: z.string().min(1),
 })
-
-// export const SubmitAnswerReq = z.object({
-//     selectedAnswerIndex: z.coerce.number().positive().min(0),
-// })
 
 export const StartGameReq = z.object({
     mode: z.enum(['solo', 'ai','multiplayer', 'tournament']),
