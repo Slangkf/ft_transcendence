@@ -39,6 +39,9 @@
 	}
 
 	console.log('User object', data.user);
+	$effect(() => {
+    console.log('User object', data.user);
+});
 </script>
 
 <!-- Main card -->

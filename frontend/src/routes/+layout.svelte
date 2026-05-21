@@ -32,7 +32,6 @@
 				return;
 			}
 			socket?.disconnect();
-			res.clearCookie('auth_token');
 			window.location.href='/?logout=true';
 		}
 		catch (error){
