@@ -42,7 +42,7 @@ export class UserController{
         }
     }
 
-    GetProfilByUsername = async(req: Request<{ username: string }>, res: Response)=>{
+    GetProfilByUsername = async(req: Request, res: Response)=>{
         try{
             const {username} = req.validatedBody; 
             const result = await this.userservice.get_profile_by_username(username);
