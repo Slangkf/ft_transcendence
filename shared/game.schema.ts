@@ -80,7 +80,7 @@ export type PublicGameState = z.infer<typeof PublicGameStateSchema>;
 
 // Backend: Start game parameters
 export const StartGameParmsSchema = z.object({
-    mode: z.enum(['solo', 'multi', 'ai']),
+    mode: z.enum(['solo', 'ai','multi']),
     userId: z.string(),
     nickname: z.string(),
 });
@@ -154,19 +154,22 @@ export type GameInfo = z.infer<typeof GameInfoSchema>;
 
 export const SubmitAnswerReq = z.object({
     selectedAnswerIndex: z.coerce.number().positive().min(0),
-    mode: z.enum(['solo', 'multiplayer', 'tournament']),
+    mode: z.enum(['solo', 'ai','multiplayer', 'tournament']),
     gameId: z.string().min(1),
 })
 
+// export const SubmitAnswerReq = z.object({
+//     selectedAnswerIndex: z.coerce.number().positive().min(0),
+// })
 
 export const StartGameReq = z.object({
-    mode: z.enum(['solo', 'multiplayer', 'tournament']),
+    mode: z.enum(['solo', 'ai','multiplayer', 'tournament']),
     category: z.string().trim().min(1).optional(),
     size: z.coerce.number().int().positive().optional(),
 })
 
 export const SetReadyParams = z.object({
-    mode: z.enum(['solo', 'multiplayer', 'tournament']),
+    mode: z.enum(['solo', 'ai', 'multiplayer', 'tournament']),
     roomId: z.string().min(1),
     isReady: z.boolean(),
 })

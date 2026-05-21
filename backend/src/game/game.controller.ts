@@ -8,22 +8,67 @@ export class GameController
     constructor(
         private gameService: GameService
     ){}
-    start = async(req: Request, res: Response)=>
+    // start = async(req: Request, res: Response)=>
+    // {
+    //     try{
+    //         // console.log("mode in params: ", req.params);
+    //         const { mode: modeParam } = req.params;
+    //         const { category, size } = req.validatedBody;
+    //         // console.log("mode in start game: ", gamemode);
+    //         const mode = modeParam?.toUpperCase() === 'AI' ? 'AI' : 
+    //                      modeParam?.toUpperCase() === 'MULTIPLAYER' ? 'MULTIPLAYER' 
+    //                      : 'SOLO';
+    //         const result = await this.gameService.startGame({
+    //             mode: mode as any,
+    //             userId: req.user!.id,
+    //             nickname: req.user!.username,
+    //             category: category,
+    //             size: size
+    //         })
+    //         if (!result) {
+    //             return res.status(202).json(
+    //                 Apiresponse.success(null, "waiting for match")
+    //             );
+    //         }
+    //         if ('status' in result){
+    //             if (result.status === 'waiting'){
+    //                 return res.status(202).json(
+    //                 Apiresponse.success(null, "Waiting for match")
+    //             )}
+    //             if (result.status === 'matched'){
+    //                 return res.status(200).json(
+    //                 Apiresponse.success(result, 'Match found and game started')
+    //             )}
+    //         }
+    //         res.status(200).json(
+    //             Apiresponse.success(result, "Solo game start")
+    //         );
+    //     }catch(error){
+    //         console.error(error);
+    //         if (error instanceof AppError){
+    //             return res.status(error.statusCode).json(
+    //                 Apiresponse.error(error.code, error.message)
+    //             );
+    //         }
+    //         return res.status(500).json(
+    //             Apiresponse.error("INTERNAL_ERROR", "Internal start game")
+    //         )
+    //     }
+    // }
+
+        start = async(req: Request, res: Response)=>
     {
         try{
-            // console.log("mode in params: ", req.params);
-            const { mode: modeParam } = req.params;
-            const { category, size } = req.validatedBody;
-            // console.log("mode in start game: ", gamemode);
-            const mode = modeParam?.toUpperCase() === 'AI' ? 'AI' : 
-                         modeParam?.toUpperCase() === 'MULTIPLAYER' ? 'MULTIPLAYER' 
-                         : 'SOLO';
+            console.log("mode in params: ", req.params);
+            const {category, size, mode: gamemode} = req.validatedBody;
+            console.log("mode in start game: ", gamemode);
+            const mode = gamemode === 'multiplayer' ? "MULTIPLAYER"
+               : gamemode === 'ai' ? "AI"
+               : 'SOLO';
             const result = await this.gameService.startGame({
-                mode: mode as any,
+                mode,
                 userId: req.user!.id,
                 nickname: req.user!.username,
-                category: category,
-                size: size
             })
             if (!result) {
                 return res.status(202).json(
