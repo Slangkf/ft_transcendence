@@ -9,7 +9,7 @@
 	let fileInput = $state<HTMLInputElement | null>(null)
 	
 	// Display the default avatar with the URL returned by the backend
-	let avatarUrl = $state(data.user.url)
+	let avatarUrl = $derived(data.user.url)
 
 	// Reactive object storing form error messages.
 	let errors = $state({

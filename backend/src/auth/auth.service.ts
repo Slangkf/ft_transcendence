@@ -47,7 +47,7 @@ export  class AuthService{
             jti: randomUUID(),
         },
         JWT_SECRET!,
-        {expiresIn: '7d'}
+        {expiresIn: '15m'}
     )
     return {
         token,
@@ -82,7 +82,7 @@ export  class AuthService{
                 jti: randomUUID()
             },
             JWT_SECRET!,
-            {expiresIn: '7d'}
+            {expiresIn: '15m'}
         )
         //return data with token
         return {

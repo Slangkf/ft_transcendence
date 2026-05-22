@@ -19,7 +19,7 @@ export class AuthController{
         sameSite: 'none',									// JIANXIN
 		secure: true, // required for sameSite: 'none', cookies are ignored otherwise
         //sameSite: 'none', // for cross-site infrastructure
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        //maxAge:  1 * 60 * 60 * 1000
     };
 
     register = async(req: Request, res: Response) =>{
