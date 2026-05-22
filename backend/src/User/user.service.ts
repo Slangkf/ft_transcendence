@@ -15,7 +15,7 @@ export class UserService{
 			throw new AppError(
 				'Unknown user', 
 				ErrorCode.USER_NOT_FOUND,
-				401,
+				404,
 				{user: input});
         }
         const {password, ...profil_of_user} = user;
@@ -28,7 +28,7 @@ export class UserService{
 			throw new AppError(
 				'Unknown user', 
 				ErrorCode.USER_NOT_FOUND,
-				401,
+				404,
 				{user: username});
         }
         const {password, ...profil_of_user} = user;

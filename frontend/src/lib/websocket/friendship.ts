@@ -15,6 +15,7 @@ export function connectWS(): Socket<FriendSocketEvents> {
 
     socket.on('connect_error', (err) => {
         console.log(`❌ friendship WS connect_error: ${err.message}`);
+		console.trace();
     });
 
     socket.onAny((event, ...args) => {

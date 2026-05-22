@@ -15,6 +15,7 @@ function createWS() {
 
     socket.on('connect_error', (err) => {
         console.log(`❌ chat WS connect_error: ${err.message}`);
+		console.trace();
     });
 
     socket.onAny((event, ...args) => {
@@ -23,17 +24,18 @@ function createWS() {
 
 	return {
 		socket,
-		sendMessage: (toUserId: string, content: string) =>
-			socket.emit('send_message', { toUserId, content }),
+		sendMessage: (receiverId: string, content: string) =>
+			socket.emit('send_message', { receiverId, content }),
 		getHistory: (withUserId: string) =>
 			socket.emit('get_history', { withUserId }),
-		markRead: (fromUserId: string) =>
-			socket.emit('mark_read', { fromUserId }),
+		markRead: (senderId: string) =>
+			socket.emit('mark_read', { senderId }),
 	};
 }
 
 export function connectWS() {
 	if (!instance)
 		instance = createWS();
+    
 	return instance;
 }

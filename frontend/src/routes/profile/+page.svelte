@@ -179,7 +179,6 @@
 			});
 			// Parse backend response as JSON.
 			const result = await response.json();
-			console.log(result)
 			// If HTTP response indicates failure (4xx).
 			if (!response.ok) {
 				// If backend returned field-specific validation errors.

@@ -17,13 +17,15 @@ export class ChatSocketHandler{
 
     async   onConnection(socket: chatSocket): Promise<void>{
         const userId = socket.data.userId;
-		await this.redis.set(RedisKeys.socket.chatUser(userId), socket.id);
-        socket.join(`user:${userId}`);
 
-        socket.on('send_message', (data)=> this.onSendMessage(socket, userId, data));
-        socket.on('get_history', (data)=> this.onGetHistory(socket, userId, data));
+		// Register all handlers before async operation to avoid missing events
+		socket.on('get_history', (data)=> this.onGetHistory(socket, userId, data));
+		socket.on('send_message', (data)=> this.onSendMessage(socket, userId, data));
         socket.on('mark_read', (data)=> this.onMarkRead(socket, userId, data));
         socket.on('disconnect', ()=> socket.leave(`user:${userId}`))
+
+		await this.redis.set(RedisKeys.socket.chatUser(userId), socket.id);
+		socket.join(`user:${userId}`);
     }
 
     private async onSendMessage(socket: chatSocket, userId: string, data:{receiverId: string; content: string}): Promise<void>{
@@ -41,9 +43,9 @@ export class ChatSocketHandler{
         }
     }
 
-    private async onGetHistory(socket: chatSocket, userId: number, data:{withUserId: string; limit?: number; before?: Date}): Promise<void>{
+    private async onGetHistory(socket: chatSocket, userId: string, data:{withUserId: string; limit?: number; before?: Date}): Promise<void>{
         try{
-            const message = await this.chatservice.getHistory(userId, Number(data.withUserId), data.limit, data.before);
+            const message = await this.chatservice.getHistory(Number(userId), Number(data.withUserId), data.limit, data.before);
             socket.emit('history', {withUserId: data.withUserId, message})
         }catch(error){
             socket.emit('error', {message: error instanceof AppError? error.message : "failed to getHistory socket"});

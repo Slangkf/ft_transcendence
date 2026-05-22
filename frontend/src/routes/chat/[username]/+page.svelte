@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state'
-	import { onMount } from 'svelte'
+	import { onMount, onDestroy } from 'svelte'
 	import { connectWS } from '$lib/websocket/chat';
 	
 	const { data } = $props();
@@ -9,65 +9,97 @@
 
 	let messages = $state<any[]>([]);
 	let	inputContent = $state('');
+	let messageContainer = $state<HTMLElement | null>(null);
 
 	onMount(() => {
 		socket.on('history', (data) => {
-		console.log('history', data.message);
-			messages = data.message;
+			messages = data.message.reverse();
 		});
 
 		socket.on('message_received', (data) => {
-			console.log('message_received', data);
+			console.log(data);
 			messages = [...messages, data];
 		});
 
 		socket.on('message_send', (data) => {
-			console.log('message_send', data);
 			messages = [...messages, data];
 		});
 
-		if (selectedUserId) {
-            getHistory(selectedUserId);
-        }
+		// getHistory émis seulement une fois connecté
+		if (socket.connected && selectedUserId) {
+			getHistory(selectedUserId);
+		} else {
+			socket.once('connect', () => {
+				if (selectedUserId) getHistory(selectedUserId);
+			});
+		}
+	});
+
+	// Nettoyage quand le composant est détruit
+	onDestroy(() => {
+		socket.off('history');
+		socket.off('message_received');
+		socket.off('message_send');
 	});
 
 	async function handleSentMessages() {
 		if (!selectedUserId)
 			return;
-		sendMessage(selectedUserId, inputContent);
-		inputContent = '';
+		if (inputContent) {
+			sendMessage(selectedUserId, inputContent);
+			inputContent = '';
+		}
+		return;
 	}
 
-	console.log('User object', data.user);
+	function dateFormat(createdAt: string): string {
+		const date = new Date(createdAt);
+		const isToday = date.toDateString() === new Date().toDateString();
+
+		return isToday
+			? date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+			: date.toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+	}
+
 	$effect(() => {
-    console.log('User object', data.user);
-});
+		messages;
+		if (messageContainer)
+			messageContainer.scrollTop = messageContainer.scrollHeight;
+	})
 </script>
 
 <!-- Main card -->
 <div class="flex flex-col items-center justify-center w-full max-w-200 rounded-xl p-4 border border-slate-700 bg-slate-900/90 backdrop-blur-xs text-white text-sm">
 	<!-- Main card title -->
 	<h2 class="text-2xl font-semibold text-pink-500 text-center">Chat</h2>
-	<p class="mt-1 text-pink-500 text-center">Your chat with</p>
+	<p class="mt-1 text-pink-500 text-center">Your chat with {data.friend?.username}</p>
 	
     <!-- Message zone -->
-    <div class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl h-200 overflow-y-auto gap-3">
-        <!-- Message history -->
+    <div bind:this={messageContainer} class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl h-200 overflow-y-auto gap-3">
+        <!-- Message card -->
 		{#each messages as message}
-			<div class="flex {message.senderId === data.user?.id ? 'justify-end' : 'justify-start'} w-full">
-				<div class="px-4 py-2 rounded-xl max-w-xs {message.senderId === data.user?.id ? 'bg-blue-500' : 'bg-slate-700'}">
-					{message.content}
+			<div class="flex w-full {Number(message.receiverId) === data.user?.id ? 'justify-start' : 'justify-end'}">
+				<div class= "flex flex-col max-w-xs">
+					<span class="text-xs text-slate-400 mb-1 text-center">
+						{Number(message.receiverId) === data.user?.id ? data.friend.username : data.user.username}
+					</span>
+					<div class="px-4 py-2 rounded-xl {Number(message.receiverId) === data.user?.id ? 'bg-pink-500' : 'bg-blue-500'}">
+						{message.content}
+					</div>
+					<span class="text-xs text-slate-400 mt-1 text-center">
+						 {dateFormat(message.createdAt)}
+					</span>
 				</div>
 			</div>
 		{:else}
 			<!-- Empty chat message -->
-				<p class="flex items-center justify-center text-pink-500 font-medium">No message</p>
+			<p class="flex items-center justify-center text-pink-500 font-medium">No message</p>
 		{/each}
     </div>
 	
     <!-- Input zone -->
     <div class="flex items-center w-full px-6 py-4 mt-4 rounded-xl gap-3">
-        <input bind:value={inputContent} type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
-        <button onclick={handleSentMessages} class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>
+        <input onkeydown={(e) => e.key === 'Enter' && handleSentMessages()} bind:value={inputContent} type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
+        <button onclick={() => handleSentMessages()} class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>
     </div>
 </div>
