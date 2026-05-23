@@ -46,7 +46,8 @@ export class SoloService extends GameBaseService{
 
     private startAIThinking(state: BaseGameState): void {
         const aiPlayer = Object.values(state.players).find(p => p.isAI);
-        if (!aiPlayer) return;
+        if (!aiPlayer) 
+            return;
         this.aiService?.generateAIAnswer(state as SoloGameState, aiPlayer.id);
     }
 
@@ -54,16 +55,22 @@ export class SoloService extends GameBaseService{
         lastAnswer: { playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string };
     }>{
         const state = await this.gamerepository.findById(gameId);
-        if (!state) throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
-        if (state.isFinished) throw new AppError('Game is already finished', ErrorCode.GAME_ALREADY_FINISHED, 400);
+        if (!state) 
+            throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
+        if (!state.questions[state.currentQuestionIndex]) 
+            throw new AppError('No more questions', ErrorCode.GAME_ALREADY_FINISHED, 400);
+        if (state.isFinished) 
+            throw new AppError('Game is already finished', ErrorCode.GAME_ALREADY_FINISHED, 400);
         
         const player = state.players[userId];
-        if (!player) throw new AppError('Player not found', ErrorCode.PLAYER_NOT_FOUND, 404);
-        if (player.status === 'answered') throw new AppError('Player already answered', ErrorCode.PLAYER_ALREADY_ANSWERED, 400);
+        if (!player) 
+            throw new AppError('Player not found', ErrorCode.PLAYER_NOT_FOUND, 404);
+        if (player.status === 'answered') 
+            throw new AppError('Player already answered', ErrorCode.PLAYER_ALREADY_ANSWERED, 400);
 
         const lastAnswer = await this.processAnswer(state, selectedAnswerIndex, userId);
         const allAnswered = Object.values(state.players)
-            .filter((p: Player) => !p.isAI || state.mode === "AI")
+            .filter((p: Player) => p.status !== 'disconnected')
             .every((p: Player) => p.status === 'answered');
 
         if (allAnswered) this.advanceGame(state);

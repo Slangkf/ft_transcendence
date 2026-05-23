@@ -13,7 +13,8 @@ export class AIService {
     constructor(private readonly gameservice: GameService) {}
 
     public async generateAIAnswer(gameState: GameState, aiId: string): Promise<void> {
-        if (gameState.isFinished) return;
+        if (gameState.isFinished) 
+            return;
 
         const currentQuestionIndex = gameState.currentQuestionIndex;
         const currentQuestion = gameState.questions[currentQuestionIndex];
