@@ -153,7 +153,7 @@ export type GameInfo = z.infer<typeof GameInfoSchema>;
 
 
 export const SubmitAnswerReq = z.object({
-    selectedAnswerIndex: z.coerce.number().positive().min(0),
+    selectedAnswerIndex: z.coerce.number().min(0),
     mode: z.enum(['solo', 'multiplayer', 'tournament']),
     gameId: z.string().min(1),
 })
