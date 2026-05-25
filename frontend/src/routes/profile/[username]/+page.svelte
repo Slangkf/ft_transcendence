@@ -5,6 +5,11 @@
 
 	const { data } = $props();
 
+	/*
+	* Sends a friend request to the viewed user.
+	* Handles backend errors: self-request, pending invitation, or already friends.
+	* Refreshes the page data on success.
+	*/
 	async function friendAddHandler() {
 		try {
 			const response = await fetch('/api/friendship/request', {

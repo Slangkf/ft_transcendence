@@ -36,7 +36,6 @@ export class ChatRepository{
             take: limit,
         });
     }
-    
 
     //mark the message has read ， tell the front how many message has read 
     //batchpayload return count 
@@ -46,7 +45,8 @@ export class ChatRepository{
             data: {read: true}
         })
     }
-    // message un read for each sender
+
+    // message unread for each sender
     async getUnreadCountPerSender(userId: number): Promise<{senderId: number; count: number}[]> {
         const result = await this.prisma.message.groupBy({
             by: ['senderId'],

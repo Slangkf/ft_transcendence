@@ -6,41 +6,50 @@
 	import { onMount } from 'svelte'
 	import { connectWS } from '$lib/websocket/friendship'
 	import { connectWS as connectChatWS } from '$lib/websocket/chat'
-	import { unreadMap, incrementUnread } from '$lib/stores/unread'
+	import { disconnectWS } from '$lib/websocket/chat'
+	import { unreadMap, initUnread, incrementUnread } from '$lib/stores/unread'
 
 	import type { Socket } from "socket.io-client";
 
 	let props = $props();
 	let socket: Socket | null = null;
+	const totalUnread = $derived(Object.values($unreadMap).reduce((sum, count) => sum + count, 0));
 
-	const totalUnread = $derived(Object.values($unreadMap).reduce((sum, count) => sum + count, 0))
 
-	$effect(() => {
-	    console.log('Messages non lus:', totalUnread)
-	})
-
+	/*
+	* Runs once on mount. If the user is authenticated, initializes two WS connections:
+	* - Friendship WS: handles friend-related events.
+	* - Chat WS:
+	*   - `unread_count`: initializes the unread store on connection, excluding the active conversation.
+	*   - `message_received`: increments unread count if the sender is not the active conversation.
+	* Cleanup: both sockets are explicitly disconnected on destroy and on logout.
+	*/
 	onMount(() => {
-		if (props.data.connected) {
-		socket = connectWS(); // friendship, déjà présent
-		
-		const { socket: chatSocket } = connectChatWS();
-		chatSocket.on('message_received', (data) => {
-			console.log('layout reçoit message_received', data)
-			const currentUserId = page.url.searchParams.get('with');
-			if (data.senderId !== currentUserId) incrementUnread(data.senderId);
-		});
-	}
-		// if (props.data.connected && !socket) {
-		// 	socket = connectWS();
-		// }
-		// return () => {
-        // 	socket?.disconnect();
-        // 	socket = null;
-    	// };
+		if (props.data.connected && !socket) {
+			socket = connectWS();
+			const { socket: chatSocket } = connectChatWS();
+			chatSocket.on('unread_count', (data) => {
+				const currentUserId = page.url.searchParams.get('with');
+				const filtered = data.perSender.filter((e: {senderId: number, count: number}) => String(e.senderId) !== currentUserId);
+    			initUnread(filtered);
+			}),
+			chatSocket.on('message_received', (data) => {
+				const currentUserId = page.url.searchParams.get('with');
+				if (data.senderId !== currentUserId) incrementUnread(data.senderId);
+			});
+		}
+		return () => {
+			socket?.disconnect();
+			disconnectWS();
+			socket = null;
+		};
 	});
 
+	/*
+	* Sends a logout request to the API, disconnects both WebSocket connections
+	* to stop incoming notifications after logout, then redirects to the home page.
+	*/
 	async function handleLogout() {
-		// Send logout action to backend API.
     	try {
     		const response = await fetch('/api/auth/logout', {
 				method: 'POST',
@@ -51,6 +60,7 @@
 				return;
 			}
 			socket?.disconnect();
+			disconnectWS();
 			window.location.href='/?logout=true';
 		}
 		catch (error){
@@ -85,7 +95,7 @@
 		{/if}
 		<h2 class="text-xs sm:text-sm font-semibold text-pink-500 text-center">Your number one quiz plateform !</h2>
     </div>
-    <!-- Drop-down menu -->
+    <!-- Dynamic drop-down menu -->
 	<el-dropdown class="flex flex-1 justify-end">
 		<button class="cursor-pointer inline-flex gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold text-pink-500 drop-shadow-[10px_10px_5px_blue] hover:text-blue-500 hover:drop-shadow-[10px_10px_15px_#FF1D8D]">
 			Menu

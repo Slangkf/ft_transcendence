@@ -2,17 +2,25 @@
 	import { page } from '$app/state'
 	import { onMount, onDestroy } from 'svelte'
 	import { connectWS } from '$lib/websocket/chat';
-	import { incrementUnread, resetUnread } from '$lib/stores/unread'
+	import { resetUnread } from '$lib/stores/unread'
 	
 	const { data } = $props();
-	const selectedUserId = page.url.searchParams.get('with');
 	const { socket, getHistory, sendMessage, markRead } = connectWS();
+
+	// Get the target user's ID from the URL query parameter.
+	const selectedUserId = page.url.searchParams.get('with');
 
 	let messages = $state<any[]>([]);
 	let	inputContent = $state('');
 	let messageContainer = $state<HTMLElement | null>(null);
 	let messageReceivedWrapper: (data: any) => void;
 
+	/*
+	* Runs once on mount:
+	* - Loads chat history and resets the unread count for the active conversation.
+	* - Listens for incoming and sent messages to update the message list.
+	* - Emits get_history once the socket is connected.
+	*/
 	onMount(() => {
 		socket.on('history', (data) => {
 			messages = data.message.reverse();
@@ -20,8 +28,6 @@
 		});
 
 		messageReceivedWrapper = (data) => { 
-			console.log('senderId:', data.senderId, 'selectedUserId:', selectedUserId, 'sont différents:', data.senderId !== selectedUserId)
-			if (data.senderId !== selectedUserId) incrementUnread(data.senderId);
 			messages = [...messages, data];
 		}
 		socket.on('message_received', messageReceivedWrapper);
@@ -30,7 +36,6 @@
 			messages = [...messages, data];
 		});
 
-		// getHistory émis seulement une fois connecté
 		if (socket.connected && selectedUserId) {
 			getHistory(selectedUserId);
 		} else {
@@ -40,13 +45,14 @@
 		}
 	});
 
-	// Nettoyage quand le composant est détruit
+	// Removes event listeners when the component is destroyed.
 	onDestroy(() => {
 		socket.off('history');
 		socket.off('message_received', messageReceivedWrapper);
 		socket.off('message_send');
 	});
 
+	// Sends the current input content as a message to the selected user.
 	async function handleSentMessages() {
 		if (!selectedUserId)
 			return;
@@ -57,6 +63,7 @@
 		return;
 	}
 
+	// Formats a timestamp: shows time only if today, otherwise shows date and time.
 	function dateFormat(createdAt: string): string {
 		const date = new Date(createdAt);
 		const isToday = date.toDateString() === new Date().toDateString();
@@ -66,6 +73,7 @@
 			: date.toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 	}
 
+	// Scrolls to the bottom of the chat container whenever messages update.
 	$effect(() => {
 		messages;
 		if (messageContainer)
@@ -102,7 +110,7 @@
 		{/each}
     </div>
 	
-    <!-- Input bar -->
+    <!-- Input shield -->
     <div class="flex items-center w-full px-6 py-4 mt-4 rounded-xl gap-3">
         <input onkeydown={(e) => e.key === 'Enter' && handleSentMessages()} bind:value={inputContent} type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
         <button onclick={() => handleSentMessages()} class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>

@@ -1,7 +1,16 @@
 import { io } from "socket.io-client";
 
+// Holds the singleton instance of the chat WebSocket connection.
 let instance: ReturnType<typeof createWS> | null = null
 
+/*
+ * Creates and returns the chat WebSocket connection to the /chat namespace.
+ * Implemented as a singleton because both the layout (unread badge logic) and
+ * the chat page (history, messages) share the same connection. Without it,
+ * multiple connections would cause duplicate events.
+ * - Logs connection status and errors.
+ * - Exposes helper functions for common chat events.
+ */
 function createWS() {
 
 	const socket = io('/chat', {
@@ -33,8 +42,15 @@ function createWS() {
 	};
 }
 
+// Returns the existing instance or creates a new one (singleton pattern).
 export function connectWS() {
 	if (!instance)
 		instance = createWS();
 	return instance;
+}
+
+// Disconnects the chat WebSocket and resets the singleton instance.
+export function disconnectWS() {
+    instance?.socket.disconnect();
+    instance = null;
 }

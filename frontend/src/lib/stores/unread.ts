@@ -1,9 +1,16 @@
 import { writable } from 'svelte/store'
 
-// Store holding the number of unread messages per sender.
+// Stores the number of unread messages per sender.
 export const unreadMap = writable<{ [senderId: string]: number }>({})
 
-// Increment the unread count for a given sender.
+// Initializes the unread map with data fetched from the server on each socket connection (first load or page refresh).
+export function initUnread(entries: {senderId: number, count: number}[]) {
+    unreadMap.set(
+		Object.fromEntries(entries.map(e => [String(e.senderId), e.count]))
+    )
+}
+
+// Increments the unread count for a given sender.
 export function incrementUnread(senderId : string) {
 	unreadMap.update(map => ({
 		...map,
@@ -11,7 +18,7 @@ export function incrementUnread(senderId : string) {
 	}))
 }
 
-// Reset the unread count for a given sender (when the user opens the conversation).
+// Resets the unread count for a given sender (when the user opens the conversation).
 export function resetUnread(senderId : string) {
 	unreadMap.update(map => ({
 		...map,

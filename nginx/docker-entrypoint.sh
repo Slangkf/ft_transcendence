@@ -1,15 +1,15 @@
 #!/bin/sh
 set -e
 
-# 动态获取 DNS
+# Dynamically retrieve the system DNS resolver from /etc/resolv.conf.
 DNS=$(cat /etc/resolv.conf | grep nameserver | head -1 | awk '{print $2}')
 echo "Using DNS resolver: $DNS"
 
-# 替换模板
+# Replace the placeholder in the NGINX configuration template with the detected DNS resolver.
 sed "s/__RESOLVER__/$DNS/g" /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
-# 验证配置
+# Validate the generated NGINX configuration before starting the service.
 nginx -t
 
-# 启动
+# Start NGINX in the foreground.
 exec nginx -g "daemon off;"

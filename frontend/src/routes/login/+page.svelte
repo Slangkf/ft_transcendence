@@ -1,45 +1,41 @@
-<!-- Handle form submit: prevent reload and send POST request to backend -->
 <script lang="ts">
 	import { Login_Input, type LoginInput } from '$lib/shared/user.schema';
 	import { showToast } from '$lib/shared/toast.svelte'
 
-	// Reactive object storing form error messages.
 	let errors = $state({
 		email: "",
 		password: ""
 	});
 
+	/*
+	* Handles login form submission:
+	* - Prevents default page reload.
+	* - Validates input using Zod schema and maps errors to form fields.
+	* - Sends credentials to the backend API.
+	* - Redirects to /modes on success.
+	*/
 	async function handleSubmit(event: SubmitEvent) {
-		// Prevent default HTML form submission (page reload).
 		event.preventDefault();
 
-		// Extract form reference from submit event.
 		const form = event.target as HTMLFormElement;
 		const email = (form.email as HTMLInputElement).value;
 		const password = (form.password as HTMLInputElement).value;
 
-		// Reset previous errors before running new validation.
 		errors.email = "";
 		errors.password = "";
 
-		// Validate input data using Zod schema.
 		const validation = Login_Input.safeParse({
 			email,
 			password
 		});
-		// If input, map Zod errors to corresponding form fields.
 		if (!validation.success) {
 			for (const issue of validation.error.issues) { 
-				// Extract the field name that caused the validation error.
 				const field = issue.path[0] as keyof LoginInput;
-				// Assign the error message to the corresponding field.
 				errors = { ...errors, [field]: issue.message };
 			}
-			// Stop submission if validation failed.
 			return;
 		}
 
-		// Send connection data to backend API.
 		try {
 			const response = await fetch('/api/auth/login', {
 				method: 'POST',
@@ -47,23 +43,16 @@
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password})
 			});
-
-			// Parse backend response as JSON.
 			const result = await response.json();
-			// If HTTP response indicates failure (4xx).
 			if (!response.ok) {
-				// If backend returned field-specific validation errors.
 				if (result.error?.code === 'AUTH_INVALID_MAIL')
 					errors.email = result.error.message;
 				else if (result.error?.code === 'AUTH_INVALID_PASSWORD')
 					errors.password = result.error.message;
-				// Stop execution if request failed.
 				return;
 			}
-			// Redirect user after successful registration.
 			window.location.href = '/modes/?login=true';
 		}
-		// Catch and log unexpected errors.
 		catch (error){
 			console.error('Login page error: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '$app/state';
+	// Displays the HTTP error code and message for any unhandled error in the app.
 </script>
 
 <div class="flex flex-col justify-center items-center">

@@ -1,8 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 
+/*
+ * Protects the multiplayer route.
+ * - No token: redirects to /login.
+ */
 export const load: PageServerLoad = async ({ cookies }) => {
-	// Redirect unauthenticated users to login
 	const token = cookies.get('auth_token');
 	if (!token) {
 		console.error('cookies.get error in the multiplayer section')
