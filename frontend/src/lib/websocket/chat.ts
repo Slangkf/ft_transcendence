@@ -24,10 +24,10 @@ function createWS() {
 
 	return {
 		socket,
-		sendMessage: (receiverId: string, content: string) =>
-			socket.emit('send_message', { receiverId, content }),
 		getHistory: (withUserId: string) =>
 			socket.emit('get_history', { withUserId }),
+		sendMessage: (receiverId: string, content: string) =>
+			socket.emit('send_message', { receiverId, content }),
 		markRead: (senderId: string) =>
 			socket.emit('mark_read', { senderId }),
 	};
@@ -36,6 +36,5 @@ function createWS() {
 export function connectWS() {
 	if (!instance)
 		instance = createWS();
-    
 	return instance;
 }

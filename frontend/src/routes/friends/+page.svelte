@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/shared/toast.svelte';
+	import { unreadMap } from '$lib/stores/unread'
 	
 	let { data } = $props();
 	let input = $state("")
@@ -143,7 +144,7 @@
 	<div class="flex flex-col w-full gap-3 mt-4">
 		{#each data.friendsList as friend}
 			<div class="flex items-center justify-between w-full px-4 py-3 border border-slate-700 bg-slate-800 rounded-xl">
-				
+
 				<!-- Avatar + username -->
 				<div class="flex items-center gap-3">
 					<img src={friend.friend.id === data.user.id ? friend.user.url : friend.friend.url} alt="avatar" class="h-12 w-12 rounded-full object-cover"/>
@@ -155,7 +156,13 @@
 					<!-- Profile -->
 					<button onclick={() => goto(`/profile/${ friend.friend.id === data.user.id ? friend.user.username : friend.friend.username }`)} type="submit" class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Profile</button>
 					<!-- Chat -->
-					<button onclick={() => openConversation(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Chat</button>
+					<button onclick={() => openConversation(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-slate-500 rounded-md hover:bg-slate-600">Chat
+						{#if $unreadMap[String(friend.friend.id === data.user.id ? friend.user.id : friend.friend.id)] > 0}
+							<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full ml-1">
+								{$unreadMap[String(friend.friend.id === data.user.id ? friend.user.id : friend.friend.id)]}
+							</span>
+    					{/if}
+					</button>
 					<!-- Remove -->
 					<button onclick={() => removeFriend(friend)} class="cursor-pointer px-3 py-1 text-sm font-medium text-slate-200 bg-red-500 rounded-md hover:bg-red-600">Remove</button>
 				</div>

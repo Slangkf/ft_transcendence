@@ -2,24 +2,29 @@
 	import { page } from '$app/state'
 	import { onMount, onDestroy } from 'svelte'
 	import { connectWS } from '$lib/websocket/chat';
+	import { incrementUnread, resetUnread } from '$lib/stores/unread'
 	
 	const { data } = $props();
 	const selectedUserId = page.url.searchParams.get('with');
-	const { socket, sendMessage, getHistory } = connectWS();
+	const { socket, getHistory, sendMessage, markRead } = connectWS();
 
 	let messages = $state<any[]>([]);
 	let	inputContent = $state('');
 	let messageContainer = $state<HTMLElement | null>(null);
+	let messageReceivedWrapper: (data: any) => void;
 
 	onMount(() => {
 		socket.on('history', (data) => {
 			messages = data.message.reverse();
+			if (selectedUserId) resetUnread(selectedUserId), markRead(selectedUserId);
 		});
 
-		socket.on('message_received', (data) => {
-			console.log(data);
+		messageReceivedWrapper = (data) => { 
+			console.log('senderId:', data.senderId, 'selectedUserId:', selectedUserId, 'sont différents:', data.senderId !== selectedUserId)
+			if (data.senderId !== selectedUserId) incrementUnread(data.senderId);
 			messages = [...messages, data];
-		});
+		}
+		socket.on('message_received', messageReceivedWrapper);
 
 		socket.on('message_send', (data) => {
 			messages = [...messages, data];
@@ -38,7 +43,7 @@
 	// Nettoyage quand le composant est détruit
 	onDestroy(() => {
 		socket.off('history');
-		socket.off('message_received');
+		socket.off('message_received', messageReceivedWrapper);
 		socket.off('message_send');
 	});
 
@@ -73,10 +78,10 @@
 	<!-- Main card title -->
 	<h2 class="text-2xl font-semibold text-pink-500 text-center">Chat</h2>
 	<p class="mt-1 text-pink-500 text-center">Your chat with {data.friend?.username}</p>
-	
-    <!-- Message zone -->
+
+    <!-- Chat area -->
     <div bind:this={messageContainer} class="flex flex-col w-full px-6 py-6 border border-slate-700 bg-slate-900/90 mt-8 rounded-xl h-200 overflow-y-auto gap-3">
-        <!-- Message card -->
+        <!-- Message container -->
 		{#each messages as message}
 			<div class="flex w-full {Number(message.receiverId) === data.user?.id ? 'justify-start' : 'justify-end'}">
 				<div class= "flex flex-col max-w-xs">
@@ -97,7 +102,7 @@
 		{/each}
     </div>
 	
-    <!-- Input zone -->
+    <!-- Input bar -->
     <div class="flex items-center w-full px-6 py-4 mt-4 rounded-xl gap-3">
         <input onkeydown={(e) => e.key === 'Enter' && handleSentMessages()} bind:value={inputContent} type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
         <button onclick={() => handleSentMessages()} class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>
