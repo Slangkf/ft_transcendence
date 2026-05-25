@@ -5,19 +5,38 @@
 	import { showToast } from '$lib/shared/toast.svelte'
 	import { onMount } from 'svelte'
 	import { connectWS } from '$lib/websocket/friendship'
+	import { connectWS as connectChatWS } from '$lib/websocket/chat'
+	import { unreadMap, incrementUnread } from '$lib/stores/unread'
+
 	import type { Socket } from "socket.io-client";
 
 	let props = $props();
 	let socket: Socket | null = null;
 
+	const totalUnread = $derived(Object.values($unreadMap).reduce((sum, count) => sum + count, 0))
+
+	$effect(() => {
+	    console.log('Messages non lus:', totalUnread)
+	})
+
 	onMount(() => {
-		if (props.data.connected && !socket) {
-			socket = connectWS();
-		}
-		return () => {
-        	socket?.disconnect();
-        	socket = null;
-    	};
+		if (props.data.connected) {
+		socket = connectWS(); // friendship, déjà présent
+		
+		const { socket: chatSocket } = connectChatWS();
+		chatSocket.on('message_received', (data) => {
+			console.log('layout reçoit message_received', data)
+			const currentUserId = page.url.searchParams.get('with');
+			if (data.senderId !== currentUserId) incrementUnread(data.senderId);
+		});
+	}
+		// if (props.data.connected && !socket) {
+		// 	socket = connectWS();
+		// }
+		// return () => {
+        // 	socket?.disconnect();
+        // 	socket = null;
+    	// };
 	});
 
 	async function handleLogout() {
@@ -88,13 +107,38 @@
 				{:else}
 					{#if page.url.pathname === '/modes'}
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<a href="/friends" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Friends
+							{#if totalUnread > 0}
+								<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full">
+									{totalUnread}
+								</span>
+							{/if}
+						</a>
 						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else if page.url.pathname === '/profile'}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<a href="/friends" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Friends
+							{#if totalUnread > 0}
+								<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full">
+									{totalUnread}
+								</span>
+							{/if}
+						</a>
+						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+					{:else if page.url.pathname === '/friends'}
+						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
 						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<a href="/friends" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Friends
+							{#if totalUnread > 0}
+								<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full">
+									{totalUnread}
+								</span>
+							{/if}
+						</a>
 						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{/if}
 				{/if}
