@@ -91,7 +91,7 @@ export type ServerToClientEvents = {
 
     'player_left':(data: PlayerLeftPayload) => void;
 
-    'reconnect': (data: ReconnectLoad)=> void;
+    'session_reconnect': (data: ReconnectLoad)=> void;
     'error': (data: {
         message: string;
     }) => void;

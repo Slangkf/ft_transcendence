@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/state';
-  import { getGameSocket, disconnectGameSocket } from '$lib/shared/gameSocket';
+  import { getGameSocket, disconnectGameSocket, ensureGameSocketConnected } from '$lib/shared/gameSocket';
 
   type PublicQuestion = { id: number; question: string; options: string[] };
   type PlayerSnapshot = { id: string; score: number; status: string; isAI: boolean; nickname?: string };
@@ -109,20 +109,22 @@
     const socket = getGameSocket();
 
     socket.off('answer_result');
-    socket.off('reconnect');
+    socket.off('session_reconnect');
     socket.off('error');
 
     socket.on('answer_result', (info: AnswerResultPayload) => {
       applyAnswerResult(info);
     });
 
-    socket.on('reconnect', (payload: ReconnectPayload) => {
+    socket.on('session_reconnect', (payload: ReconnectPayload) => {
       if (payload.type === 'in_game') {
         const state = payload.state;
         totalQuestions = state.state?.totalQuestions ?? 0;
         playersState = Object.values(state.state?.player ?? {});
         questionNumber = (state.state?.currentQuestionIndex ?? 0) + 1;
         isFinished = state.status === 'finished';
+        // restore current question from server-provided nextQuestion
+        try { currentQuestion = state.nextQuestion ?? null; } catch { currentQuestion = null; }
       }
     });
 
@@ -143,12 +145,25 @@
     } catch {}
   }
 
-  function submitAnswer(answerIndex: number) {
+  async function submitAnswer(answerIndex: number) {
     if (!currentQuestion || answered || revealing || isFinished) return;
     selectedIndex = answerIndex;
     answered = true;
+    try {
+      await ensureGameSocketConnected();
+    } catch (err) {
+      error = 'Socket not connected.';
+      answered = false;
+      return;
+    }
     const socket = getGameSocket();
-    socket.emit('submit_answer', { gameId, answerIndex });
+    socket.emit('submit_answer', { gameId, answerIndex }, (ack: any) => {
+      if (!ack || !ack.success) {
+        // submission failed — revert answered so user can retry
+        answered = false;
+        error = ack?.message ?? 'Failed to submit answer.';
+      }
+    });
   }
 
   onMount(() => {

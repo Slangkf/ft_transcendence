@@ -62,7 +62,7 @@ export class GameSocketHandler{
         await this.handleReconnect(socket, userId);
 
         socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
-        socket.on('submit_answer', (data) => this.onSubmitAnswer(socket, userId, data));
+        socket.on('submit_answer', (data, ack) => this.onSubmitAnswer(socket, userId, data, ack));
     }
 
     private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{
@@ -75,7 +75,7 @@ export class GameSocketHandler{
         }
         switch (status){
             case "queue":{
-                socket.emit('reconnect', {
+                socket.emit('session_reconnect', {
                     type: "queue",
                     message: "Still in matchmaking queue"
                 })
@@ -89,7 +89,7 @@ export class GameSocketHandler{
                 });
                 break;}
 
-                socket.emit('reconnect', {
+                socket.emit('session_reconnect', {
                     type: "matched",
                     players: match.players,
                     roomId: match.roomId,
@@ -104,7 +104,7 @@ export class GameSocketHandler{
                 });
                 break;}
                 
-                socket.emit('reconnect', {
+                socket.emit('session_reconnect', {
                     type: "in_room",
                     roomId: room.roomId,
                     players: Object.values(room.players).map(p=>({
@@ -131,7 +131,7 @@ export class GameSocketHandler{
                     });
                     break;
                 } else {
-                    socket.emit('reconnect', {
+                    socket.emit('session_reconnect', {
                         type: "in_game",
                         gameId: gamestate.gameId,
                         state: this.mapper.toUpdateResponse(gamestate),
@@ -140,7 +140,7 @@ export class GameSocketHandler{
                 }
             }
             default:
-                socket.emit('reconnect', {type: "idle"});
+                socket.emit('session_reconnect', {type: "idle"});
         }
     }
 
@@ -191,7 +191,7 @@ export class GameSocketHandler{
     }
     
 
-    private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0]): Promise<void> {
+    private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0], ack?: (response: any) => void): Promise<void> {
         try {
             const { gameId, answerIndex } = data;
             
@@ -209,6 +209,7 @@ export class GameSocketHandler{
 
             // Answer was processed successfully, event will be broadcasted by gameService
             socket.emit('answer_submitted', { success: true });
+            try { ack?.({ success: true }); } catch {}
             
             const gamestate = await this.gamerepos.findById(gameId);
             if (!gamestate || !('roomId' in gamestate) || !gamestate.roomId)
@@ -241,6 +242,7 @@ export class GameSocketHandler{
         } catch (error) {
             console.error('Error submitting answer:', error);
             socket.emit('error', { message: 'Error submitting answer' });
+            try { ack?.({ success: false, message: 'Error submitting answer' }); } catch {}
         }
     }
 }
