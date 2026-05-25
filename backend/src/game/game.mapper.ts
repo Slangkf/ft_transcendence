@@ -81,6 +81,7 @@ export class GameMapper {
                 id,
                 {
                     id: player.id,
+                    nickname: player.nickname,
                     score: player.score,
                     status: player.status,
                     isAI: player.isAI || false

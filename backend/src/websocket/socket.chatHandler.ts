@@ -9,6 +9,7 @@ type chatNamespace = Namespace<Record<string, never>, ChatSocketEvents>;
 type chatSocket = Socket<Record<string, never>, ChatSocketEvents>;
 
 export class ChatSocketHandler{
+    private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
     constructor(
         private ns: chatNamespace,
         private chatservice: ChatService,
@@ -22,7 +23,7 @@ export class ChatSocketHandler{
 		socket.on('get_history', (data)=> this.onGetHistory(socket, userId, data));
 		socket.on('send_message', (data)=> this.onSendMessage(socket, userId, data));
         socket.on('mark_read', (data)=> this.onMarkRead(socket, userId, data));
-        socket.on('disconnect', ()=> socket.leave(`user:${userId}`))
+        socket.on('disconnect', ()=> this.onDisconnect(socket, userId));
 
 		await this.redis.set(RedisKeys.socket.chatUser(userId), socket.id);
 		socket.join(`user:${userId}`);
@@ -66,5 +67,18 @@ export class ChatSocketHandler{
                 message: "failed to mark read in socket"
             })
         }
+    }
+
+    private async onDisconnect(socket: chatSocket, userId: string): Promise<void>{
+        await this.redis.del(RedisKeys.socket.chatUser(userId));
+        await this.redis.set(RedisKeys.socket.chatDisconnect(userId), '1', {EX: 30})
+
+        const timer = setTimeout(async () => {
+            const stillDisconnected = await this.redis.get(RedisKeys.socket.chatUser(userId));
+            if (!stillDisconnected) return;
+
+            await this.redis.del(RedisKeys.socket.chatDisconnect(userId));
+        }, 30_000);
+        this.disconnectTimers.set(userId, timer);
     }
 }
