@@ -46,12 +46,16 @@ export class ChatRepository{
             data: {read: true}
         })
     }
-    //
-    async getUnreadCount(userId: number) {
-        return this.prisma.message.groupBy({
+    // message un read for each sender
+    async getUnreadCountPerSender(userId: number): Promise<{senderId: number; count: number}[]> {
+        const result = await this.prisma.message.groupBy({
             by: ['senderId'],
             where: { receiverId: userId, read: false },
             _count: { id: true }
         });
+        return result.map(r => ({
+            senderId: r.senderId,
+            count: r._count.id
+        }));
     }
 }

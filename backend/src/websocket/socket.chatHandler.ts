@@ -26,6 +26,9 @@ export class ChatSocketHandler{
 
 		await this.redis.set(RedisKeys.socket.chatUser(userId), socket.id);
 		socket.join(`user:${userId}`);
+
+        const unread = await this.chatservice.getUnreadCountPerSender(Number(userId));
+        socket.emit('unread_count', {perSender: unread});
     }
 
     private async onSendMessage(socket: chatSocket, userId: string, data:{receiverId: string; content: string}): Promise<void>{
@@ -55,10 +58,15 @@ export class ChatSocketHandler{
     private async onMarkRead(socket: chatSocket, userId: string, data: {senderId: string}): Promise<void>{
         try{
             await this.chatservice.markAsRead(Number(userId), Number(data.senderId));
+
+            const unread = await this.chatservice.getUnreadCountPerSender(Number(userId));
+            socket.emit('unread_count', {perSender: unread});
         }catch (error){
             socket.emit('error', {
                 message: "failed to mark read in socket"
             })
         }
     }
+
+
 }
