@@ -95,20 +95,19 @@ export type ServerToClientEvents = {
 
 	'game_started': (data: GameStartedPayload) => void;
 
-	'answer_submitted': (data: AnswerSubmitPayload) => void;
-	'answer_result':(data: AnswerResultPayload) => void;
+  'answer_submitted': (data: AnswerSubmitPayload) => void;
+  'answer_result':(data: AnswerResultPayload) => void;
 
-	'game_finished':(data: GameFinishedPayload) => void;
+  'game_finished':(data: GameFinishedPayload) => void;
 
-	'player_left':(data: PlayerLeftPayload) => void;
+  'player_left':(data: PlayerLeftPayload) => void;
 
-	'session_reconnect': (data: ReconnectLoad)=> void;
-	'error': (data: {
-		message: string;
-	}) => void;
+  'session_reconnect': (data: ReconnectLoad)=> void;
+  'error': (data: {
+    message: string;
+  }) => void;
 }
 
-// Events emitted from the client to the server
 export type ClientToServerEvents = {
     submit_answer:(data: {
         gameId: string;

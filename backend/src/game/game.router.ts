@@ -5,7 +5,7 @@ import { verifyToken } from "../middleware/verify_token";
 import { valideRequest } from "src/middleware/zod_check";
 import {StartGameReq, 
         SetReadyParams,
-        SubmitAnswerReq,
+        SubmitAnswerReqSchema,
 } from '@shared/game.schema';
 
 
@@ -20,7 +20,7 @@ export function createGameRouter(gameService: GameService): Router{
     router.get('/categories', gamecontroller.categories);
     router.post('/:mode/start', valideRequest(StartGameReq), gamecontroller.start);
     router.post('/:mode/ready/:roomId', valideRequest(SetReadyParams), gamecontroller.setready);
-    router.post('/:mode/:gameId/answer', valideRequest(SubmitAnswerReq), gamecontroller.answer);
+    router.post('/:mode/:gameId/answer', valideRequest(SubmitAnswerReqSchema), gamecontroller.answer);
     
     return router;
 }

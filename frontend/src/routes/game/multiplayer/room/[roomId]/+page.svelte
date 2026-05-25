@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
-  import { getGameSocket, disconnectGameSocket } from '$lib/shared/gameSocket';
+  import { getGameSocket, disconnectGameSocket, ensureGameSocketConnected } from '$lib/shared/gameSocket';
 
   type RoomPlayer = { id: string; nickname: string; isReady: boolean };
 
@@ -21,16 +21,27 @@
     socket.off('player_ready');
     socket.off('game_started');
     socket.off('player_left');
-    socket.off('reconnect');
+    socket.off('session_reconnect');
     socket.off('error');
-
-    socket.on('reconnect', (payload: any) => {
+    socket.on('session_reconnect', async (payload: any) => {
       if ((payload.type === 'in_room' || payload.type === 'matched') && payload.roomId === roomId) {
+        console.log(`socket id: ${socket.id}`);
+        console.log('payload type: ', payload.type);
         players = (payload.players ?? []).map((p: any) => ({
           id: p.id ?? p.userId,
           nickname: p.nickname,
           isReady: p.isReady ?? false,
         }));
+        // try to sync myReady from server state
+        try {
+          const resp = await fetch('/api/user/me', { credentials: 'include' });
+          if (resp.ok) {
+            const me = await resp.json();
+            const meId = String(me.data?.id ?? me.id ?? '');
+            const mePlayer = players.find(p => p.id === meId);
+            if (mePlayer) myReady = !!mePlayer.isReady;
+          }
+        } catch {}
       } else if (payload.type === 'in_game' && payload.gameId) {
         starting = true;
         goto(`/game/multiplayer/play/${payload.gameId}`);
@@ -87,7 +98,10 @@ async function toggleReady() {
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
+    try {
+      await ensureGameSocketConnected();
+    } catch {}
     attachListeners();
     // load players from sessionStorage (set by the matched event on the previous page)
     try {
@@ -96,6 +110,16 @@ async function toggleReady() {
         const matched = JSON.parse(raw);
         players = matched.map((p: any) => ({ id: p.userId, nickname: p.nickname, isReady: false }));
         sessionStorage.removeItem('mp_room_players');
+        // attempt to sync myReady if server already knows
+        try {
+          const resp = await fetch('/api/user/me', { credentials: 'include' });
+          if (resp.ok) {
+            const me = await resp.json();
+            const meId = String(me.data?.id ?? me.id ?? '');
+            const mePlayer = players.find(p => p.id === meId);
+            if (mePlayer) myReady = !!mePlayer.isReady;
+          }
+        } catch {}
       }
     } catch {}
   });
