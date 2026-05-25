@@ -26,7 +26,7 @@ export class UserRepository{
                 username: input.username,
                 email: input.email,
                 password: hashed_password,
-                url: "/uploads/avatars/default.jpg",
+                url: "/avatars/default.jpg",
 				status: 'ONLINE',
             }
         })

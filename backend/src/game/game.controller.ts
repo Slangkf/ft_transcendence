@@ -8,16 +8,20 @@ export class GameController
     constructor(
         private gameService: GameService
     ){}
-    start = async(req: Request, res: Response)=>
+
+        start = async(req: Request, res: Response)=>
     {
         try{
             const {category, size, mode: gamemode} = req.validatedBody;
             const mode = gamemode === 'multiplayer' ? "MULTIPLAYER"
+               : gamemode === 'ai' ? "AI"
                : 'SOLO';
             const result = await this.gameService.startGame({
                 mode,
                 userId: req.user!.id,
                 nickname: req.user!.username,
+                category: category,
+                size: size,
             })
             if (!result) {
                 return res.status(202).json(

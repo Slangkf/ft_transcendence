@@ -28,7 +28,8 @@ export class GameService{
 
         switch(mode){
             case "SOLO":
-                const state = await this.soloservice.startGame(userId, nickname, "SOLO", category);
+            case "AI":
+                const state = await this.soloservice.startGame(userId, nickname, mode, category);
                 return this.mapper.toUpdateResponse(state);
             case "MULTIPLAYER":
                 const result =  await this.multiplayer.joinMatchmaking("MULTIPLAYER", userId, nickname, size);

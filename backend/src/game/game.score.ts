@@ -6,15 +6,17 @@ export class PrismaGameRepository {
         private prisma: PrismaClient
     ){}
 
-    async create(result: MatchResult): Promise<void>{
+    async create(result: MatchResult): Promise<void> {
         await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            //1. create in matchresult 
-            const match = await tx.matchResult.create({
+            const winnerIdNum = parseInt(result.winnerId ?? "");
+            const humanPlayers = result.players.filter(p => p.userId !== "brain");
+
+            await tx.matchResult.create({
                 data: {
                     mode: result.mode,
-                    winnerId: result.winnerId ?  parseInt(result.winnerId) : null,
+                    winnerId: !isNaN(winnerIdNum) ? winnerIdNum : null,
                     players: {
-                        create: result.players.map(p=> ({
+                        create: humanPlayers.map(p => ({
                             userId: parseInt(p.userId),
                             score: p.score,
                             correctAnswers: p.correctAnswers,
@@ -22,24 +24,23 @@ export class PrismaGameRepository {
                         }))
                     }
                 }
-            })
+            });
 
-            //update players
             await Promise.all(
-                result.players.map( p=> 
+                humanPlayers.map(p =>
                     tx.user.update({
-                        where: {id: parseInt(p.userId)},
+                        where: { id: parseInt(p.userId) },
                         data: {
-                            played: {increment: 1},
-                            score: {increment: p.score},
-                            wins: result.winnerId === p.userId 
-                                ? {increment: 1}
+                            played: { increment: 1 },
+                            score: { increment: p.score },
+                            wins: result.winnerId === p.userId
+                                ? { increment: 1 }
                                 : undefined,
                         }
                     })
                 )
-            )
-        })
+            );
+        });
     }
 
     async findByUserId(userId: number) {
