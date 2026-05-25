@@ -2,7 +2,7 @@
 import { GameEmitter } from "./socket.emitter";
 import { Namespace, Socket } from "socket.io";
 import { Redis, RedisKeys } from "../lib/redis"
-import { ClientToServerEvents, ServerToClientEvents } from "./socket.types";
+import { ClientToServerEvents, ServerToClientEvents, SubmitAnswerRes } from "./socket.types";
 import { StatementSync } from "node:sqlite";
 import { RoomService } from "../room/room.service";
 import { MatchService } from "../game/match/match.service";
@@ -10,6 +10,7 @@ import { RedisGameRepository } from "../game/game.redis.repository";
 import { GameService } from "../game/game.service";
 import { SessionService } from "../game/session.service";
 import { GameMapper } from "src/game/game.mapper";
+import {SubmitAnswerReq} from "@shared/game.schema";
 
 type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
@@ -62,7 +63,10 @@ export class GameSocketHandler{
         await this.handleReconnect(socket, userId);
 
         socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
-        socket.on('submit_answer', (data, ack) => this.onSubmitAnswer(socket, userId, data, ack));
+        socket.on('submit_answer', (
+            data: SubmitAnswerReq, 
+            ack:(response: SubmitAnswerRes) => void
+        ) => {this.onSubmitAnswer(socket, userId, data, ack)});
     }
 
     private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{

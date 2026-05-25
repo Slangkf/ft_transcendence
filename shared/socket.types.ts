@@ -1,6 +1,6 @@
 import {SendFriendRequestInput} from "@shared/friendship.schema";
-import { RoomStatus } from "../room/room.types";
-import { GameUpdateResponse, MatchPlayer, PlayerSnapShot } from "../game/game.types";
+import { RoomStatus } from "../backend/room/room.types";
+import { GameUpdateResponse, MatchPlayer, PlayerSnapShot } from "../backend/game/game.types";
 import { PublicQuestion } from "@shared/game.schema";
 
 export type RoomPlayerInfo = {

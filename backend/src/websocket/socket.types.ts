@@ -1,7 +1,7 @@
 import {SendFriendRequestInput} from "@shared/friendship.schema";
 import { RoomStatus } from "../room/room.types";
 import { GameUpdateResponse, MatchPlayer, PlayerSnapShot } from "../game/game.types";
-import { PublicQuestion } from "@shared/game.schema";
+import { PublicQuestion, SubmitAnswerReq } from "@shared/game.schema";
 
 export type RoomPlayerInfo = {
     id: string;
@@ -98,10 +98,10 @@ export type ServerToClientEvents = {
 }
 
 export type ClientToServerEvents = {
-    submit_answer:(data: {
-        gameId: string;
-        answerIndex: number;
-    }) => void;
+    submit_answer:(
+        data: SubmitAnswerReq,
+         ack:(response: SubmitAnswerRes) => void
+    ) => void;
 
     //ready: (data: {
     //    roomId: string;
@@ -159,4 +159,9 @@ export type ChatSocketEvents ={
     'error': (data: {
         message: string;
     }) => void;
+}
+
+export type SubmitAnswerRes = {
+    success: boolean;
+    error?: string;
 }
