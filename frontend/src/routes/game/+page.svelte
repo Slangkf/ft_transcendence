@@ -107,6 +107,7 @@
     const selectedOptionText = currentQuestion.options[answerIndex];
 
     loading = true;
+    revealing = true;
     error = '';
 
     try {

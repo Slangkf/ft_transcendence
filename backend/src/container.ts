@@ -14,6 +14,7 @@ import { MatchRepository } from "./game/match/match.repository";
 import { MatchService } from "./game/match/match.service";
 import { SessionService } from "./game/session.service";
 import { SoloService } from "./game/solo";
+import { AIService } from "./game/ai";
 import { QuestionRepository } from "./question/question.repository";
 import { QuestionService } from "./question/question.service";
 import { RoomRepository } from "./room/room.repository";
@@ -58,6 +59,7 @@ export class Container{
     public matchService!: MatchService;
     public roomService!: RoomService;
     public soloService!: SoloService;
+    public aiService!: AIService;
     public localMultiPlayer!: LocalMultiPlayer;
     public multiplayerFacade!: MultiPlayerFacade;
     public gameService!: GameService;
@@ -146,6 +148,10 @@ export class Container{
             this.db,
             this.gamemapper,
         )
+        
+        //aiservice
+        this.aiService = new AIService(this.gameService);
+        this.soloService.setAIService(this.aiService);
         
         //friendshipservice
         this.friendService = new FriendshipService(

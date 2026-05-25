@@ -29,7 +29,7 @@ const start = async () => {
       origin: true, // must match the Origin header sent by the browser (protocol + host + port)
       credentials: true
     }));
-    app.use('/uploads', express.static('uploads'));
+    app.use('/avatars', express.static('avatars'));
 
     app.get('/api/health', (req, res) => res.json({ ok: true }));
 

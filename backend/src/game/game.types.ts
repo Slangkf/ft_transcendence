@@ -48,6 +48,7 @@ export interface BaseGameState {
     roomId?: string;
     hostId?: string;
     status?: "waiting" | "starting" | "playing" | "finished";
+    category?: string;
 }
 
 export interface SoloGameState extends BaseGameState {
@@ -123,7 +124,7 @@ export type SetReadyResult = {
 
 //input
 export type StartGameParams = {
-   mode: "SOLO" | "MULTIPLAYER";
+   mode: "SOLO" | "MULTIPLAYER" | "AI";
    userId: string;
    nickname: string;
    category?: string;

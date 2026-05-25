@@ -120,7 +120,7 @@ export class UserService{
         }
 
         const previousAvatarUrl = user.url;
-        const avatarUrl = `/uploads/avatars/${file.filename}`;
+        const avatarUrl = `/avatars/${file.filename}`;
 
         try {
             const updatedUser = await this.userrepository.update_avatar(userid, avatarUrl);
@@ -133,11 +133,11 @@ export class UserService{
     }
 
     private async delete_avatar_file(avatarUrl?: string | null): Promise<void>{
-        if (!avatarUrl || avatarUrl === '/uploads/avatars/default.jpg'){
+        if (!avatarUrl || avatarUrl === '/avatars/default.jpg'){
             return;
         }
 
-        if (!avatarUrl.startsWith('/uploads/avatars/')){
+        if (!avatarUrl.startsWith('/avatars/')){
             return;
         }
 
