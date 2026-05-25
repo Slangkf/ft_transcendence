@@ -74,29 +74,34 @@ export class GameBaseService
                 404
             )
         };
-            const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
-            
-            const player = state.players[userId];
-            if (!player){
-                throw new AppError(
-                    'player not found',
-                    ErrorCode.PLAYER_NOT_FOUND,
-                    404
-                );
-            }
-            player.answers.push({
-                questionId: currentQuestion.id,
-                selectedAnswerIndex: selectedIndex,
-                isCorrect,
-                answeredAt: Date.now()  
-            })
-            player.status = 'answered';
-
-            if (isCorrect){
-                player.score += 1;
-            }
-
-            return {playerId: userId, isCorrect, correctAnswerIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
+        if (selectedIndex >= currentQuestion.options.length || selectedIndex < 0){
+            throw new AppError(
+                'Selected Answer Index problem',
+                ErrorCode.BAD_REQUEST,
+                400
+            )
+        };
+        const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
+        
+        const player = state.players[userId];
+        if (!player){
+            throw new AppError(
+                'player not found',
+                ErrorCode.PLAYER_NOT_FOUND,
+                404
+            );
+        }
+        player.answers.push({
+            questionId: currentQuestion.id,
+            selectedAnswerIndex: selectedIndex,
+            isCorrect,
+            answeredAt: Date.now()  
+        })
+        player.status = 'answered';
+        if (isCorrect){
+            player.score += 1;
+        }
+        return {playerId: userId, isCorrect, correctAnswerIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
     }
 
     protected advanceGame(state: BaseGameState): void {

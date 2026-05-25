@@ -35,13 +35,13 @@ export class ChatController{
         const userId = req.user!.id;
     
         try{
-            const unread = await this.chatservice.getUnreadCount(Number(userId));
+            const unread = await this.chatservice.getUnreadCountPerSender(Number(userId));
             return res.status(200).json(
                 Apiresponse.success(unread, "unread count fetched")
             );
 
         }catch(error){
-            console.error("error in getUnreadCOunt: ", error);
+            console.error("error in getUnreadCount: ", error);
             if (error instanceof AppError){
                 return res.status(error.statusCode).json(
                     Apiresponse.error(error.code, error.message)
