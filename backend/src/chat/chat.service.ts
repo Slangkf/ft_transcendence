@@ -36,6 +36,8 @@ export class ChatService{
             createdAt: message.createdAt.getTime(),
         };
         await this.emitter.toUser(String(receiverId), 'message_received', socketPayload);
+        const unread = await this.getUnreadCountPerSender(receiverId);
+        await this.emitter.toUser(String(receiverId), 'unread_count', {perSender: unread});
 
         return chatMessage;
     }
@@ -52,8 +54,8 @@ export class ChatService{
         return await this.chatrepo.markAsRead(senderId, userId);
     }
 
-    async getUnreadCount(userId: number) {
-        return this.chatrepo.getUnreadCount(userId);
+    async getUnreadCountPerSender(userId: number): Promise<{ senderId: number; count: number }[]> {
+        return this.chatrepo.getUnreadCountPerSender(userId);
     }
 }
 

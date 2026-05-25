@@ -152,6 +152,10 @@ export type ChatSocketEvents ={
         message: any[];
     }) => void;
 
+    'unread_count': (data: {
+        perSender: {senderId: number; count: number}[];
+    }) => void;
+
     'error': (data: {
         message: string;
     }) => void;

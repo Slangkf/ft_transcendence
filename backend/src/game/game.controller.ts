@@ -11,9 +11,7 @@ export class GameController
     start = async(req: Request, res: Response)=>
     {
         try{
-            console.log("mode in params: ", req.params);
             const {category, size, mode: gamemode} = req.validatedBody;
-            console.log("mode in start game: ", gamemode);
             const mode = gamemode === 'multiplayer' ? "MULTIPLAYER"
                : 'SOLO';
             const result = await this.gameService.startGame({
