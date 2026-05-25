@@ -21,3 +21,16 @@ export function disconnectGameSocket() {
     socket = null;
   }
 }
+
+export async function ensureGameSocketConnected(): Promise<void> {
+  const s = getGameSocket();
+  if (s.connected) return;
+  await new Promise<void>((resolve, reject) => {
+    const onConnect = () => { cleanup(); resolve(); };
+    const onErr = (err: any) => { cleanup(); reject(err); };
+    const cleanup = () => { s.off('connect', onConnect); s.off('connect_error', onErr); };
+    s.once('connect', onConnect);
+    s.once('connect_error', onErr);
+    if (!s.active) s.connect();
+  });
+}
