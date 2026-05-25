@@ -1,8 +1,14 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect, isRedirect, isHttpError } from '@sveltejs/kit';
 
+/*
+ * Protects the /friends/[username] route and loads the requested user's friends list.
+ * - No token: redirects to /login.
+ * - Fetches the user profile and their friends list in parallel.
+ * - Unknown username: throws a 404 error.
+ * - If the friends list request fails, returns an empty list.
+ */
 export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
-	// Redirect unauthenticated users to login
 	const token = cookies.get('auth_token');
 	if (!token) {
 		console.error('No auth token found in cookies in /friends/[username]');
@@ -10,8 +16,6 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 	}
 
 	try {
-		// Fetch the user object matching the requested username
-		// If the user does not exist, display a 404 error page
 		const [userResponse, friendsResponse] = await Promise.all ([
 			fetch(`http://backend:3000/api/user/username/${ params.username }`, {
 				headers: { Authorization: `Bearer ${token}` }
@@ -32,8 +36,8 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 
 		return { user, friendsList };
 	}
-	// Rethrow SvelteKit-handled errors to let the framework handle them natively
-	// Log unexpected errors (network failure, runtime errors, etc)
+	// Rethrow SvelteKit-handled errors to let the framework handle them natively.
+	// Log unexpected errors (network failure, runtime errors, etc).
 	catch (error) {
 		if (isRedirect(error) || isHttpError(error))
 			throw error;

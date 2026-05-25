@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Backend: Database schema for Question
+// Backend: Database schema for a question
 export const QuestionSchema = z.object({
     id: z.number(),
     question: z.string(),
@@ -9,7 +9,7 @@ export const QuestionSchema = z.object({
 });
 export type Question = z.infer<typeof QuestionSchema>;
 
-// Frontend: Public question schema (without correct answer)
+// Frontend: Public question schema (without the correct answer)
 export const PublicQuestionSchema = z.object({
     id: z.number(),
     question: z.string(),
@@ -78,7 +78,7 @@ export const PublicGameStateSchema = z.object({
 });
 export type PublicGameState = z.infer<typeof PublicGameStateSchema>;
 
-// Backend: Start game parameters
+// Backend: Parameters required to start a game
 export const StartGameParmsSchema = z.object({
     mode: z.enum(['solo', 'multi']),
     userId: z.string(),
@@ -86,18 +86,20 @@ export const StartGameParmsSchema = z.object({
 });
 export type StartGameParms = z.infer<typeof StartGameParmsSchema>;
 
-// Backend/Frontend: Start game result
+// Backend/Frontend: Result returned when starting a game
 export const StartGameResultSchema = z.object({
     gameId: z.string(),
     question: PublicQuestionSchema,
 });
 export type StartGameResult = z.infer<typeof StartGameResultSchema>;
 
+// Backend/Frontend: Player information used during matchmaking
 export type MatchPlayer = {
     userId: string;
     nickname: string;
 };
 
+// Backend/Frontend: Lightweight snapshot of a player state during the game
 export type PlayerSnapShot = {
     id: string;
     nickname?: string;
@@ -106,6 +108,7 @@ export type PlayerSnapShot = {
     isAI: boolean;
 };
 
+// Backend/Frontend: Final game score and ranking information
 export type FinalScore = {
     winnerId: string;
     finishedAt: number;
@@ -113,6 +116,7 @@ export type FinalScore = {
     ranking: Array<{playerId: string; score: number; rank: number}>;
 };
 
+// Backend/Frontend: Real-time game update response
 export interface GameUpdateResponse {
     gameId: string;
     status: 'playing' | 'finished';
@@ -131,13 +135,14 @@ export interface GameUpdateResponse {
     finalScore?: FinalScore | null;
 }
 
-// Backend/Frontend: Game info union
+// Backend/Frontend: Union type for game information
 export const PlayingGameInfoSchema = z.object({
     gameresult: PublicGameStateSchema,
     correctAnswer: z.string(),
     nextQuestion: PublicQuestionSchema.nullable(),
 });
 
+// Backend/Frontend: Schema for a finished game result
 export const FinishedGameInfoSchema = z.object({
     gameresult: PublicGameStateSchema,
     finalscore: z.object({
@@ -148,5 +153,6 @@ export const FinishedGameInfoSchema = z.object({
     }),
 });
 
+// Backend/Frontend: Union schema representing either a running or finished game
 export const GameInfoSchema = z.union([PlayingGameInfoSchema, FinishedGameInfoSchema]);
 export type GameInfo = z.infer<typeof GameInfoSchema>;

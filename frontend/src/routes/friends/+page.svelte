@@ -7,6 +7,7 @@
 	let { data } = $props();
 	let input = $state("")
 
+	// Redirects to the profile page of the searched username.
 	async function searchContact() {
 		try {
 			const response = await fetch(`/api/user/username/${input}`, {
@@ -28,6 +29,7 @@
 		}
 	}
 
+	// Accepts an incoming friend request and refreshes the page data.
 	async function acceptFriendship(request : typeof data.requestList[number]) {
 		try {
 			const response = await fetch(`/api/friendship/request/${request.id}/accept`, {
@@ -48,6 +50,7 @@
 		}
 	}
 
+	// Declines an incoming friend request and refreshes the page data.
 	async function rejectFriendship(request : typeof data.requestList[number]) {
 		try {
 			const response = await fetch(`/api/friendship/request/${request.id}/decline`, {
@@ -68,11 +71,13 @@
 		}
 	}
 
+	// Navigates to the chat page with the selected friend.
 	async function openConversation(friend: typeof data.friendsList[number]) {
 		const target = friend.friend.id === data.user.id ? friend.user.id : friend.friend.id;
 		goto(`/chat/${friend.friend.id === data.user.id ? friend.user.username : friend.friend.username}?with=${target}`);
 	}
 
+	// Removes a friend from the friend list and refreshes the page data.
 	async function removeFriend(friend: typeof data.friendsList[number]){
 		try {
 			const target = friend.friend.id === data.user.id ? friend.user.id : friend.friend.id;
@@ -106,11 +111,11 @@
 	<form class="p-4 w-full mt-4">   
 		<label for="search" class ="block mb-2.5 text-sm font-medium text-gray-500 sr-only ">Search</label>
 		<div class="relative">
-			<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+			<div class="absolute inset-y-0 inset-s-0 flex items-center ps-3 pointer-events-none">
 				<svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
 			</div>
 			<input onkeydown={(e) => e.key === 'Enter' && searchContact()} type="search" id="search" bind:value={input} class="block w-full p-3 ps-9 bg-slate-900 border border-slate-700 text-sm rounded-md focus:outline-none focus:ring-2 transition focus:ring-indigo-500 focus:border-indigo-500 shadow-sm placeholder:text-gray-500" placeholder="Search a user"/>
-			<button onclick={() => searchContact()} type="button" class="absolute end-1.5 bottom-1.5 text-slate-200 bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-indigo-500 shadow-sm font-medium leading-5 rounded-md text-xs px-4 py-2 focus:outline-none cursor-pointer">Search</button>
+			<button onclick={() => searchContact()} type="button" class="absolute inset-e-1.5 bottom-1.5 text-slate-200 bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-indigo-500 shadow-sm font-medium leading-5 rounded-md text-xs px-4 py-2 focus:outline-none cursor-pointer">Search</button>
 		</div>
 	</form>
 

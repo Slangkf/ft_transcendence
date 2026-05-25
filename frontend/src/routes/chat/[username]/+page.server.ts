@@ -1,7 +1,12 @@
-import { error, redirect, isRedirect, isHttpError } from '@sveltejs/kit';
-
+import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
+/*
+ * Protects the /chat route and loads the data needed to render the chat page.
+ * - No token: redirects to /login.
+ * - Fetches the authenticated user and the friend's data in parallel.
+ * - If any request fails, returns null for that resource.
+ */
 export const load: PageServerLoad = async ({ cookies, fetch, url }) => {
 	// Redirect unauthenticated users to login
 	const token = cookies.get('auth_token');
@@ -20,7 +25,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, url }) => {
 		]);
 		if (!userResponse.ok)
 			console.error('Failed to fetch user informations — /chat:', userResponse.status);
-		if (!userResponse.ok)
+		if (!friendResponse.ok)
 			console.error('Failed to fetch friend informations — /chat:', friendResponse.status);
 
 		const user = userResponse.ok ? await userResponse.json(): null;

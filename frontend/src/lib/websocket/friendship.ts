@@ -1,7 +1,15 @@
 import { io, Socket } from "socket.io-client";
 import { showToast } from "$lib/shared/toast.svelte";
+
 import type { FriendSocketEvents } from "$lib/shared/socket.types";
 
+/*
+ * Creates and returns a new WebSocket connection to the /friendship namespace.
+ * Not a singleton — only the layout uses this connection, so it owns and manages
+ * its full lifecycle (creation on mount, disconnection on logout or destroy).
+ * - Logs connection status and errors.
+ * - Listens for friendship events and displays toast notifications accordingly.
+ */
 export function connectWS(): Socket<FriendSocketEvents> {
 
 	const socket = io('/friendship', {
