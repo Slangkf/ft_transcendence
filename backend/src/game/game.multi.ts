@@ -157,6 +157,8 @@ export class MultiPlayerFacade {
             ])
         }));
 
+        await this.matchService.deleteMatch(match.matchId);
+
         return {
             status: 'matched',
             players: match.players,
@@ -203,7 +205,22 @@ export class MultiPlayerFacade {
         }
 
         return { type: "queue" };
-    }   
+    } 
+
+    async cleanupRoom(roomId: string, userIds: string[]): Promise<void>{
+        await this.roomService.deleteRoom(roomId);
+
+        await Promise.all(
+            userIds.map(async (userId) => {
+                await this.matchService.leaveQueue(userId);
+                await this.sessionService.update(userId, {
+                    status: 'idle',
+                    roomId: undefined,
+                    gameId: undefined,
+                })
+            })
+        )
+    }
 }
 
 /***

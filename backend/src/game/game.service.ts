@@ -77,10 +77,21 @@ export class GameService{
         return this.multiplayer.setPlayerReady(roomId, userId, isReady);
     }
 
+    async cleanupAfterGame(roomId: string, userIds: string[]): Promise<void> {
+        await this.multiplayer.cleanupRoom(roomId, userIds);
+    }
+
     private async persistAndClean(state: BaseGameState): Promise<void> {
         const matchResult = this.mapper.toMatchResult(state);  // ← mapper 负责转换
         await this.db.create(matchResult);
         await this.gameRepository.delete(state.gameId);
+        if (state.mode === 'MULTIPLAYER'){
+            const roomId = state.roomId;
+            const userIds = Object.keys(state.players);
+            if (roomId){
+                await this.multiplayer.cleanupRoom(roomId, userIds);
+            }
+        }
     }
 
 }
