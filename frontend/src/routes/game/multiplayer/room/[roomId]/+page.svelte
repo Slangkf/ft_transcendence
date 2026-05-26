@@ -39,7 +39,7 @@
           if (resp.ok) {
             const me = await resp.json();
             const meId = String(me.data?.id ?? me.id ?? '');
-            const mePlayer = players.find(p => p.id === meId);
+            const mePlayer = players.find(p => String(p.id) === meId);
             if (mePlayer) myReady = !!mePlayer.isReady;
           }
         } catch {}
@@ -50,7 +50,8 @@
     });
 
     socket.on('player_ready', (payload: { playerId: string; isReady: boolean; allReady: boolean }) => {
-      players = players.map(p => p.id === payload.playerId ? { ...p, isReady: payload.isReady } : p);
+      const pid = String(payload.playerId);
+      players = players.map(p => String(p.id) === pid ? { ...p, isReady: payload.isReady } : p);
     });
 
     socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number }) => {
@@ -62,7 +63,8 @@
     });
 
     socket.on('player_left', (payload: { playerId: string; newHostId: string }) => {
-      players = players.filter(p => p.id !== payload.playerId);
+      const pid = String(payload.playerId);
+      players = players.filter(p => String(p.id) !== pid);
     });
 
     socket.on('error', (payload: { message: string }) => {
@@ -118,7 +120,7 @@ async function toggleReady() {
           if (resp.ok) {
             const me = await resp.json();
             const meId = String(me.data?.id ?? me.id ?? '');
-            const mePlayer = players.find(p => p.id === meId);
+            const mePlayer = players.find(p => String(p.id) === meId);
             if (mePlayer) myReady = !!mePlayer.isReady;
           }
         } catch {}

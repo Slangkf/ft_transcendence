@@ -127,6 +127,10 @@ export class GameController
                     );
             }
 
+            if (result.status === 'finished') {
+                await this.gameService.finalize(gameId);
+            }
+
             return res.status(200).json(
                 Apiresponse.success(result, result.status === 'finished' ? "Game finished." : "Answer submitted.")
                 );

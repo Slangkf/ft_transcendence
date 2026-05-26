@@ -58,7 +58,7 @@
     return `${m}:${r.toString().padStart(2, '0')}`;
   }
 
-  const nameOf = (id: string) => playersState.find(p => p.id === id)?.nickname ?? id;
+  const nameOf = (id: string) => playersState.find(p => String(p.id) === String(id))?.nickname ?? id;
   let revealing = $state(false);
   let answered = $state(false);
 
@@ -296,7 +296,7 @@
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         Game finished
       </h2>
-      <p class="text-center text-blue-100 mb-4">Winner: <span class="font-bold text-pink-200">{finalScore.ranking.find(r => r.playerId === finalScore!.winnerId)?.nickname ?? nameOf(finalScore.winnerId)}</span></p>
+      <p class="text-center text-blue-100 mb-4">Winner: <span class="font-bold text-pink-200">{finalScore.ranking.find(r => String(r.playerId) === String(finalScore!.winnerId))?.nickname ?? nameOf(finalScore.winnerId)}</span></p>
       <div class="grid gap-2">
         {#each finalScore.ranking as entry}
           <div class="flex items-center justify-between px-3 py-2 rounded bg-gray-500/20 border border-white/10">

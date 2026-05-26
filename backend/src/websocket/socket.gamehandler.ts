@@ -291,6 +291,8 @@ export class GameSocketHandler{
                         )
                     )
                 }
+                // persist match result to DB and clear Redis state now that everyone has been notified
+                await this.gameService.finalize(gameId);
                 return;
             }
             this.io.to(gamestate.roomId).emit('answer_result', {
