@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Register_Input, type RegisterInput } from '$lib/shared/user.schema';
-	import { showToast } from '$lib/toast.svelte';
+	import { showToast } from '$lib/shared/toast.svelte';
 	import { onMount } from 'svelte'
 	import { page } from '$app/state';
 
+	// Shows a notification after logging out.
 	onMount(() => {
 		page.url.searchParams.get('logout') && showToast("You are now disconnected, see you soon.");
 	});
@@ -15,63 +16,55 @@
 		password: ""
 	});
 
-	async function handleSubmit(event: SubmitEvent) {
-		// Prevent default HTML form submission (page reload).
-		event.preventDefault();
 
-		// Extract form reference from submit event.
+	/*
+	* Handles form submission:
+	* - Prevents default page reload.
+	* - Extracts and validates user input using Zod schema.
+	* - Maps validation errors to their corresponding form fields.
+	* - Sends registration data to the API and handles backend errors.
+	* - Redirects to the home page on success.
+	*/
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
 		const form = event.target as HTMLFormElement;
-		// Extract user input values from the form fields.
 		const email = (form.email as HTMLInputElement).value;
 		const username = (form.username as HTMLInputElement).value;
 		const password = (form.password as HTMLInputElement).value;
 
-		// Reset previous errors before running new validation.
 		errors.email = "";
 		errors.username = "";
 		errors.password = "";
 		
-		// Validate input data using Zod schema.
 		const validation = Register_Input.safeParse({
 			email,
 			username,
 			password
 		});
-		// If input, map Zod errors to corresponding form fields.
 		if (!validation.success) {
 			for (const issue of validation.error.issues) { 
-				// Extract the field name that caused the validation error.
 				const field = issue.path[0] as keyof RegisterInput;
-				// Assign the error message to the corresponding field.
 				errors = { ...errors, [field]: issue.message };
 			}
-			// Stop submission if validation failed.
 			return;
 		}
 
-		// Send registration data to backend API.
 		try {
 			const response = await fetch('/api/auth/register', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, username, password})
 			});
-			// Parse backend response as JSON.
 			const result = await response.json();
-			// If HTTP response indicates failure (4xx).
 			if (!response.ok) {
-				// If backend returned field-specific validation errors.
 				if (result.error?.code === "AUTH_MAIL_ALREADY_EXIST")
 					errors.email = result.error.message;
 				else if (result.error?.code === "AUTH_USERNAME_ALREADY_EXIST")
 					errors.username = result.error.message;
-				// Stop execution if request failed.
 				return;
 			}
-			// Redirect user after successful registration
 			window.location.href = '/modes/?register=true';
 		}
-		// Catch and log unexpected errors.
 		catch (error){
 			console.error('Register page error: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");

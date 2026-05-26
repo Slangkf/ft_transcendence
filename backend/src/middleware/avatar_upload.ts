@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
 
-const avatarDirectory = path.resolve(process.cwd(), 'uploads/avatars');
+const avatarDirectory = path.resolve(process.cwd(), 'avatars');
 
 fs.mkdirSync(avatarDirectory, { recursive: true });
 

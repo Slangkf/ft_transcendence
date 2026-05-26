@@ -9,6 +9,7 @@ import {createServer} from 'http';
 import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
 import { container } from './container';
+import { ChatSocketHandler } from './websocket/socket.chatHandler';
 
 
 const app = express();
@@ -25,12 +26,12 @@ const start = async () => {
     app.use(cookieParser());
     app.use(express.json());
     app.use(cors({
-      origin: 'https://localhost:8888', // must match the Origin header sent by the browser (protocol + host + port)
+      origin: true, // must match the Origin header sent by the browser (protocol + host + port)
       credentials: true
     }));
-    app.use('/uploads', express.static('uploads'));
+    app.use('/avatars', express.static('avatars'));
 
-    app.get('/api/health', (_req, res) => res.json({ ok: true }));
+    app.get('/api/health', (req, res) => res.json({ ok: true }));
 
     //httpserver 
     const httpserver = createServer(app);
@@ -43,16 +44,18 @@ const start = async () => {
     //socket handler
     gameNs.on('connection', socket => container.gameSocketHandler.onConnection(socket));
     friendNs.on('connection', socket => container.friendSocketHandler.onConnection(socket));
+    chatNs.on('connection', socket => container.chatSocketHandler.onConnection(socket));
 
 
     app.use('/api/auth', container.authRouter);
     app.use('/api/user', container.userRouter);
     app.use('/api/game', container.gameRouter);
     app.use('/api/friendship', container.friendRouter);
+    app.use('/api/chat', container.chatRouter);
     app.use('/api/tournament', container.tournamentRouter);
 
     // 3. Start server
-    httpserver.listen(PORT, () => {
+    httpserver.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
     });
 

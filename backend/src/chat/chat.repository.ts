@@ -1,6 +1,6 @@
 import { 
     PrismaClient, 
-    Message, 
+     type Message, 
     Prisma
  } from "@prisma/client"
 
@@ -11,11 +11,11 @@ export class ChatRepository{
     ){}
 
     // save a message
-    async saveMessage(fromId: number, toUserId: number, content: string): Promise<Message>{
+    async saveMessage(senderId: number, receiverId: number, content: string): Promise<Message>{
         return await this.prisma.message.create({
             data:{
-                senderId: fromId,
-                receiverId: toUserId,
+                senderId: senderId,
+                receiverId: receiverId,
                 content,
             }
         })
@@ -36,22 +36,26 @@ export class ChatRepository{
             take: limit,
         });
     }
-    
 
     //mark the message has read ， tell the front how many message has read 
     //batchpayload return count 
-    async markAsRead(fromId: number, toUserId: number): Promise<Prisma.BatchPayload>{
+    async markAsRead(fromId: number, receiverId: number): Promise<Prisma.BatchPayload>{
         return this.prisma.message.updateMany({
-            where: {senderId: fromId, receiverId: toUserId, read: false},
+            where: {senderId: fromId, receiverId: receiverId, read: false},
             data: {read: true}
         })
     }
-    //
-    async getUnreadCount(userId: number) {
-        return this.prisma.message.groupBy({
+
+    // message unread for each sender
+    async getUnreadCountPerSender(userId: number): Promise<{senderId: number; count: number}[]> {
+        const result = await this.prisma.message.groupBy({
             by: ['senderId'],
             where: { receiverId: userId, read: false },
             _count: { id: true }
         });
+        return result.map(r => ({
+            senderId: r.senderId,
+            count: r._count.id
+        }));
     }
 }

@@ -14,6 +14,7 @@ import { MatchRepository } from "./game/match/match.repository";
 import { MatchService } from "./game/match/match.service";
 import { SessionService } from "./game/session.service";
 import { SoloService } from "./game/solo";
+import { AIService } from "./game/ai";
 import { QuestionRepository } from "./question/question.repository";
 import { QuestionService } from "./question/question.service";
 import { RoomRepository } from "./room/room.repository";
@@ -37,6 +38,8 @@ import { PrismaClient } from "@prisma/client";
 import { TournamentRepository } from "./tournament/tournament.repository";
 import { TournamentService } from "./tournament/tournament.service";
 import { createTournamentRouter } from "./tournament/tournament.router";
+import { GameMapper } from "./game/game.mapper";
+import { PrismaGameRepository } from "./game/game.score";
 
 
 export class Container{
@@ -51,6 +54,7 @@ export class Container{
     public friendRepo!: FriendshipRepository;
     public chatRepo!: ChatRepository;
     public tournamentRepo!: TournamentRepository;
+    public db!: PrismaGameRepository;
 
     //service 
     public questionService!: QuestionService;
@@ -59,6 +63,7 @@ export class Container{
     public matchService!: MatchService;
     public roomService!: RoomService;
     public soloService!: SoloService;
+    public aiService!: AIService;
     public localMultiPlayer!: LocalMultiPlayer;
     public multiplayerFacade!: MultiPlayerFacade;
     public gameService!: GameService;
@@ -66,6 +71,7 @@ export class Container{
     public friendService!: FriendshipService;
     public chatService!: ChatService;
     public tournamentService!: TournamentService;
+    public gamemapper!: GameMapper;
 
     //controller
     public friendController!: FriendshipController;
@@ -110,6 +116,7 @@ export class Container{
         this.friendRepo = new FriendshipRepository();
         this.chatRepo = new ChatRepository(this.prisma);
         this.tournamentRepo = new TournamentRepository();
+        this.db = new PrismaGameRepository(this.prisma);
 
         //initialise services without dependance
         this.questionService = new QuestionService(this.questionRepo);
@@ -126,6 +133,8 @@ export class Container{
         this.friendEmitter = new FriendEmitter(io, redis);
         this.chatEmitter = new ChatEmitter(io, redis);
 
+        this.gamemapper = new GameMapper(this.questionService);
+
         //multigamefacade 
         this.multiplayerFacade = new MultiPlayerFacade(
             this.matchService,
@@ -134,14 +143,17 @@ export class Container{
             this.sessionService,
             this.gameEmitter,
             gameNs,
-            redis
+            redis,
+            this.gamemapper,
         );
         //gameservice
         this.gameService = new GameService(
             this.soloService,
             this.multiplayerFacade,
             this.gameRepo,
-            this.questionService
+            this.questionService,
+            this.db,
+            this.gamemapper,
         )
 
         //tournament
@@ -156,6 +168,10 @@ export class Container{
         );
         // wire tournament back into the multiplayer facade so room→game linking can notify the bracket
         this.multiplayerFacade.setTournamentService(this.tournamentService);
+        
+        //aiservice
+        this.aiService = new AIService(this.gameService);
+        this.soloService.setAIService(this.aiService);
         
         //friendshipservice
         this.friendService = new FriendshipService(
@@ -192,6 +208,7 @@ export class Container{
             this.gameService,
             this.sessionService,
             this.tournamentService,
+            this.gamemapper,
         );
 
         this.friendSocketHandler = new FriendSocketHandler(
@@ -202,10 +219,11 @@ export class Container{
             this.userRepo
         );
 
-        this.chatSocketHandler = new ChatSocketHandler(
-            chatNs,
-            this.chatService
-        )
+		this.chatSocketHandler = new ChatSocketHandler(
+			chatNs,
+			this.chatService,
+			redis
+		);
     }
 }
 export const container = Container.getInstance();

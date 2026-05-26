@@ -5,10 +5,11 @@ import { Redis, RedisKeys } from "../lib/redis";
 import { FriendshipService } from "../friendship/friendship.service";
 import { UserRepository } from "../User/user.repository";
 
-type friendNamespace = Namespace<FriendSocketEvents, FriendSocketEvents>;
-type friendSocket = Socket<FriendSocketEvents, FriendSocketEvents>;
+type friendNamespace = Namespace<{}, FriendSocketEvents>;
+type friendSocket = Socket<{}, FriendSocketEvents>;
 
 export class FriendSocketHandler{
+    private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
     constructor(
         private ns: friendNamespace,
         private redis: typeof Redis,
@@ -19,6 +20,15 @@ export class FriendSocketHandler{
 
     async onConnection(socket: friendSocket): Promise<void>{
         const userId = socket.data.userId;
+
+        const existTimer = this.disconnectTimers.get(userId);
+        if (existTimer){
+            clearTimeout(existTimer);
+            this.disconnectTimers.delete(userId);
+            
+            await this.redis.set(RedisKeys.socket.friendUser(userId), socket.id);
+            return;
+        }
 
         await this.redis.set(RedisKeys.socket.friendUser(userId), socket.id);
 
@@ -48,7 +58,11 @@ export class FriendSocketHandler{
     private async onDisconnect(userId: string, nickname: string): Promise<void>{
         await this.redis.del(RedisKeys.socket.friendUser(userId));
 
-        try{
+        const timer = setTimeout(async ()=> {
+            const stillDisconnected = !(await this.redis.get(RedisKeys.socket.friendUser(userId)));
+            if (!stillDisconnected) return ;
+
+            try{
             const friends = await this.friendshipservice.get_friends(Number(userId));
             await Promise.all(
                 friends.map(friend => {
@@ -59,8 +73,10 @@ export class FriendSocketHandler{
                     })
                 })
             )
-        } catch(error){
-            console.error('error notify friends offline: ', error);
-        }
+            } catch(error){
+                console.error('error notify friends offline: ', error);
+            }
+        }, 15_000)
+        this.disconnectTimers.set(userId, timer);  
     }
 }

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { GameService } from './game.service';
-import { GameMode } from './game.types';
 import { Apiresponse } from '../lib/api_response';
 import { AppError, ErrorCode } from '../error/apperror';
 
@@ -9,31 +8,20 @@ export class GameController
     constructor(
         private gameService: GameService
     ){}
-    start = async(req: Request, res: Response)=>
+
+        start = async(req: Request, res: Response)=>
     {
         try{
-            const rawmode = req.params.mode; 
-            const mode = rawmode === 'multiplayer' ? GameMode.MULTIPLAYER
-               : rawmode === 'solo'        ? GameMode.SOLO
-               : null;
-
-            if (!mode) {
-                return res.status(400).json(
-                     Apiresponse.error('INVALID_MODE', 'Invalid game mode')
-                );
-            }
-
-            const rawCategory = req.body?.category;
-            const category = typeof rawCategory === 'string' && rawCategory.trim().length > 0
-                ? rawCategory.trim()
-                : undefined;
-            const rawSize = req.body?.size;
-            const size = rawSize !== undefined ? Number(rawSize) : undefined;
-
+            const {category, size, mode: gamemode} = req.validatedBody;
+            const mode = gamemode === 'multiplayer' ? "MULTIPLAYER"
+               : gamemode === 'ai' ? "AI"
+               : 'SOLO';
             const result = await this.gameService.startGame({
                 mode,
                 userId: req.user!.id,
                 nickname: req.user!.username,
+                category: category,
+                size: size,
             })
             if (!result) {
                 return res.status(202).json(
@@ -49,14 +37,12 @@ export class GameController
                     return res.status(200).json(
                     Apiresponse.success(result, 'Match found and game started')
                 )}
-
             }
             res.status(200).json(
                 Apiresponse.success(result, "Solo game start")
             );
         }catch(error){
             console.error(error);
-
             if (error instanceof AppError){
                 return res.status(error.statusCode).json(
                     Apiresponse.error(error.code, error.message)
@@ -82,8 +68,7 @@ export class GameController
     }
 
     setready = async(req: Request, res: Response) => {
-        const roomId = req.params.roomId as string;
-        const isReady = req.body.isReady;
+        const {roomId, isReady} = req.validatedBody;
         const userId = req.user!.id;
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);

@@ -1,16 +1,17 @@
-# Node base image with specific Debian distribution.
+# Use the official Node.js 24 image based on Debian Bookworm.
 FROM    node:24-bookworm
 
-# Working directory.
+# Set the working directory inside the container.
 WORKDIR /app
 
-# Copy the local directory into the /app container directory.
+# Copy the project files from the local machine to the container.
 COPY    ./ /app
 
-# Install all listed dependencies from package.json
+# Install project dependencies defined in package.json.
 RUN     npm install
 
-# Svelte-kit listens on port 5500.
+# Expose the port used by the SvelteKit server.
 EXPOSE  5500
 
+# Start the application in development mode.
 CMD ["npm", "run", "dev"]

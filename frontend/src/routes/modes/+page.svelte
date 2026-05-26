@@ -1,7 +1,7 @@
 <script lang="ts">
 	import "../../app.css";
 	import { goto } from '$app/navigation';
-	import { showToast } from '$lib/toast.svelte';
+	import { showToast } from '$lib/shared/toast.svelte';
 	import { onMount } from 'svelte'
 	import { page } from '$app/state';
 

@@ -34,7 +34,6 @@ export class RoomService{
         }
 
         const room: Room = {
-            type: params.type,
             roomId,
             hostId: params.hostId,
             players,

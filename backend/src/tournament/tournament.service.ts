@@ -6,7 +6,8 @@ import { MatchService } from "../game/match/match.service";
 import { RoomService } from "../room/room.service";
 import { SessionService } from "../game/session.service";
 import { GameEmitter } from "../websocket/socket.emitter";
-import { GameMode, MatchPlayer } from "../game/game.types";
+import { MatchPlayer } from "../game/game.types";
+import { GameMode } from "@prisma/client";
 import { TournamentRepository } from "./tournament.repository";
 import { BracketMatch, PublicBracketView, TournamentPlayer, TournamentState } from "./tournament.types";
 

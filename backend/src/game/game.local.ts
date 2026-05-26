@@ -2,21 +2,21 @@ import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
 import { Room } from "../room/room.types";
 import { GameBaseService } from "./game.base";
-import { IGameRepository } from "./game.redis.repository";
-import { BaseGameState, GameMode, GameUpdateResponse, MultiGameState, Player } from "./game.types";
+import { RedisGameRepository } from "./game.redis.repository";
+import { BaseGameState, MultiGameState, Player } from "./game.types";
 
 export class LocalMultiPlayer extends GameBaseService {
-    protected gamerepository: IGameRepository;
+    protected gamerepository: RedisGameRepository;
 
     constructor(
         questionservice: QuestionService,
-        gamerepo: IGameRepository,
+        gamerepo: RedisGameRepository,
     ){
         super(questionservice);
         this.gamerepository = gamerepo;
     }
 
-    async startGame(room: Room, category?: string, tournamentId?: string): Promise<GameUpdateResponse>{
+    async startGame(room: Room, category?: string): Promise<BaseGameState>{
         const playerlist = Object.values(room.players);
         if (playerlist.length < 2) throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
 
@@ -25,15 +25,19 @@ export class LocalMultiPlayer extends GameBaseService {
         for(const p of playerlist){
             players[p.userId] = this.initPlayers(p.userId, p.nickname);
         }
-        const state = await this.prepareGame(players, GameMode.MULTIPLAYER, {roomId: room.roomId, hostId: room.hostId, category, tournamentId});
+        const state = await this.prepareGame(players, "MULTIPLAYER", {roomId: room.roomId, hostId: room.hostId, category}) as MultiGameState;
+
+        if (room.tournamentId) {
+            state.tournamentId = room.tournamentId;
+        }
 
         await this.gamerepository.create(state);
-        return {
-            ...this.buildResponseForFront(state)
-        }
+        return state;
     }
 
-    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<GameUpdateResponse>{
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<{state: BaseGameState, 
+        lastAnswer:{playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string }
+    }>{
         const state = await this.gamerepository.submitanswerAtomic(
             gameId,
             userId,
@@ -50,34 +54,15 @@ export class LocalMultiPlayer extends GameBaseService {
         const submitter = state.players[userId] as Player | undefined;
         const allAnswered = state.isFinished || submitter?.status === 'playing';
 
-        const lastAnswerUpdate = {
+        const lastAnswer = {
             playerId: userId,
-            questionId: currentQuestion?.id,
             isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
             correctAnswerIndex: currentQuestion?.correctAnswerIndex,
             correctText: allAnswered ? currentQuestion?.options[currentQuestion?.correctAnswerIndex] : undefined,
         };
 
-        return { ...this.buildResponseForFront(state), lastAnswerUpdate };
+        return { state, lastAnswer };
     }
 
-    override buildResponseForFront(state: BaseGameState): GameUpdateResponse {
-        const base = super.buildResponseForFront(state);
-        return {
-            ...base,
-            state: {
-                ...base.state,
-                player: Object.fromEntries(
-                    Object.entries(state.players).map(([id, p]) => [
-                        id, 
-                        {
-                            ...base.state.player[id],
-                            nickname: p.nickname,
-                        }
-                    ])
-                )
-            }
-        }
-    }
 }
     

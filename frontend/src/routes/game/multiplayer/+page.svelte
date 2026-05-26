@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { getGameSocket, disconnectGameSocket } from '$lib/gameSocket';
+  import { getGameSocket, disconnectGameSocket, ensureGameSocketConnected } from '$lib/shared/gameSocket';
 
   type MatchPlayer = { userId: string; nickname: string };
   type StartApiResponse = {
@@ -19,26 +19,14 @@
   let matchedRoomId: string | null = null;
 
   async function ensureSocketConnected(): Promise<void> {
-    const socket = getGameSocket();
-    if (socket.connected) return;
-    await new Promise<void>((resolve, reject) => {
-      const onConnect = () => { cleanup(); resolve(); };
-      const onErr = (err: any) => { cleanup(); reject(err); };
-      const cleanup = () => {
-        socket.off('connect', onConnect);
-        socket.off('connect_error', onErr);
-      };
-      socket.once('connect', onConnect);
-      socket.once('connect_error', onErr);
-      if (!socket.active) socket.connect();
-    });
+    await ensureGameSocketConnected();
   }
 
   function setupSocketListeners() {
     const socket = getGameSocket();
 
     socket.off('matched');
-    socket.off('reconnect');
+    socket.off('session_reconnect');
     socket.off('error');
 
     socket.on('matched', (payload: { roomId: string; players: MatchPlayer[] }) => {
@@ -47,7 +35,7 @@
       goto(`/game/multiplayer/room/${payload.roomId}`);
     });
 
-    socket.on('reconnect', (payload: any) => {
+    socket.on('session_reconnect', (payload: any) => {
       if (payload.type === 'queue') {
         waiting = true;
         info = 'Waiting for players...';

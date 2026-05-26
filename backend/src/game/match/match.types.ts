@@ -1,4 +1,4 @@
-import { GameMode } from "../game.types";
+import {GameMode} from "@prisma/client"
 
 export type JoinQueueParams = {
     mode: GameMode,

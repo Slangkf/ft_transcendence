@@ -2,15 +2,18 @@ import type { PageServerLoad } from './$types';
 import { redirect, isRedirect } from '@sveltejs/kit';
 
 
+/*
+ * Protects the /friends route and loads the data needed to render the page.
+ * - No token: redirects to /login.
+ * - Fetches user info, pending friend requests, and friends list in parallel.
+ * - If any request fails, logs the error and returns an empty list for that resource.
+ */
 export const load: PageServerLoad = async ({ cookies, fetch }) => {
-	// Redirect unauthenticated users to login
 	const token = cookies.get('auth_token');
 	if (!token) {
 		console.error('No auth token found in cookies — /friends');
 		throw redirect(302, '/login');
 	}
-	// Retrieve the lists of pending requests and friends
-	// If they cannot be retrieved, return empty lists
 	try {
 		const [userResponse, requestResponse, friendsResponse] = await Promise.all([
 			fetch('http://backend:3000/api/user/me', {

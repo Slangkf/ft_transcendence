@@ -1,8 +1,7 @@
 import {SendFriendRequestInput} from "@shared/friendship.schema";
-import { string } from "zod/v4-mini";
 import { RoomStatus } from "../room/room.types";
 import { GameUpdateResponse, MatchPlayer, PlayerSnapShot } from "../game/game.types";
-import { PublicQuestion } from "@shared/game.schema";
+import { PublicQuestion, SubmitAnswerReq } from "@shared/game.schema";
 import { BracketMatch, PublicBracketView, TournamentPlayer } from "../tournament/tournament.types";
 
 export type RoomPlayerInfo = {
@@ -51,6 +50,7 @@ export type AnswerResultPayload = {
         playerId: string;
         isCorrect: boolean;
         correctAnswerIndex: number;
+        correctText: string;
     };
     nextQuestion?: PublicQuestion | null;
     players: Record<string, PlayerSnapShot>;
@@ -93,7 +93,7 @@ export type ServerToClientEvents = {
 
     'player_left':(data: PlayerLeftPayload) => void;
 
-    'reconnect': (data: ReconnectLoad)=> void;
+    'session_reconnect': (data: ReconnectLoad)=> void;
     'error': (data: {
         message: string;
     }) => void;
@@ -132,19 +132,16 @@ export type TournamentFinishedPayload = {
 }
 
 export type ClientToServerEvents = {
-    submit_answer:(data: {
-        gameId: string;
-        answerIndex: number;
-    }) => void;
+    submit_answer:(
+        data: SubmitAnswerReq,
+         ack:(response: SubmitAnswerRes) => void
+    ) => void;
 
     //ready: (data: {
     //    roomId: string;
     //    isReady: boolean;
     //})
 }
-
-
-
 
 export type FriendSocketEvents = {
     'friend_request':(data: {
@@ -171,15 +168,15 @@ export type FriendSocketEvents = {
 export type ChatSocketEvents ={
     'message_received': (data: {
         messageId: string;
-        fromUserId: string;
-        toUserId: string;
+        senderId: string;
+        receiverId: string;
         content: string;
         createdAt: number;
     }) => void;
 
     'message_send': (data:{
         messageId: string;
-        toUserId: string;
+        receiverId: string;
         content: string;
         createdAt: number;
     }) => void;
@@ -189,7 +186,16 @@ export type ChatSocketEvents ={
         message: any[];
     }) => void;
 
+    'unread_count': (data: {
+        perSender: {senderId: number; count: number}[];
+    }) => void;
+
     'error': (data: {
         message: string;
     }) => void;
+}
+
+export type SubmitAnswerRes = {
+    success: boolean;
+    error?: string;
 }

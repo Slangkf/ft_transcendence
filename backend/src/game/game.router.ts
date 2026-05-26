@@ -2,6 +2,11 @@ import { Router } from "express";
 import { GameController } from "./game.controller";
 import { GameService } from "./game.service";
 import { verifyToken } from "../middleware/verify_token";
+import { valideRequest } from "src/middleware/zod_check";
+import {StartGameReq, 
+        SetReadyParams,
+        SubmitAnswerReqSchema,
+} from '@shared/game.schema';
 
 
 
@@ -13,9 +18,9 @@ export function createGameRouter(gameService: GameService): Router{
     router.use(verifyToken);
 
     router.get('/categories', gamecontroller.categories);
-    router.post('/:mode/start', gamecontroller.start);
-    router.post('/:mode/ready/:roomId', gamecontroller.setready);
-    router.post('/:mode/:gameId/answer', gamecontroller.answer);
+    router.post('/:mode/start', valideRequest(StartGameReq), gamecontroller.start);
+    router.post('/:mode/ready/:roomId', valideRequest(SetReadyParams), gamecontroller.setready);
+    router.post('/:mode/:gameId/answer', valideRequest(SubmitAnswerReqSchema), gamecontroller.answer);
     
     return router;
 }

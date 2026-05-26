@@ -3,13 +3,13 @@
 	import { invalidateAll } from '$app/navigation';
 	import { Change_Username_Input, type ChangeUsernameInput } from '$lib/shared/user.schema';
 	import { Change_Pd_Input, type ChangePdInput } from '$lib/shared/user.schema';
-	import { showToast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 
 	let { data } = $props();
 	let fileInput = $state<HTMLInputElement | null>(null)
 	
-	// Display the default avatar with the URL returned by the backend
-	let avatarUrl = $state(data.user.url)
+	// Displays the default avatar using the URL returned by the backend.
+	let avatarUrl = $derived(data.user.url)
 
 	// Reactive object storing form error messages.
 	let errors = $state({
@@ -20,16 +20,18 @@
 		confirmpd: ""
 	});
 
-	// Trigger the hidden file input click to open the file picker
+	// Triggers the hidden file input to open the native file picker.
 	function openFilePicker() {
 		fileInput?.click()
 	}
 
-	// Handle file selection: upload the chosen file to the backend immediately
+	/*
+	* Handles avatar selection and upload:
+	* - Validates file type (png, jpg) and size (max 2MB).
+	* - Sends the file to the backend and updates the displayed avatar on success.
+	*/
 	async function handleFileChange(event: Event) {
 		const input = event.target as HTMLInputElement
-		
-		// Retrieve the selected file, if any
 		const file = input.files?.[0]
 		if (!file) {
 			showToast("Sorry, you need to select an avatar before continuing.");
@@ -38,7 +40,6 @@
 
 		errors.avatar = "";
 
-		// Type and size verifications
 		const allowedType = ['image/png', 'image/jpeg']
 		if (!allowedType.includes(file.type)) {
 			showToast("Sorry, only .png, or .jpg/jpeg files are allowed.");
@@ -50,15 +51,14 @@
 			return;
 		}
 
-		// Build a FormData with the selected file
-		// FormData is the standard way to send files over HTTP
+		// Build a FormData with the selected file.
+		// FormData is the standard way to send files over HTTP.
 		const formData = new FormData();
 		formData.append("avatar", file);
 
 		try {
-			// Send the avatar to the backend
             // NB: Content-Type header is intentionally omitted so the browser
-            // can set it automatically with the correct multipart boundary
+            // can set it automatically with the correct multipart boundary.
 			const response = await fetch('/api/user/me/avatar', {
 				method: 'POST',
 				credentials: 'include',
@@ -71,7 +71,6 @@
 				return;
 			}
 
-			// Update the displayed avatar with the URL returned by the backend
 			avatarUrl = result.url
 			showToast("Your avatar has been successfully changed");
 		}
@@ -81,21 +80,21 @@
 		}
 	}
 
+	/*
+	* Handles username change:
+	* - Validates input with Zod schema.
+	* - Sends the new username to the backend and refreshes the page data on success.
+	*/
 	async function handleUsernameSubmission(event: SubmitEvent) {
-		// Prevent default HTML form submission (page reload).
 		event.preventDefault();
-		// Extract form reference from submit event.
 		const form = event.target as HTMLFormElement;
 		const username = (form.username as HTMLInputElement).value;
 
-		// Reset previous errors before running new validation.
 		errors.username = "";
 
-		// Validate input data using Zod schema.
 		const validation = Change_Username_Input.safeParse({
 			username
 		});
-		// If input, map Zod errors to corresponding form fields.
 		if (!validation.success) {
 			for (const issue of validation.error.issues) { 
 				// Extract the field name that caused the validation error.
@@ -103,98 +102,82 @@
 				// Assign the error message to the corresponding field.
 				errors = { ...errors, [field]: issue.message };
 			}
-			// Stop submission if validation failed.
 			return;
 		}
 
-		// Send new username data to backend API.
 		try {
 			const response = await fetch('/api/user/me/changeusername', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json' },
 				credentials: 'include',
-				body: JSON.stringify({ newUsername: username })
+				body: JSON.stringify({username })
 			});
-			// Parse backend response as JSON.
 			const result = await response.json();
-			// If HTTP response indicates failure (4xx).
 			if (!response.ok) {
-				// If backend returned field-specific validation errors.
 				if (result.error?.code === "SAME_NEW_OLD_USERNAME")
 					errors.username = result.error.message;
 				else if (result.error?.code === "AUTH_USERNAME_ALREADY_EXIST")
 					errors.username = result.error.message;
-				// Stop execution if request failed.
 				return;
 			}
-			// Re-run all load functions
 			await invalidateAll();
 			showToast("Your username has been successfully changed");
 		}
 		catch (error){
-			console.error('Error login: ', error);
+			console.error('Error handleUsernameSubmission: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
 
+	/*
+	* Handles password change:
+	* - Validates input with Zod schema.
+	* - Sends old and new passwords to the backend and refreshes the page data on success.
+	*/
 	async function handlePasswordSubmission(event: SubmitEvent) {
-		// Prevent default HTML form submission (page reload).
 		event.preventDefault();
-		// Extract form reference from submit event.
 		const form = event.target as HTMLFormElement;
 		const oldpassword = (form.oldpassword as HTMLInputElement).value;
 		const newpassword = (form.newpassword as HTMLInputElement).value;
 		const confirmpassword = (form.confirmpassword as HTMLInputElement).value;
 
-		// Reset previous errors before running new validation.
 		errors.oldpassword = "";
 		errors.newpassword = "";
 		errors.confirmpd = "";
 
-		// Validate input data using Zod schema.
 		const validation = Change_Pd_Input.safeParse({
+			oldpassword: oldpassword,
 			newpassword: newpassword,
 			confirmpd: confirmpassword
 		});
-		// If input, map Zod errors to corresponding form fields.
 		if (!validation.success) {
 			for (const issue of validation.error.issues) { 
-				// Extract the field name that caused the validation error.
 				const field = issue.path[0] as keyof ChangePdInput;
-				// Assign the error message to the corresponding field.
 				errors = { ...errors, [field]: issue.message };
 			}
-			// Stop submission if validation failed.
 			return;
 		}
 
-		// Send new password data to backend API.
 		try {
 			const response = await fetch('/api/user/me/changepassword', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json' },
 				credentials: 'include',
-				body: JSON.stringify({ oldpassword, newpassword })
+				body: JSON.stringify({ oldpassword, newpassword, confirmpd: confirmpassword })
 			});
-			// Parse backend response as JSON.
 			const result = await response.json();
-			console.log(result)
-			// If HTTP response indicates failure (4xx).
 			if (!response.ok) {
-				// If backend returned field-specific validation errors.
 				if (result.error?.code === "INVALID_OLD_PASSWORD")
 					errors.oldpassword = result.error.message;
 				else if (result.error?.code === "SAME_NEW_OLD_PASSWORD")
 					errors.newpassword = result.error.message;
-				// Stop execution if request failed.
 				return;
 			}
-			// Re-run all load functions
 			await invalidateAll();
-			showToast("Your password has been successfully changed. Please log in again.");
+			showToast("Your password has been successfully changed.");
 		}
 		catch (error){
-			console.error('Error login: ', error);
+			console.error('Error handlePasswordSubmission: ', error);
 			showToast("Internal error, please try later");
 		}
 	}

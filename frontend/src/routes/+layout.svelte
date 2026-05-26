@@ -1,23 +1,55 @@
 <script lang="ts">
 	import "../app.css";
 	import { page } from '$app/state';
-	import { toast } from '$lib/toast.svelte'
-	import { showToast } from '$lib/toast.svelte'
+	import { toast } from '$lib/shared/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 	import { onMount } from 'svelte'
 	import { connectWS } from '$lib/websocket/friendship'
+	import { connectWS as connectChatWS } from '$lib/websocket/chat'
+	import { disconnectWS } from '$lib/websocket/chat'
+	import { unreadMap, initUnread, incrementUnread } from '$lib/stores/unread'
+
 	import type { Socket } from "socket.io-client";
 
 	let props = $props();
 	let socket: Socket | null = null;
+	const totalUnread = $derived(Object.values($unreadMap).reduce((sum, count) => sum + count, 0));
 
+
+	/*
+	* Runs once on mount. If the user is authenticated, initializes two WS connections:
+	* - Friendship WS: handles friend-related events.
+	* - Chat WS:
+	*   - `unread_count`: initializes the unread store on connection, excluding the active conversation.
+	*   - `message_received`: increments unread count if the sender is not the active conversation.
+	* Cleanup: both sockets are explicitly disconnected on destroy and on logout.
+	*/
 	onMount(() => {
-		if (props.data.connected) {
+		if (props.data.connected && !socket) {
 			socket = connectWS();
+			const { socket: chatSocket } = connectChatWS();
+			chatSocket.on('unread_count', (data) => {
+				const currentUserId = page.url.searchParams.get('with');
+				const filtered = data.perSender.filter((e: {senderId: number, count: number}) => String(e.senderId) !== currentUserId);
+    			initUnread(filtered);
+			}),
+			chatSocket.on('message_received', (data) => {
+				const currentUserId = page.url.searchParams.get('with');
+				if (data.senderId !== currentUserId) incrementUnread(data.senderId);
+			});
 		}
+		return () => {
+			socket?.disconnect();
+			disconnectWS();
+			socket = null;
+		};
 	});
 
+	/*
+	* Sends a logout request to the API, disconnects both WebSocket connections
+	* to stop incoming notifications after logout, then redirects to the home page.
+	*/
 	async function handleLogout() {
-		// Send logout action to backend API.
     	try {
     		const response = await fetch('/api/auth/logout', {
 				method: 'POST',
@@ -28,6 +60,7 @@
 				return;
 			}
 			socket?.disconnect();
+			disconnectWS();
 			window.location.href='/?logout=true';
 		}
 		catch (error){
@@ -62,7 +95,7 @@
 		{/if}
 		<h2 class="text-xs sm:text-sm font-semibold text-pink-500 text-center">Your number one quiz plateform !</h2>
     </div>
-    <!-- Drop-down menu -->
+    <!-- Dynamic drop-down menu -->
 	<el-dropdown class="flex flex-1 justify-end">
 		<button class="cursor-pointer inline-flex gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold text-pink-500 drop-shadow-[10px_10px_5px_blue] hover:text-blue-500 hover:drop-shadow-[10px_10px_15px_#FF1D8D]">
 			Menu
@@ -84,13 +117,38 @@
 				{:else}
 					{#if page.url.pathname === '/modes'}
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<a href="/friends" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Friends
+							{#if totalUnread > 0}
+								<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full">
+									{totalUnread}
+								</span>
+							{/if}
+						</a>
 						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else if page.url.pathname === '/profile'}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<a href="/friends" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Friends
+							{#if totalUnread > 0}
+								<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full">
+									{totalUnread}
+								</span>
+							{/if}
+						</a>
+						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
+					{:else if page.url.pathname === '/friends'}
+						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
+						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
 						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{:else}
 						<a href="/modes" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Game</a>
 						<a href="/profile" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Profile</a>
+						<a href="/friends" class="block text-center py-2 text-sm text-pink-500 hover:text-blue-500 focus:text-blue-500 focus:outline-hidden">Friends
+							{#if totalUnread > 0}
+								<span class="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-blue-500 rounded-full">
+									{totalUnread}
+								</span>
+							{/if}
+						</a>
 						<button onclick={() => handleLogout()} class="block cursor-pointer w-full py-2 text-center text-sm text-pink-500 hover:text-blue-500 focus:bg-white/5 focus:text-blue-500 focus:outline-hidden">Logout</button>
 					{/if}
 				{/if}

@@ -7,6 +7,7 @@ import { Redis } from '../lib/redis';
 import { User } from '@prisma/client';
 import { AppError, ErrorCode } from '../error/apperror';
 import { UserPayload } from '../types/express';
+import {prisma} from '../lib/prisma';
 
 export const verifyToken = async(req: Request, res: Response, next: NextFunction)=>{
 	// check either the cookie or the Authorization header
@@ -29,6 +30,15 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
             ErrorCode.AUTH_UNAUTHORIZED,
             401
         ))}
+        //check if the user found in database
+        const user = await prisma.user.findUnique({
+            where: {id: Number(decoded.id)},
+            select:{ id: true}
+        })
+        if (!user){
+            return next(new AppError("User no longer exist", ErrorCode.AUTH_UNAUTHORIZED));
+        }
+
         req.user = decoded
         next()
     }catch(error){

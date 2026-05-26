@@ -15,21 +15,17 @@ export class UserService{
 			throw new AppError(
 				'Unknown user', 
 				ErrorCode.USER_NOT_FOUND,
-				401,
+				404,
 				{user: input});
         }
         const {password, ...profil_of_user} = user;
         return profil_of_user
     }
 
-    async get_profile_by_username(username: string): Promise<UserOutput>{
+    async get_profile_by_username(username: string): Promise<UserOutput | null>{
         const user = await this.userrepository.findByUsername(username);
         if (!user){
-			throw new AppError(
-				'Unknown user', 
-				ErrorCode.USER_NOT_FOUND,
-				401,
-				{user: username});
+			return null
         }
         const {password, ...profil_of_user} = user;
         return profil_of_user
@@ -124,7 +120,7 @@ export class UserService{
         }
 
         const previousAvatarUrl = user.url;
-        const avatarUrl = `/uploads/avatars/${file.filename}`;
+        const avatarUrl = `/avatars/${file.filename}`;
 
         try {
             const updatedUser = await this.userrepository.update_avatar(userid, avatarUrl);
@@ -137,11 +133,11 @@ export class UserService{
     }
 
     private async delete_avatar_file(avatarUrl?: string | null): Promise<void>{
-        if (!avatarUrl || avatarUrl === '/uploads/avatars/default.jpg'){
+        if (!avatarUrl || avatarUrl === '/avatars/default.jpg'){
             return;
         }
 
-        if (!avatarUrl.startsWith('/uploads/avatars/')){
+        if (!avatarUrl.startsWith('/avatars/')){
             return;
         }
 

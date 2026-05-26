@@ -1,6 +1,14 @@
 import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
-import { Player, BaseGameState, GameUpdateResponse, PlayerSnapShot, FinalScore, GameMode, MultiGameState, SoloGameState, GameState } from "./game.types";
+import { Player, 
+    BaseGameState, 
+    GameUpdateResponse, 
+    PlayerSnapShot, 
+    FinalScore, 
+    MultiGameState, SoloGameState, GameState, MatchResult } from "./game.types";
+
+import {GameMode} from "@prisma/client";
+
 
 
 export class GameBaseService
@@ -36,7 +44,7 @@ export class GameBaseService
             startedAt: now,
             questionStartedAt: now
         }
-        if (mode === GameMode.MULTIPLAYER || mode === GameMode.TOURNAMENT){
+        if (mode === "MULTIPLAYER" || mode === "TOURNAMENT"){
             if (!extra){
                 throw new AppError(
                     'roomId and hostId required for multiplayer',
@@ -69,29 +77,34 @@ export class GameBaseService
                 404
             )
         };
-            const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
-            
-            const player = state.players[userId];
-            if (!player){
-                throw new AppError(
-                    'player not found',
-                    ErrorCode.PLAYER_NOT_FOUND,
-                    404
-                );
-            }
-            player.answers.push({
-                questionId: currentQuestion.id,
-                selectedAnswerIndex: selectedIndex,
-                isCorrect,
-                answeredAt: Date.now()  
-            })
-            player.status = 'answered';
-
-            if (isCorrect){
-                player.score += 1;
-            }
-
-            return {playerId: userId, isCorrect, correctAnswerIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
+        if (selectedIndex >= currentQuestion.options.length || selectedIndex < 0){
+            throw new AppError(
+                'Selected Answer Index problem',
+                ErrorCode.BAD_REQUEST,
+                400
+            )
+        };
+        const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
+        
+        const player = state.players[userId];
+        if (!player){
+            throw new AppError(
+                'player not found',
+                ErrorCode.PLAYER_NOT_FOUND,
+                404
+            );
+        }
+        player.answers.push({
+            questionId: currentQuestion.id,
+            selectedAnswerIndex: selectedIndex,
+            isCorrect,
+            answeredAt: Date.now()  
+        })
+        player.status = 'answered';
+        if (isCorrect){
+            player.score += 1;
+        }
+        return {playerId: userId, isCorrect, correctAnswerIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
     }
 
     protected advanceGame(state: BaseGameState): void {
@@ -105,71 +118,6 @@ export class GameBaseService
                     p.status = 'playing';
             })
         }
-    }
-
-    /// prepare the information for front 
-    public buildResponseForFront(state: BaseGameState): GameUpdateResponse{
-        const isFinished = state.isFinished;
-        const currentQuestion = state.questions[state.currentQuestionIndex];
-        return {
-            gameId: state.gameId,
-            status: isFinished? "finished": "playing",
-            state: {
-                currentQuestionIndex: state.currentQuestionIndex,
-                totalQuestions: state.questions.length,
-                player: this.buildPublicPlayerSnapShot(state.players),
-                startedAt: state.startedAt,
-                questionStartedAt: state.questionStartedAt
-            },
-            nextQuestion: isFinished? null : this.questionService.toPublicQuestion(currentQuestion),
-            finalScore: isFinished? this.buildFinalScore(state.players) : null
-        }
-    }
-
-    protected buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PlayerSnapShot> {
-        return Object.fromEntries(
-            Object.entries(players).map(([id, player]: [string, Player]) => [
-                id,
-                {
-                    id: player.id,
-                    score: player.score,
-                    status: player.status,
-                    isAI: player.isAI || false,
-                    totalTime: player.Totaltime || 0
-                }
-            ])
-        )
-    }
-
-    protected buildFinalScore(players: Record<string, Player>): FinalScore{
-        const scores = Object.fromEntries(
-            Object.entries(players).map(([id, player]: [string, Player]) => [
-                id,
-                player.score
-            ])
-        );
-
-        const sorted = Object.entries(players).sort((a, b) => {
-            if (b[1].score !== a[1].score) return b[1].score - a[1].score;
-            return (a[1].Totaltime || 0) - (b[1].Totaltime || 0);
-        });
-
-        const ranking = sorted.map(([playerId, p], index) => ({
-            playerId,
-            nickname: p.nickname,
-            score: p.score,
-            rank: index + 1,
-            totalTime: p.Totaltime || 0,
-        }));
-
-        const winnerId = ranking[0]?.playerId ?? "";
-        return {
-            winnerId,
-            finishedAt: Date.now(),
-            scores,
-            ranking,
-        }
-
     }
 
 }

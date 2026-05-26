@@ -1,15 +1,8 @@
 import { Redis, RedisKeys } from '../lib/redis';
 import { GameState } from './game.types';
 
-export interface IGameRepository {
-    submitanswerAtomic: any;
-    create(game:GameState): Promise<void>;
-    findById(gameId: string): Promise<GameState | null>;
-    update(game: GameState): Promise<void>;
-    delete(gameId: string): Promise<void>;
-}
 
-export class RedisGameRepository implements IGameRepository
+export class RedisGameRepository 
 {
     private key(gameId: string) {
         return RedisKeys.game.state(gameId);

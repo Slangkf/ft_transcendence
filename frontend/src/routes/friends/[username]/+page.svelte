@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
-	import { showToast } from '$lib/toast.svelte'
+	import { showToast } from '$lib/shared/toast.svelte'
 
 	let { data } = $props();
 
+	// Sends a friend request to the selected user.
+	// Handles backend errors: self-request, pending invitation, or already friends.
 	async function friendAddHandler(friend: typeof data.friendsList[number]) {
 		const targetID = data.user.id === friend.user.id ? friend.friend.id : friend.user.id;
 		try {

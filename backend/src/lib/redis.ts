@@ -36,7 +36,8 @@ export const RedisKeys = {
     gameUser: (userId: string)=> `socket:v1:gameUser:${userId}`,
     chatUser: (userId: string)=> `socket:v1:chatUser:${userId}`,
     friendUser: (userId: string)=> `socket:v1:friendUser:${userId}`,
-    disconnect: (userId: string)=> `socket:v1:disconnect:${userId}`
+    disconnect: (userId: string)=> `socket:v1:disconnect:${userId}`,
+    chatDisconnect: (userId: string)=> `socket:v1:chatdisconnect:${userId}`,
   },
 
   session:{
