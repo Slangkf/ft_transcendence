@@ -9,6 +9,7 @@ import { MatchService } from "../game/match/match.service";
 import { RedisGameRepository } from "../game/game.redis.repository";
 import { GameService } from "../game/game.service";
 import { SessionService } from "../game/session.service";
+import { TournamentService } from "../tournament/tournament.service";
 import { GameMapper } from "src/game/game.mapper";
 import {SubmitAnswerReq} from "@shared/game.schema";
 
@@ -27,6 +28,7 @@ export class GameSocketHandler{
         private emitter: GameEmitter,
         private gameService: GameService,
         private sessionService: SessionService,
+        private tournamentService: TournamentService,
         private mapper: GameMapper,
     ){}
 
@@ -76,6 +78,10 @@ export class GameSocketHandler{
         const {status} = session;
         if (session.roomId){
             socket.join(session.roomId);
+        }
+        // always rejoin tournament broadcast room if applicable
+        if (session.tournamentId){
+            socket.join(`tournament:${session.tournamentId}`);
         }
         switch (status){
             case "queue":{
@@ -160,6 +166,24 @@ export class GameSocketHandler{
                     break; 
                 }
             }
+            case "in_tournament": {
+                if (!session.tournamentId) {
+                    await this.sessionService.update(userId, { status: "idle" });
+                    socket.emit('session_reconnect', {type: "idle"});
+                    break;
+                }
+                const bracket = await this.tournamentService.getPublic(session.tournamentId);
+                if (!bracket) {
+                    await this.sessionService.update(userId, { status: "idle", tournamentId: undefined });
+                    socket.emit('session_reconnect', {type: "idle"});
+                    break;
+                }
+                socket.emit('bracket_update', {
+                    tournamentId: session.tournamentId,
+                    bracket,
+                });
+                break;
+            }
             default:
                 socket.emit('session_reconnect', {type: "idle"});
         }
@@ -190,6 +214,14 @@ export class GameSocketHandler{
                             newHostId: '',
                         })
                     }
+                }
+            }
+            // tournament forfeit: if the user was part of a tournament, forfeit their current match
+            if (session?.tournamentId) {
+                try {
+                    await this.tournamentService.forfeit(session.tournamentId, userId);
+                } catch (e) {
+                    console.error("tournament forfeit error:", e);
                 }
             }
             if (session?.roomId){
@@ -238,14 +270,46 @@ export class GameSocketHandler{
             //calcul finalscore
             if (gamestate.isFinished)
             {
+                const finalResponse = this.mapper.toUpdateResponse(gamestate);
+                this.io.to(gamestate.roomId).emit('answer_result', {
+                    gameId,
+                    status: result.status,
+                    lastAnswerUpdate: result.lastAnswerUpdate!,
+                    nextQuestion: null,
+                    players: finalResponse.state.player,
+                    finalScore: finalResponse.finalScore,
+                })
                 this.io.to(gamestate.roomId).emit('game_finished', {
                     gameId: gamestate.gameId,
-                    state: this.mapper.toUpdateResponse(gamestate),
+                    state: finalResponse,
                 })
-                await this.gameService.cleanupAfterGame(
-                    gamestate.roomId,
-                    Object.keys(gamestate.players)
-                );
+
+                const tournamentId = (gamestate as any).tournamentId as string | undefined;
+                if (tournamentId) {
+                    // tournament match finished — bracket is updated; players stay in_tournament
+                    const winnerId = finalResponse.finalScore?.winnerId ?? '';
+                    if (winnerId) {
+                        await this.tournamentService.onMatchFinished(tournamentId, gameId, winnerId);
+                    }
+                    // sessions: drop gameId, keep tournamentId
+                    await Promise.all(
+                        Object.keys(gamestate.players).map(p =>
+                            this.sessionService.update(p, {
+                                status: 'in_tournament',
+                                gameId: undefined,
+                                roomId: undefined,
+                            })
+                        )
+                    )
+                } else {
+                    await Promise.all(
+                        Object.keys(gamestate.players).map(p =>
+                            this.sessionService.update(p, {status: 'idle'})
+                        )
+                    )
+                }
+                // persist match result to DB and clear Redis state now that everyone has been notified
+                await this.gameService.finalize(gameId);
                 return;
             }
             this.io.to(gamestate.roomId).emit('answer_result', {

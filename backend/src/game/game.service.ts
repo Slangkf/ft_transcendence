@@ -67,9 +67,6 @@ export class GameService{
             ({state, lastAnswer} = await this.soloservice.submitAnswer(gameId, selectedAnswerIndex, userId));
         }
 
-        if (state.isFinished){
-            await this.persistAndClean(state);
-        }
         return this.mapper.toUpdateResponse(state, lastAnswer);
     }
 
@@ -77,12 +74,10 @@ export class GameService{
         return this.multiplayer.setPlayerReady(roomId, userId, isReady);
     }
 
-    async cleanupAfterGame(roomId: string, userIds: string[]): Promise<void> {
-        await this.multiplayer.cleanupRoom(roomId, userIds);
-    }
-
-    private async persistAndClean(state: BaseGameState): Promise<void> {
-        const matchResult = this.mapper.toMatchResult(state);  // ← mapper 负责转换
+    async finalize(gameId: string): Promise<void> {
+        const state = await this.gameRepository.findById(gameId);
+        if (!state || !state.isFinished) return;
+        const matchResult = this.mapper.toMatchResult(state);
         await this.db.create(matchResult);
         await this.gameRepository.delete(state.gameId);
         if (state.mode === 'MULTIPLAYER'){

@@ -86,8 +86,8 @@ export class    MatchService{
         switch(mode){
             case "MULTIPLAYER":
                 return 2;
-            case "TOURNAMENT": //mode name need to check
-                return 3;
+            case "TOURNAMENT":
+                return 4;
             default:
                 throw new AppError(
                     'Game mode unkown',

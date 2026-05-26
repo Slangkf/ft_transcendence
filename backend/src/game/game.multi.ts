@@ -10,21 +10,27 @@ import { GameEmitter } from "../websocket/socket.emitter";
 import { Redis, RedisKeys } from "../lib/redis";
 import { AppError, ErrorCode } from "../error/apperror";
 import { Room } from "../room/room.types";
+import { TournamentService } from "../tournament/tournament.service";
 import { GameMapper } from "./game.mapper";
 import {GameMode} from "@prisma/client"
 
 
 export class MultiPlayerFacade {
+    private tournamentService?: TournamentService;
     constructor (
         private matchService: MatchService,
         private roomService: RoomService,
         private multiService: LocalMultiPlayer,
-        private sessionService: SessionService, 
+        private sessionService: SessionService,
         private emitter: GameEmitter,
         private gameNs: Namespace,
         private redis: typeof Redis,
         private mapper: GameMapper,
     ){}
+
+    setTournamentService(ts: TournamentService) {
+        this.tournamentService = ts;
+    }
 
     async handleAllReady(roomId: string): Promise<SetReadyResult>{
         const room = await this.roomService.getRoom(roomId);
@@ -37,7 +43,7 @@ export class MultiPlayerFacade {
 
         try{
             const state = await this.multiService.startGame(room);
-           const response = this.mapper.toUpdateResponse(state);
+            const response = this.mapper.toUpdateResponse(state);
 
             if (!response.nextQuestion){
                 throw new AppError('No first question available', ErrorCode.BAD_REQUEST);
@@ -52,15 +58,22 @@ export class MultiPlayerFacade {
                     this.sessionService.update(p.userId, {
                         status: 'in_game',
                         gameId: response.gameId,
+                        tournamentId: room.tournamentId,
                     })
                 })
             )
+
+            // if this room is part of a tournament, link the new gameId to its bracket match
+            if (room.tournamentId && this.tournamentService) {
+                await this.tournamentService.linkGameToMatch(room.tournamentId, room.roomId, response.gameId);
+            }
 
             //notify all players
             await this.emitter.toRoom(roomId, 'game_started', {
                 gameId: response.gameId,
                 firstQuestion: response.nextQuestion,
                 players: response.state.player,
+                startedAt: response.state.startedAt ?? Date.now(),
             })
             return {
                 allReady: true,
