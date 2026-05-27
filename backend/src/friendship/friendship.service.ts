@@ -1,7 +1,8 @@
 import { FriendshipRepository } from './friendship.repository';
 import { UserRepository } from '../User/user.repository';
-import type { FriendshipOutput, SendFriendRequestInput,  } from '@shared/friendship.schema';
-import { FriendEmitter } from '../websocket/socket.emitter';
+import type { FriendshipOutput, SendFriendRequestInput } from '@shared/friendship.schema';
+import { FriendEmitter, ChatEmitter } from '../websocket/socket.emitter';
+import { ChatRepository } from '../chat/chat.repository';
 import { AppError, ErrorCode } from '../error/apperror';
 
 export class FriendshipService {
@@ -10,7 +11,10 @@ export class FriendshipService {
     constructor(
         private friendshipRepository: FriendshipRepository,
         private userRepository: UserRepository,
-        private emitter: FriendEmitter,) {}
+        private emitter: FriendEmitter,
+        private chatEmitter: ChatEmitter,
+        private chatRepository: ChatRepository,
+    ) {}
 
     async send_friend_request(userId: number, input: SendFriendRequestInput): Promise<FriendshipOutput> {
         if (userId === input.friendId) {
@@ -104,10 +108,26 @@ export class FriendshipService {
             throw new AppError("Cannot remove non-accepted friendship", ErrorCode.FRIEND_NOT_ACCEPTED, 400);
         }
 
+        const nickname = (await this.userRepository.find_by_id(userId))?.username ?? '';
+
+        await this.chatRepository.markAsRead(userId, friendId);
+        await this.chatRepository.markAsRead(friendId, userId);
+
+        await this.emitter.toUser(String(friendId), 'friend_remove', {
+            userId: String(userId),
+            nickname,
+        });
+
         await this.friendshipRepository.delete_friendship(friendship.id);
 
         await this.userRepository.decrement_friends_count(friendship.userId);
         await this.userRepository.decrement_friends_count(friendship.friendId);
+
+        const removerUnread = await this.chatRepository.getUnreadCountPerSender(userId);
+        const removedUnread = await this.chatRepository.getUnreadCountPerSender(friendId);
+
+        await this.chatEmitter.toUser(String(userId), 'unread_count', { perSender: removerUnread });
+        await this.chatEmitter.toUser(String(friendId), 'unread_count', { perSender: removedUnread });
     }
 
     async get_friends(userId: number): Promise<FriendshipOutput[]> {

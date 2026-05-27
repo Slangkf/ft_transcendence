@@ -124,6 +124,7 @@ export class FriendshipController {
     };
 
     private handleError(res: Response, error: any, defaultMessage: string) {
+        console.error(error);
         if (error instanceof AppError) {
             return res.status(error.statusCode).json(
                 Apiresponse.error(error.code, error.message)

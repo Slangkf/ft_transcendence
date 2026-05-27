@@ -178,6 +178,8 @@ export class Container{
             this.friendRepo,
             this.userRepo,
             this.friendEmitter,
+            this.chatEmitter,
+            this.chatRepo,
         );
         this.friendController = new FriendshipController(this.friendService);
 

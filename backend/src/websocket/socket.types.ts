@@ -163,6 +163,11 @@ export type FriendSocketEvents = {
         userId: string;
         nickname: string;
     }) => void;
+
+    'friend_remove': (data: {
+        userId: string;
+        nickname: string;
+    }) => void;
 }
 
 export type ChatSocketEvents ={
