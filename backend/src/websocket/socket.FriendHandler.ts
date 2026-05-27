@@ -21,6 +21,8 @@ export class FriendSocketHandler{
     async onConnection(socket: friendSocket): Promise<void>{
         const userId = socket.data.userId;
 
+		socket.on('disconnect', () => this.onDisconnect(userId, socket.data.nickname));
+
         const existTimer = this.disconnectTimers.get(userId);
         if (existTimer){
             clearTimeout(existTimer);
@@ -29,13 +31,10 @@ export class FriendSocketHandler{
             await this.redis.set(RedisKeys.socket.friendUser(userId), socket.id);
             return;
         }
-
         await this.redis.set(RedisKeys.socket.friendUser(userId), socket.id);
 
         //tell friends user is online 
         await this.notification_friendship(userId, socket.data.nickname);
-
-        socket.on('disconnect', () => this.onDisconnect(userId, socket.data.nickname));
     }
 
     private async notification_friendship(userId: string, nickname: string): Promise<void>{
@@ -59,6 +58,7 @@ export class FriendSocketHandler{
         await this.redis.del(RedisKeys.socket.friendUser(userId));
 
         const timer = setTimeout(async ()=> {
+			this.disconnectTimers.delete(userId);
             const stillDisconnected = !(await this.redis.get(RedisKeys.socket.friendUser(userId)));
             if (!stillDisconnected) return ;
 
