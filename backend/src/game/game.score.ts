@@ -32,7 +32,7 @@ export class PrismaGameRepository {
                         where: { id: parseInt(p.userId) },
                         data: {
                             played: { increment: 1 },
-                            score: { increment: p.score },
+                            score: { increment: p.correctAnswers },
                             wins: result.winnerId === p.userId
                                 ? { increment: 1 }
                                 : undefined,
