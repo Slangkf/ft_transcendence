@@ -76,7 +76,7 @@ export class FriendSocketHandler{
             } catch(error){
                 console.error('error notify friends offline: ', error);
             }
-        }, 15_000)
+        }, 2_000)
         this.disconnectTimers.set(userId, timer);  
     }
 }

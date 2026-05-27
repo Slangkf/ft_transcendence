@@ -196,6 +196,7 @@ export class GameSocketHandler{
         await this.redis.set(this.disconnectkey(userId), '1', {EX: 60});
 
         const timer =setTimeout(async () => {
+			this.disconnectTimers.delete(userId);
             const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
             if (!stillDisconnected) return; // 已重连，不处理
 
@@ -239,7 +240,7 @@ export class GameSocketHandler{
             }
             await this.sessionService.update(userId, {
                 status: "idle"});
-        }, 60_000);
+        }, 10_000);
         this.disconnectTimers.set(userId, timer);
     }
     
