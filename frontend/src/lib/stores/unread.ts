@@ -20,7 +20,6 @@ export function incrementUnread(senderId : string) {
 
 // Resets the unread count for a given sender (when the user opens the conversation).
 export function resetUnread(senderId : string) {
-	console.log('which id:', senderId);
 	unreadMap.update(map => ({
 		...map,
 		[senderId]: 0

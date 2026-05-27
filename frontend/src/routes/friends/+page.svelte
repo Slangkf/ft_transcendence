@@ -90,7 +90,6 @@
 				showToast("Sorry, an internal error has occurred. Please try again later.");
 				return;
 			}
-			console.log('userID:', target);
 			resetUnread(target);
 			await invalidateAll();
 			showToast("The contact has been successfully deleted.");
