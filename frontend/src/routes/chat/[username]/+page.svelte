@@ -15,6 +15,10 @@
 	let messageContainer = $state<HTMLElement | null>(null);
 	let messageReceivedWrapper: (data: any) => void;
 
+	let errors = $state({
+		noMoreFriend: ""
+	});
+
 	/*
 	* Runs once on mount:
 	* - Loads chat history and resets the unread count for the active conversation.
@@ -34,6 +38,11 @@
 
 		socket.on('message_send', (data) => {
 			messages = [...messages, data];
+		});
+
+		socket.on('error', (data) => {
+			if (data.message === 'Not friends')
+				errors.noMoreFriend = "You are no longer friends with this user.";
 		});
 
 		if (socket.connected && selectedUserId) {
@@ -111,8 +120,13 @@
     </div>
 	
     <!-- Input shield -->
-    <div class="flex items-center w-full px-6 py-4 mt-4 rounded-xl gap-3">
-        <input onkeydown={(e) => e.key === 'Enter' && handleSentMessages()} bind:value={inputContent} type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
-        <button onclick={() => handleSentMessages()} class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>
-    </div>
+	 <div class="w-full px-6 mt-4">
+		<div class="flex items-center w-full py-4 rounded-xl gap-3">
+        	<input onkeydown={(e) => e.key === 'Enter' && handleSentMessages()} bind:value={inputContent} type="text" placeholder="Write a message" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-500"/>
+        	<button onclick={() => handleSentMessages()} class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">Send</button>
+    	</div>
+		{#if errors.noMoreFriend}
+			<p class="text-red-500 text-xs mb-2 text-center">{errors.noMoreFriend}</p>
+		{/if}
+	 </div>
 </div>

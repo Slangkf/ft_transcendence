@@ -2,7 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/shared/toast.svelte';
-	import { unreadMap } from '$lib/stores/unread'
+	import { unreadMap, resetUnread } from '$lib/stores/unread'
 	
 	let { data } = $props();
 	let input = $state("")
@@ -90,6 +90,7 @@
 				showToast("Sorry, an internal error has occurred. Please try again later.");
 				return;
 			}
+			resetUnread(target);
 			await invalidateAll();
 			showToast("The contact has been successfully deleted.");
 		}
