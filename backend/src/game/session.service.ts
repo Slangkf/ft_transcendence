@@ -32,10 +32,11 @@ export class SessionService {
 
 export interface userSession {
     userId: string;
-    status: 'idle' | 'queue' | 'matched' | 'in_room' | 'in_game';
+    status: 'idle' | 'queue' | 'matched' | 'in_room' | 'in_game' | 'in_tournament';
     socketId?: string;
     matchId?: string;
     roomId?: string;
     gameId?: string;
+    tournamentId?: string;
     updatedAt: number;
 }

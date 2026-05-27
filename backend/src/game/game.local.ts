@@ -3,8 +3,7 @@ import { QuestionService } from "../question/question.service";
 import { Room } from "../room/room.types";
 import { GameBaseService } from "./game.base";
 import { RedisGameRepository } from "./game.redis.repository";
-import { BaseGameState, GameUpdateResponse, MultiGameState, Player } from "./game.types";
-import {GameMode} from "@prisma/client"
+import { BaseGameState, MultiGameState, Player } from "./game.types";
 
 export class LocalMultiPlayer extends GameBaseService {
     protected gamerepository: RedisGameRepository;
@@ -20,13 +19,17 @@ export class LocalMultiPlayer extends GameBaseService {
     async startGame(room: Room, category?: string): Promise<BaseGameState>{
         const playerlist = Object.values(room.players);
         if (playerlist.length < 2) throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
-        
+
         const players: Record<string, Player> = {};
-        
+
         for(const p of playerlist){
             players[p.userId] = this.initPlayers(p.userId, p.nickname);
         }
-        const state = await this.prepareGame(players, "MULTIPLAYER", {roomId: room.roomId, hostId: room.hostId, category});
+        const state = await this.prepareGame(players, "MULTIPLAYER", {roomId: room.roomId, hostId: room.hostId, category}) as MultiGameState;
+
+        if (room.tournamentId) {
+            state.tournamentId = room.tournamentId;
+        }
 
         await this.gamerepository.create(state);
         return state;

@@ -14,6 +14,7 @@
   let error = $state('');
   let starting = $state(false);
   let leaving = false;
+  let inTournament = $state(false);
 
   function attachListeners() {
     const socket = getGameSocket();
@@ -38,7 +39,7 @@
           if (resp.ok) {
             const me = await resp.json();
             const meId = String(me.data?.id ?? me.id ?? '');
-            const mePlayer = players.find(p => p.id === meId);
+            const mePlayer = players.find(p => String(p.id) === meId);
             if (mePlayer) myReady = !!mePlayer.isReady;
           }
         } catch {}
@@ -49,19 +50,21 @@
     });
 
     socket.on('player_ready', (payload: { playerId: string; isReady: boolean; allReady: boolean }) => {
-      players = players.map(p => p.id === payload.playerId ? { ...p, isReady: payload.isReady } : p);
+      const pid = String(payload.playerId);
+      players = players.map(p => String(p.id) === pid ? { ...p, isReady: payload.isReady } : p);
     });
 
-    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any }) => {
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number }) => {
       starting = true;
       try {
-        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players }));
+        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt }));
       } catch {}
       goto(`/game/multiplayer/play/${payload.gameId}`);
     });
 
     socket.on('player_left', (payload: { playerId: string; newHostId: string }) => {
-      players = players.filter(p => p.id !== payload.playerId);
+      const pid = String(payload.playerId);
+      players = players.filter(p => String(p.id) !== pid);
     });
 
     socket.on('error', (payload: { message: string }) => {
@@ -103,7 +106,8 @@ async function toggleReady() {
       await ensureGameSocketConnected();
     } catch {}
     attachListeners();
-    // load players from sessionStorage (set by the matched event on the previous page)
+    try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
+    // load players from sessionStorage (set by next_match_ready)
     try {
       const raw = sessionStorage.getItem('mp_room_players');
       if (raw) {
@@ -116,7 +120,7 @@ async function toggleReady() {
           if (resp.ok) {
             const me = await resp.json();
             const meId = String(me.data?.id ?? me.id ?? '');
-            const mePlayer = players.find(p => p.id === meId);
+            const mePlayer = players.find(p => String(p.id) === meId);
             if (mePlayer) myReady = !!mePlayer.isReady;
           }
         } catch {}
@@ -125,7 +129,9 @@ async function toggleReady() {
   });
 
   onDestroy(() => {
-    if (!starting) {
+    let inTournament = false;
+    try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
+    if (!starting && !inTournament) {
       // user navigated away mid-lobby
       disconnectGameSocket();
     }
@@ -138,7 +144,7 @@ async function toggleReady() {
 
 <div class="max-w-3xl mx-auto px-4 py-6 leading-relaxed font-serif text-blue-200 bg-white/15 backdrop-blur-xs rounded">
   <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-pink-200 text-center mb-2">
-    Lobby
+    {inTournament ? 'Tournament Match' : 'Lobby'}
   </h1>
   <p class="text-center text-sm text-blue-100/80 mb-6">Room {roomId}</p>
 

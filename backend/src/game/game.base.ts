@@ -30,9 +30,10 @@ export class GameBaseService
         return player;
     }
 
-    protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string}): Promise<GameState> {
+    protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string, tournamentId?: string}): Promise<GameState> {
         const questions = await this.questionService.getQuestions(10, extra?.category);
         const gameId = crypto.randomUUID();
+        const now = Date.now();
         const base = {
             gameId,
             mode: mode,
@@ -40,7 +41,8 @@ export class GameBaseService
             players,
             currentQuestionIndex: 0,
             isFinished: false,
-            startedAt: Date.now()
+            startedAt: now,
+            questionStartedAt: now
         }
         if (mode === "MULTIPLAYER" || mode === "TOURNAMENT"){
             if (!extra){
@@ -56,6 +58,7 @@ export class GameBaseService
                 roomId: extra.roomId,
                 hostId: extra.hostId,
                 status: 'playing',
+                tournamentId: extra.tournamentId,
             } as MultiGameState;
         } 
         return {
@@ -109,6 +112,7 @@ export class GameBaseService
             state.isFinished = true;
         } else {
             state.currentQuestionIndex++;
+            state.questionStartedAt = Date.now();
             Object.values(state.players).forEach(p => {
                 if (p.status !== 'disconnected')
                     p.status = 'playing';

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/state';
+  import { goto } from '$app/navigation';
   import { getGameSocket, disconnectGameSocket, ensureGameSocketConnected } from '$lib/shared/gameSocket';
 
   type PublicQuestion = { id: number; question: string; options: string[] };
@@ -9,7 +10,7 @@
     winnerId: string;
     finishedAt: number;
     scores: Record<string, number>;
-    ranking: Array<{ playerId: string; score: number; rank: number }>;
+    ranking: Array<{ playerId: string; nickname?: string; score: number; rank: number; totalTime: number }>;
   };
   type AnswerResultPayload = {
     gameId: string;
@@ -45,8 +46,19 @@
   let error = $state('');
   let selectedIndex = $state<number | null>(null);
   let correctIndex = $state<number | null>(null);
+  let startedAt = $state<number | null>(null);
+  let now = $state(Date.now());
+  let tickHandle: ReturnType<typeof setInterval> | null = null;
 
-  const nameOf = (id: string) => playersState.find(p => p.id === id)?.nickname ?? id;
+  const elapsedMs = $derived(startedAt ? Math.max(0, now - startedAt) : 0);
+  function formatTime(ms: number): string {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${r.toString().padStart(2, '0')}`;
+  }
+
+  const nameOf = (id: string) => playersState.find(p => String(p.id) === String(id))?.nickname ?? id;
   let revealing = $state(false);
   let answered = $state(false);
 
@@ -55,6 +67,17 @@
     correctIndex = null;
     revealing = false;
     answered = false;
+  }
+
+  let backToBracketHandle: ReturnType<typeof setTimeout> | null = null;
+  function maybeReturnToBracket() {
+    let tid: string | null = null;
+    try { tid = sessionStorage.getItem('current_tournament_id'); } catch {}
+    if (!tid) return;
+    if (backToBracketHandle) return;
+    backToBracketHandle = setTimeout(() => {
+      goto(`/game/tournament/${tid}`);
+    }, 4000);
   }
 
   function buttonClasses(index: number): string {
@@ -81,6 +104,8 @@
       finalScore = info.finalScore ?? null;
       currentQuestion = null;
       feedback = '';
+      if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+      maybeReturnToBracket();
       return;
     }
 
@@ -116,6 +141,21 @@
       applyAnswerResult(info);
     });
 
+    socket.off('game_finished');
+    socket.on('game_finished', (payload: { gameId: string; state: any }) => {
+      revealing = false;
+      answered = false;
+      isFinished = true;
+      finalScore = payload?.state?.finalScore ?? finalScore;
+      if (payload?.state?.state?.player) {
+        playersState = Object.values(payload.state.state.player);
+      }
+      currentQuestion = null;
+      feedback = '';
+      if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+      maybeReturnToBracket();
+    });
+
     socket.on('session_reconnect', (payload: ReconnectPayload) => {
       if (payload.type === 'in_game') {
         const state = payload.state;
@@ -123,6 +163,11 @@
         playersState = Object.values(state.state?.player ?? {});
         questionNumber = (state.state?.currentQuestionIndex ?? 0) + 1;
         isFinished = state.status === 'finished';
+        if (state.state?.startedAt && !startedAt) startedAt = state.state.startedAt;
+        if (isFinished) {
+          finalScore = state.finalScore ?? finalScore;
+          if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+        }
         // restore current question from server-provided nextQuestion
         try { currentQuestion = state.nextQuestion ?? null; } catch { currentQuestion = null; }
       }
@@ -140,6 +185,7 @@
         const payload = JSON.parse(raw);
         currentQuestion = payload.question;
         questionNumber = 1;
+        if (payload.startedAt) startedAt = payload.startedAt;
         sessionStorage.removeItem('mp_first_question');
       }
     } catch {}
@@ -172,10 +218,17 @@
     // ask backend for current state via reconnection flow
     const socket = getGameSocket();
     if (!socket.connected) socket.connect();
+    if (!startedAt) startedAt = Date.now();
+    tickHandle = setInterval(() => { now = Date.now(); }, 250);
   });
 
   onDestroy(() => {
-    disconnectGameSocket();
+    if (tickHandle) clearInterval(tickHandle);
+    if (backToBracketHandle) clearTimeout(backToBracketHandle);
+    // if we are in a tournament, keep the socket alive across navigation
+    let inTournament = false;
+    try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
+    if (!inTournament) disconnectGameSocket();
   });
 </script>
 
@@ -184,9 +237,12 @@
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 py-6 leading-relaxed font-serif text-blue-200 bg-white/15 backdrop-blur-xs rounded">
-  <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-pink-200 text-center mb-4">
+  <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-pink-200 text-center mb-2">
     Multiplayer Quiz
   </h1>
+  <p class="text-center text-blue-100/80 text-sm mb-4">
+    Time: <span class="font-mono text-pink-200">{formatTime(elapsedMs)}</span>
+  </p>
 
   <div class="grid gap-2 mb-4">
     {#each playersState as p}
@@ -240,12 +296,15 @@
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         Game finished
       </h2>
-      <p class="text-center text-blue-100 mb-4">Winner: <span class="font-bold text-pink-200">{nameOf(finalScore.winnerId)}</span></p>
+      <p class="text-center text-blue-100 mb-4">Winner: <span class="font-bold text-pink-200">{finalScore.ranking.find(r => String(r.playerId) === String(finalScore!.winnerId))?.nickname ?? nameOf(finalScore.winnerId)}</span></p>
       <div class="grid gap-2">
         {#each finalScore.ranking as entry}
           <div class="flex items-center justify-between px-3 py-2 rounded bg-gray-500/20 border border-white/10">
-            <span class="text-blue-100">#{entry.rank} {nameOf(entry.playerId)}</span>
-            <span class="text-pink-200 font-bold">{entry.score} / {totalQuestions}</span>
+            <span class="text-blue-100">#{entry.rank} {entry.nickname ?? nameOf(entry.playerId)}</span>
+            <span class="text-pink-200 font-bold">
+              {entry.score} / {totalQuestions}
+              <span class="text-blue-100/70 font-mono text-sm ml-2">{formatTime(entry.totalTime ?? 0)}</span>
+            </span>
           </div>
         {/each}
       </div>

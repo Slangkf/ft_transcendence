@@ -65,15 +65,20 @@ export class RedisGameRepository
         if answered then return nil end
 
         local isCorrect = (selectIndex == currentQuestion.correctAnswerIndex)
+        local now = tonumber(ARGV[3])
+        local qStart = tonumber(state.questionStartedAt) or now
+        local elapsed = now - qStart
+        if elapsed < 0 then elapsed = 0 end
 
         local newAnswer = {
             questionId = currentQuestion.id,
             selectedAnswerIndex = selectIndex,
             isCorrect = isCorrect,
-            answeredAt = tonumber(ARGV[3])
+            answeredAt = now
         }
         table.insert(player.answers, newAnswer)
         player.status = 'answered'
+        player.Totaltime = (tonumber(player.Totaltime) or 0) + elapsed
         if isCorrect then
             player.score = player.score + 1
         end
@@ -96,6 +101,7 @@ export class RedisGameRepository
                 state.status = 'finished'
             else
                 state.currentQuestionIndex = state.currentQuestionIndex + 1
+                state.questionStartedAt = now
                 for pid, p in pairs(state.players) do
                     if p.status ~= 'disconnected' then
                         p.status = 'playing'
