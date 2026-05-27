@@ -38,9 +38,10 @@ export class RoomService{
             hostId: params.hostId,
             players,
             status: 'waiting',
-            maxPlayers: params.maxPlayers ?? 2, 
+            maxPlayers: params.maxPlayers ?? 2,
             createdAt: Date.now(),
             sessionId: '',
+            tournamentId: params.tournamentId,
         }
         //save in redis
         await this.roomrepository.save(room);

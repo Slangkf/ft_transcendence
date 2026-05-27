@@ -2,6 +2,7 @@ import {SendFriendRequestInput} from "@shared/friendship.schema";
 import { RoomStatus } from "../room/room.types";
 import { GameUpdateResponse, MatchPlayer, PlayerSnapShot } from "../game/game.types";
 import { PublicQuestion, SubmitAnswerReq } from "@shared/game.schema";
+import { BracketMatch, PublicBracketView, TournamentPlayer } from "../tournament/tournament.types";
 
 export type RoomPlayerInfo = {
     id: string;
@@ -39,6 +40,7 @@ export type GameStartedPayload = {
     gameId: string;
     firstQuestion: PublicQuestion;
     players: Record<string, PlayerSnapShot>;
+    startedAt: number;
 }
 
 export type AnswerResultPayload = {
@@ -56,7 +58,7 @@ export type AnswerResultPayload = {
         winnerId: string;
         finishedAt: number;
         scores: Record<string, number>; 
-        ranking: Array<{playerId: string, score: number, rank:number}>;
+        ranking: Array<{playerId: string, nickname?: string, score: number, rank:number, totalTime: number}>;
     } | null;
 }
 
@@ -95,6 +97,38 @@ export type ServerToClientEvents = {
     'error': (data: {
         message: string;
     }) => void;
+
+    // tournament events
+    'tournament_started': (data: TournamentStartedPayload) => void;
+    'bracket_update': (data: BracketUpdatePayload) => void;
+    'next_match_ready': (data: NextMatchReadyPayload) => void;
+    'tournament_finished': (data: TournamentFinishedPayload) => void;
+}
+
+export type TournamentStartedPayload = {
+    tournamentId: string;
+    bracket: PublicBracketView;
+}
+
+export type BracketUpdatePayload = {
+    tournamentId: string;
+    bracket: PublicBracketView;
+}
+
+export type NextMatchReadyPayload = {
+    tournamentId: string;
+    roomId: string;
+    opponentId: string;
+    opponentNickname: string;
+    round: number;
+    players: { userId: string; nickname: string }[];
+}
+
+export type TournamentFinishedPayload = {
+    tournamentId: string;
+    bracket: PublicBracketView;
+    winnerId: string;
+    ranking: string[];
 }
 
 export type ClientToServerEvents = {

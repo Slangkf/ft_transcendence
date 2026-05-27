@@ -17,6 +17,10 @@
 	async function handleMultiplayer() {
 		await goto('/game/multiplayer');
 	}
+
+	async function handleTournament() {
+		await goto('/game/tournament');
+	}
 </script>
 
 <!-- Container -->
@@ -44,9 +48,9 @@
 				<p class="text-sm font-semibold text-center">Online multiplayer</p>
 			</button>
 			<!-- Tournament button -->
-			<button disabled class="flex flex-col items-center cursor-not-allowed opacity-50 overflow-hidden rounded-xl transition transform duration-200 text-pink-500">
-				<img src="/images/tournament_mode.png" alt="multiplayer mode" class="w-full max-w-180px h-auto object-cover">
-				<p class="text-sm font-semibold text-center">Local tournament</p>
+			<button onclick={handleTournament} class="flex flex-col items-center cursor-pointer overflow-hidden rounded-xl transition transform duration-200 hover:scale-105 hover:drop-shadow-[10px_10px_15px_#3B82F6] text-pink-500 hover:text-blue-500">
+				<img src="/images/tournament_mode.png" alt="tournament mode" class="w-full max-w-180px h-auto object-cover">
+				<p class="text-sm font-semibold text-center">Remote tournament</p>
 			</button>
 		</div>
 	</div>

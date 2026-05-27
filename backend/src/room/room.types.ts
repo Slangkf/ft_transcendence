@@ -15,7 +15,8 @@ export type Room = {
     status:  RoomStatus;
     createdAt: number;
     maxPlayers: number;
-    sessionId?: string; // gameid or userid for friends chat 
+    sessionId?: string; // gameid or userid for friends chat
+    tournamentId?: string; // link this room to a tournament bracket match
 }
 
 export type CreateRoomParams = {
@@ -23,6 +24,8 @@ export type CreateRoomParams = {
     hostNickname: string;
     players?: { userId: string; nickname: string }[];
     maxPlayers?: number;
+    type?: 'game'| 'chat';
+    tournamentId?: string;
 }
 
 export type JoinRoomParams = {

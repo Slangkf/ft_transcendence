@@ -72,12 +72,22 @@ export class    MatchService{
         return await this.matchrepository.saveMatch(match);
     }
 
+    async deleteMatch(matchId: string): Promise<void>{
+        const match = await this.matchrepository.getMatch(matchId);
+        if (!match) return ;
+
+        await this.matchrepository.deleteMatch(
+            matchId,
+            match.players.map(p => p.userId)
+        )
+    }
+
     private getmaxplayersfrommode(mode: GameMode):number{
         switch(mode){
             case "MULTIPLAYER":
                 return 2;
-            case "TOURNAMENT": //mode name need to check
-                return 3;
+            case "TOURNAMENT":
+                return 4;
             default:
                 throw new AppError(
                     'Game mode unkown',

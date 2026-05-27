@@ -20,7 +20,9 @@ export class GameMapper {
             state: {
                 currentQuestionIndex: state.currentQuestionIndex,
                 totalQuestions: state.questions.length,
-                player:  this.buildPublicPlayerSnapShot(state.players)
+                player:  this.buildPublicPlayerSnapShot(state.players),
+                startedAt: state.startedAt,
+                questionStartedAt: state.questionStartedAt,
             },
             nextQuestion: isfinished? null : this.questionService.toPublicQuestion(currentQuestion),
             finalScore: isfinished? this.buildFinalScore(state.players) : null,
@@ -58,12 +60,17 @@ export class GameMapper {
             ])
         );
 
-        const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        const sorted = Object.entries(players).sort((a, b) => {
+            if (b[1].score !== a[1].score) return b[1].score - a[1].score;
+            return (a[1].Totaltime || 0) - (b[1].Totaltime || 0);
+        });
 
-        const ranking = sorted.map(([playerId, score], index) => ({
+        const ranking = sorted.map(([playerId, p], index) => ({
             playerId,
-            score,
+            nickname: p.nickname,
+            score: p.score,
             rank: index + 1,
+            totalTime: p.Totaltime || 0,
         }));
 
         const winnerId = ranking[0]?.playerId ?? "";
@@ -74,7 +81,7 @@ export class GameMapper {
             ranking,
         }
     }
-    
+
     private buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PlayerSnapShot> {
         return Object.fromEntries(
             Object.entries(players).map(([id, player]: [string, Player]) => [
@@ -84,7 +91,8 @@ export class GameMapper {
                     nickname: player.nickname,
                     score: player.score,
                     status: player.status,
-                    isAI: player.isAI || false
+                    isAI: player.isAI || false,
+                    totalTime: player.Totaltime || 0,
                 }
             ])
         )
