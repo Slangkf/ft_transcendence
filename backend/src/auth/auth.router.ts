@@ -13,5 +13,12 @@ export function createAuthRouter(authService: AuthService): Router {
     router.post('/login', valideRequest(Login_Input), authController.login);
     router.post('/logout', authController.logout);
 
+    router.get('/github', (req, res)=> {
+        const url = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=read:user,user:email`;
+        res.redirect(url);
+    })
+
+    router.get('/github/callback', authController.githubCallback);
+
     return router;
 }

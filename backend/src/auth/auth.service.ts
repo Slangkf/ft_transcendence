@@ -100,4 +100,56 @@ export  class AuthService{
             }
         }
     }
+
+    async loginOrCreateOAuth(profile:{githubId: string, username: string, email: string}): Promise<AuthResult>{
+        //1. find if already login with githubid
+        let user = await this.userrepository.find_by_github_id(profile.githubId);
+
+        //2. create a compte user with 
+        if (!user){
+            //3. email check
+            const email_exist = await this.userrepository.find_by_email(profile.email);
+            if (email_exist){
+                user = await this.userrepository.link_github(email_exist.id, profile.githubId);
+            }else{
+                let username = profile.username;
+                const usernameexist = await this.userrepository.find_by_username(username);
+                if (usernameexist){
+                    username = `${username}_${profile.githubId.slice(0,4)}`;
+                }
+                user = await this.userrepository.create_oath({
+                    username,
+                    email: profile.email,
+                    githubId: profile.githubId,
+                    provider: 'github'
+                })
+            }
+        }
+        
+        await this.userrepository.update_status(user.id, 'ONLINE');
+        //4. give a new token 
+        const token = jwt.sign({
+            id: user.id,
+            username: user.username,
+            nickname: user.username,
+            jti: randomUUID()
+        },
+        JWT_SECRET!,
+        {expiresIn: '24h'})
+
+        return {
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                url: user.url,
+                score: user.score,
+                wins: user.wins,
+                friendsNb: user.friendsNb,
+                status: 'ONLINE',
+                createdAt: user.createdAt
+            }
+        }
+    }
 }

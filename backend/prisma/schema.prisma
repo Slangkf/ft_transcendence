@@ -20,6 +20,8 @@ model User {
     friendsNb   Int?        @default(0)
     status      UserStatus  @default(OFFLINE)
     role        Role        @default(USER)
+    githubId    String?     @unique
+    provider    String?
     quizzes     Quiz[]
 
     sentFriendships     Friendship[] @relation("SentFriendships")

@@ -11,7 +11,7 @@
 #                                                                              #
 # **************************************************************************** #
 
-FROM node:24-bookworm
+FROM node:24-alpine
 
 RUN apt-get update \
     && apt-get install -y netcat-openbsd curl \

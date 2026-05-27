@@ -1,6 +1,7 @@
 import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
+import { randomUUID } from "crypto";
 
 export class UserRepository{
     private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'status' | 'role'>): UserOutput {
@@ -122,6 +123,32 @@ export class UserRepository{
                 status
             }
         });
+    }
+
+    async find_by_github_id(githubId: string): Promise<UserDB | null>{
+        return prisma.user.findUnique({where: {githubId}})
+    }
+
+    async create_oath(profil: {username: string, email: string, githubId: string, provider: string}){
+        return prisma.user.create({
+            data: {
+                username: profil.username,
+                email: profil.email,
+                password: randomUUID(),
+                githubId: profil.githubId,
+                provider: profil.provider,
+            }
+        })
+    }
+
+    async link_github(userId: number, githubId: string){
+        return prisma.user.update({
+            where: {id: userId},
+            data:{
+                githubId,
+                provider: 'github'
+            }
+        })
     }
 }
 

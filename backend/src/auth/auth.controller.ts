@@ -6,6 +6,7 @@ import { Apiresponse } from "../lib/api_response";
 import jwt from "jsonwebtoken";
 import { Redis } from "../lib/redis";
 import { CookieOptions } from "express";
+import { access } from "fs";
 
 //version for middleware of zod, add token in cookie 
 export class AuthController{
@@ -87,5 +88,51 @@ export class AuthController{
 
         res.clearCookie('auth_token', this.cookieOptions);
         res.json({message: "Logged out"})
+    }
+
+    githubCallback = async(req: Request, res: Response) => {
+        const code = req.query.code as string;
+        try{
+            const tokenres = await fetch('https://github.com/login/oauth/access_token',
+                {method: 'POST',
+                headers: {'Accept': 'application/json', 
+                        'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    client_id: process.env.GITHUB_CLIENT_ID,
+                    client_secret: process.env.GITHUB_CLIENT_SECRET,
+                    code,})
+                })
+            const token_github = await tokenres.json() as {access_token: string};
+
+            //get the profil of user with the token 
+            const profilres = await fetch('https://api.github.com/user', {
+                headers: {
+                    Authorization: `Bearer ${token_github}`,
+                }
+            })
+            const profil = await profilres.json() as {id: number; login: string; email:string};
+
+            //get email 
+            let email = profil.email;
+            if (!email){
+                const emailres = await fetch('https://api.github.com/user/emails',{
+                    headers: {Authorization: `Bearer ${token_github}`,}
+                })
+                const emails = await emailres.json() as {email: string; primary: boolean }[];
+                email = emails.find(e => e.primary)?.email ?? `${profil.id}@github.noemail`;
+            }
+
+            const {token, user} = await this.authservice.loginOrCreateOAuth({
+                githubId: String(profil.id),
+                username: profil.login,
+                email,
+            })
+            res.cookie('auth_token', token, this.cookieOptions);
+            res.redirect('https://localhost:5500/oauth/success');
+        }catch(error){
+            res.redirect('https://localhost:5500/oauth/error');
+        }
+        
     }
 }

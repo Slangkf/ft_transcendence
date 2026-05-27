@@ -1,4 +1,6 @@
-Dockerfile
-.vscode/
-.gitignore
-node_modules/
+node_modules
+dist
+.git
+.cache
+.next
+coverage

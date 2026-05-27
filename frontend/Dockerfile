@@ -1,5 +1,5 @@
 # Use the official Node.js 24 image based on Debian Bookworm.
-FROM    node:24-bookworm
+FROM    node:24-alpine
 
 # Set the working directory inside the container.
 WORKDIR /app
