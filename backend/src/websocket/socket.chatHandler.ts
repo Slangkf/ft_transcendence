@@ -74,11 +74,12 @@ export class ChatSocketHandler{
         await this.redis.set(RedisKeys.socket.chatDisconnect(userId), '1', {EX: 30})
 
         const timer = setTimeout(async () => {
+			this.disconnectTimers.delete(userId);
             const stillDisconnected = await this.redis.get(RedisKeys.socket.chatUser(userId));
             if (!stillDisconnected) return;
 
             await this.redis.del(RedisKeys.socket.chatDisconnect(userId));
-        }, 30_000);
+        }, 2_000);
         this.disconnectTimers.set(userId, timer);
     }
 }
