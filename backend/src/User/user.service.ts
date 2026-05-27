@@ -22,10 +22,14 @@ export class UserService{
         return profil_of_user
     }
 
-    async get_profile_by_username(username: string): Promise<UserOutput | null>{
+    async get_profile_by_username(username: string): Promise<UserOutput>{
         const user = await this.userrepository.findByUsername(username);
         if (!user){
-			return null
+			throw new AppError(
+				'Unknown user', 
+				ErrorCode.USER_NOT_FOUND,
+				404,
+				{user: username});
         }
         const {password, ...profil_of_user} = user;
         return profil_of_user
