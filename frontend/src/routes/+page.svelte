@@ -72,7 +72,7 @@
 	}
 	
 	function handleGoogleLogin(){
-		window.location.href = 'https://localhost:8888/api/auth/google';
+		window.location.href = 'https://127.0.0.1:8888/api/auth/google';
 	}
 </script>
 

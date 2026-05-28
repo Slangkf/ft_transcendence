@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {randomUUID} from 'crypto';
 import { AppError, ErrorCode } from '../error/apperror';
+import {Provider} from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -102,10 +103,20 @@ export  class AuthService{
     }
 
     async googleLogin(code: string): Promise<AuthResult>{
+const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID!,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+    code,
+    redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
+    grant_type: 'authorization_code',
+});
+console.log('=== params sent to Google ===', params.toString());
+
+
         //1. echange code contre un token
         const tokenres = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: new URLSearchParams({
                 client_id: process.env.GOOGLE_CLIENT_ID!,
                 client_secret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -114,7 +125,10 @@ export  class AuthService{
                 grant_type: 'authorization_code',
             }),
         });
-        const {access_token} = await tokenres.json();
+const tokenData = await tokenres.json();
+console.log('=== tokenData ===', JSON.stringify(tokenData));
+
+        const {access_token} = tokenData.access_token;
 
         //get the information with token 
         const userres = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -122,6 +136,7 @@ export  class AuthService{
         })
         const googleUser = await userres.json();
 
+        console.log("googleId: ", googleUser.id);
         //check googleid, if not found, check with email
         let user = await this.userrepository.find_by_google_id(googleUser.id);
         if (!user){

@@ -3,7 +3,6 @@ import { AuthService } from "./auth.service";
 import { Router } from "express";
 import { valideRequest } from "../middleware/zod_check";
 import { Register_Input, Login_Input } from "@shared/user.schema"
-import { container } from "../container";
 import { randomUUID } from "crypto";
 
 export function createAuthRouter(authService: AuthService): Router {
@@ -24,8 +23,9 @@ export function createAuthRouter(authService: AuthService): Router {
             response_type: 'code',
             //scope: tell what type of information we will get
             scope: [
-                'https://www.googleapis.com/auth/userinfo.profile',
-                'https://www.googleapis.com/auth/userinfo.email'
+                'openid',
+                'email',
+                'profile'
             ].join(' '),
             state: randomUUID(),
         }

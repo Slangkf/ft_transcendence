@@ -93,6 +93,7 @@ export class AuthController{
 
         try{
             const {code} = req.query;
+            console.log("======code=====", code);
             if (!code){
                 return res.status(400).json({message: 'Authorization code not found in query'})
             }
@@ -103,6 +104,7 @@ export class AuthController{
             res.redirect('https://localhost:5500/oauth/success')
         }catch(error){
             console.error('error in googlecallback: ', error);
+                console.error('error stack:', (error as Error).stack);  // 加这行
             res.redirect('https://localhost:5500/oauth/error');
         }
     }
