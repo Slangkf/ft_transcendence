@@ -105,4 +105,5 @@ export class AuthController{
             console.error('error in googlecallback: ', error);
             res.redirect('https://localhost:5500/oauth/error');
         }
+    }
 }

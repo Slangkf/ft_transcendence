@@ -70,6 +70,10 @@
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
+	
+	function handleGoogleLogin(){
+		window.location.href = 'https://localhost:8888/api/auth/google';
+	}
 </script>
 
 <!-- Sign up card -->

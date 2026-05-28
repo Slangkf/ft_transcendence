@@ -142,7 +142,7 @@ export class UserRepository{
         })
     }
 
-    async createByGoogle(profil: {username: string, email: string, provider: Pro, googleId: string, url: string}): Promise<UserDB>{
+    async createByGoogle(profil: {username: string, email: string, provider: Provider, googleId: string, url: string}): Promise<UserDB>{
         return await prisma.user.create({
             data: {
                 username: profil.username,
