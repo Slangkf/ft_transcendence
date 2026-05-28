@@ -88,4 +88,21 @@ export class AuthController{
         res.clearCookie('auth_token', this.cookieOptions);
         res.json({message: "Logged out"})
     }
+
+    googleCallBack = async(req: Request, res: Response)=> {
+
+        try{
+            const {code} = req.query;
+            if (!code){
+                return res.status(400).json({message: 'Authorization code not found in query'})
+            }
+            const result = await this.authservice.googleLogin(code as string);
+            //add the token in cookie
+            res.cookie('auth_token', result.token, this.cookieOptions);
+            //redirection vers le front 
+            res.redirect('https://localhost:5500/oauth/success')
+        }catch(error){
+            console.error('error in googlecallback: ', error);
+            res.redirect('https://localhost:5500/oauth/error');
+        }
 }
