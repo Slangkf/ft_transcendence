@@ -1,6 +1,7 @@
 import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
+import {Provider} from '@prisma/client'
 
 export class UserRepository{
     private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'status' | 'role'>): UserOutput {
@@ -122,6 +123,36 @@ export class UserRepository{
                 status
             }
         });
+    }
+
+    async find_by_google_id(googleId: string): Promise<UserDB | null>{
+        return await prisma.user.findUnique({
+            where: { googleId}
+        })
+    }
+
+    async link_google(userId: number, profil:{googleId: string, provider: Provider, url: string}): Promise<UserDB>{
+        return await prisma.user.update({
+            where: {id: userId},
+            data: {
+                googleId: profil.googleId,
+                provider: profil.provider,
+                url: profil.url
+            }
+        })
+    }
+
+    async createByGoogle(profil: {username: string, email: string, provider: Pro, googleId: string, url: string}): Promise<UserDB>{
+        return await prisma.user.create({
+            data: {
+                username: profil.username,
+                email: profil.email,
+                provider: profil.provider,
+                googleId: profil.googleId,
+                url: profil.url,
+                status: 'ONLINE',
+            }
+        })
     }
 }
 
