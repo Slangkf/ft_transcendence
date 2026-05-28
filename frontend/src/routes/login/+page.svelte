@@ -98,7 +98,7 @@
 			<div class="flex-1 h-px bg-slate-700"></div>
 		</div>
 
-		<! --Google Button -->
+		<!--Google Button -->
 		<button
 			onclick={handleGoogleLogin}
 			class="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-md hover:bg-slate-700 hover:border-slate-500 transition text-slate-200 font-medium">

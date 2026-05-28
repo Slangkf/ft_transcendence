@@ -31,7 +31,7 @@
       Try again
     </button>
 
-    
+    <a
       href="/login"
       class="w-full px-4 py-2.5 font-medium text-slate-400 bg-slate-800 border border-slate-600 rounded-md hover:bg-slate-700 transition text-center"
     >
