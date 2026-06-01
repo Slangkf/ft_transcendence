@@ -52,6 +52,7 @@
 		try {
 			const response = await fetch('/api/auth/register', {
 				method: 'POST',
+				credentials: 'include',
 				headers: {'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, username, password})
 			});
@@ -117,7 +118,7 @@
 		</div>
 		<!-- GitHub OAuth button -->
 		<a 
-		    href="https://localhost:8888/api/auth/github"
+		    href="/api/auth/github"
 		    class="flex items-center justify-center gap-2 w-full px-4 py-2.5 font-medium text-slate-200 bg-slate-700 rounded-md hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500"
 		>
 		    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -125,6 +126,5 @@
 		    </svg>
 		    Continue with GitHub
 		</a>
-
 	</div>
 </div>

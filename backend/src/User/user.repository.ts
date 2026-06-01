@@ -2,6 +2,7 @@ import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
 import { randomUUID } from "crypto";
+import {Provider } from "@prisma/client";
 
 export class UserRepository{
     private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'status' | 'role'>): UserOutput {
@@ -129,7 +130,7 @@ export class UserRepository{
         return prisma.user.findUnique({where: {githubId}})
     }
 
-    async create_oath(profil: {username: string, email: string, githubId: string, provider: string}){
+    async create_oath(profil: {username: string, email: string, githubId: string, provider: Provider}){
         return prisma.user.create({
             data: {
                 username: profil.username,
@@ -146,7 +147,7 @@ export class UserRepository{
             where: {id: userId},
             data:{
                 githubId,
-                provider: 'github'
+                provider: Provider.GITHUB,
             }
         })
     }

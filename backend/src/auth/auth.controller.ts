@@ -108,7 +108,7 @@ export class AuthController{
             //get the profil of user with the token 
             const profilres = await fetch('https://api.github.com/user', {
                 headers: {
-                    Authorization: `Bearer ${token_github}`,
+                    Authorization: `Bearer ${token_github.access_token}`,
                 }
             })
             const profil = await profilres.json() as {id: number; login: string; email:string};
@@ -117,9 +117,10 @@ export class AuthController{
             let email = profil.email;
             if (!email){
                 const emailres = await fetch('https://api.github.com/user/emails',{
-                    headers: {Authorization: `Bearer ${token_github}`,}
+                    headers: {Authorization: `Bearer ${token_github.access_token}`,}
                 })
                 const emails = await emailres.json() as {email: string; primary: boolean }[];
+                console.log("emails: ", emails);
                 email = emails.find(e => e.primary)?.email ?? `${profil.id}@github.noemail`;
             }
 
@@ -129,10 +130,25 @@ export class AuthController{
                 email,
             })
             res.cookie('auth_token', token, this.cookieOptions);
-            res.redirect('https://localhost:5500/oauth/success');
+            res.redirect('https://localhost:8888/oauth/success');
         }catch(error){
-            res.redirect('https://localhost:5500/oauth/error');
+            console.error("error in callback: ", error);
+            res.redirect('https://localhost:8888/oauth/error');
         }
-        
+    }
+
+    getMe = async(req: Request, res: Response) => {
+        try{
+            const token = req.cookies?.auth_token;
+            if (!token) {
+                return res.status(401).json(Apiresponse.error("UNAUTHORIZED", "No auth token provided"));
+            }
+            jwt.verify(token, process.env.JWT_SECRET!);
+
+            const decoded = jwt.decode(token) as jwt.JwtPayload;
+            res.json({user: decoded});
+        }catch(error){
+            res.status(401).json(Apiresponse.error("UNAUTHORIZED", "Invalid auth token"));
+        }
     }
 }

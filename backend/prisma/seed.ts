@@ -6,7 +6,7 @@
 /*   By: jmen <jmen@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 18:30:48 by ikayiban          #+#    #+#             */
-/*   Updated: 2026/05/18 11:11:10 by jmen             ###   ########.fr       */
+/*   Updated: 2026/06/01 12:43:00 by jmen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ async function connectWithRetry(retries = 5) {
     try {
       await prisma.$connect();
       const result = await prisma.$queryRaw`SELECT current_user, current_database();`;
-      console.log('Database connected:', result);
       return;
     } catch (err) {
       console.log(`Failed to connecte database, retries reste: ${retries--}`);
