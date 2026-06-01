@@ -2,6 +2,7 @@ import type { UserDB, RegisterInput, UserOutput } from "@shared/user.schema";
 import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
 import {Provider} from '@prisma/client'
+import { AppError, ErrorCode } from "src/error/apperror";
 
 export class UserRepository{
     private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'status' | 'role'>): UserOutput {
@@ -125,35 +126,68 @@ export class UserRepository{
         });
     }
 
-    async find_by_google_id(googleId: string): Promise<UserDB | null>{
-        if (!googleId) return null;
-        return await prisma.user.findUnique({
-            where: { googleId}
-        })
+    // user/user.repository.ts
+    async find_by_oauth_id(provider: 'GOOGLE' | 'GITHUB', oauthId: string): Promise<UserDB | null> {
+        if (provider === 'GOOGLE') {
+            return await prisma.user.findUnique({
+                where: { googleId: oauthId }
+            });
+        } else if (provider === 'GITHUB') {
+            return await prisma.user.findUnique({
+                where: { githubId: oauthId }
+            });
+        }
+        return null;
     }
 
-    async link_google(userId: number, profil:{googleId: string, provider: Provider, url: string}): Promise<UserDB>{
-        return await prisma.user.update({
-            where: {id: userId},
-            data: {
-                googleId: profil.googleId,
-                provider: profil.provider,
-                url: profil.url
-            }
-        })
+    async link_oauth(
+        userId: number, 
+        profile: { provider: 'GOOGLE' | 'GITHUB'; oauthId: string; url: string }
+    ): Promise<UserDB> {
+        if (profile.provider === 'GOOGLE') {
+            return await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    googleId: profile.oauthId,
+                    provider: profile.provider,
+                    url: profile.url
+                }
+            });
+        } else if (profile.provider === 'GITHUB') {
+            return await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    githubId: profile.oauthId,
+                    provider: profile.provider,
+                    url: profile.url
+                }
+            });
+        }
+        throw new AppError('Invalid provider', ErrorCode.INVALID_PROVIDER, 400);
     }
 
-    async createByGoogle(profil: {username: string, email: string, provider: Provider, googleId: string, url: string}): Promise<UserDB>{
-        return await prisma.user.create({
-            data: {
-                username: profil.username,
-                email: profil.email,
-                provider: profil.provider,
-                googleId: profil.googleId,
-                url: profil.url,
-                status: 'ONLINE',
-            }
-        })
+    async createByOAuth(profile: {
+        username: string;
+        email: string;
+        provider: 'GOOGLE' | 'GITHUB';
+        oauthId: string;
+        url: string;
+    }): Promise<UserDB> {
+        const data: any = {
+            username: profile.username,
+            email: profile.email,
+            provider: profile.provider,
+            url: profile.url,
+            status: 'ONLINE',
+        };
+
+        if (profile.provider === 'GOOGLE') {
+            data.googleId = profile.oauthId;
+        } else if (profile.provider === 'GITHUB') {
+            data.githubId = profile.oauthId;
+        }
+
+        return await prisma.user.create({ data });
     }
 }
 

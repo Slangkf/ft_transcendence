@@ -101,3 +101,10 @@ export const Get_Profil_by_Id = z.object({
     userId: z.coerce.number().int().positive(),
 })
 export type GetProfilByIdInput = z.infer<typeof Get_Profil_by_Id>;
+
+interface OAuthUser {
+    id: string;
+    email: string;
+    name: string;
+    picture: string;
+}

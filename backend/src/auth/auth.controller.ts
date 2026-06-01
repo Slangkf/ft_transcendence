@@ -6,6 +6,7 @@ import { Apiresponse } from "../lib/api_response";
 import jwt from "jsonwebtoken";
 import { Redis } from "../lib/redis";
 import { CookieOptions } from "express";
+import { randomUUID } from "node:crypto";
 
 //version for middleware of zod, add token in cookie 
 export class AuthController{
@@ -89,23 +90,34 @@ export class AuthController{
         res.json({message: "Logged out"})
     }
 
-    googleCallBack = async(req: Request, res: Response)=> {
-
-        try{
-            const {code} = req.query;
-            console.log("======code=====", code);
-            if (!code){
-                return res.status(400).json({message: 'Authorization code not found in query'})
+    googleCallBack = async (req: Request, res: Response) => {
+        try {
+            const { code } = req.query;
+            if (!code) {
+                return res.status(400).json({ message: 'Authorization code not found' });
             }
-            const result = await this.authservice.googleLogin(code as string);
-            //add the token in cookie
+            const result = await this.authservice.oauthLogin('GOOGLE', code as string);
             res.cookie('auth_token', result.token, this.cookieOptions);
-            //redirection vers le front 
-            res.redirect('https://localhost:8888/oauth/success')
-        }catch(error){
-            console.error('error in googlecallback: ', error);
-                console.error('error stack:', (error as Error).stack);  // 加这行
-            res.redirect('https://localhost:8888/oauth/error');
+            res.redirect('https://localhost:8888/oauth/success?provider=Google');
+        } catch (error) {
+            console.error('error in google callback:', error);
+            res.redirect('https://localhost:8888/oauth/error?provider=Google');
+        }
+    }
+
+    githubCallBack = async (req: Request, res: Response) => {
+        try {
+            const { code } = req.query;
+            if (!code) {
+                return res.status(400).json({ message: 'Authorization code not found' });
+            }
+            // ✅ 统一调用，只改 provider 参数
+            const result = await this.authservice.oauthLogin('GITHUB', code as string);
+            res.cookie('auth_token', result.token, this.cookieOptions);
+            res.redirect('https://localhost:8888/oauth/success?provider=Github');
+        } catch (error) {
+            console.error('error in github callback:', error);
+            res.redirect('https://localhost:8888/oauth/error?provider=Github');
         }
     }
 
@@ -136,5 +148,35 @@ export class AuthController{
                 Apiresponse.error("UNAUTHORIZED", "Invalid auth token")
             )
         }
+    }
+
+    google = async(req: Request, res: Response)=> {
+        const url = 'https://accounts.google.com/o/oauth2/v2/auth';
+        const options = {
+            client_id: process.env.GOOGLE_CLIENT_ID!,
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
+            response_type: 'code',
+            //scope: tell what type of information we will get
+            scope: [
+                'openid',
+                'email',
+                'profile'
+            ].join(' '),
+            state: randomUUID(),
+        }
+        const qs = new URLSearchParams(options).toString();
+        return res.redirect(`${url}?${qs}`)
+    }
+
+    github = async(req: Request, res: Response) => {
+        const url_base  = "https://github.com/login/oauth/authorize";
+
+        const params = new URLSearchParams({
+            client_id : process.env.GITHUB_CLIENT_ID!,
+            redirect_uri : process.env.GITHUB_CALLBACK_URL!,
+            scope: 'read:user user:email',
+
+        })
+        return res.redirect(`${url_base}?${params.toString()}`);
     }
 }

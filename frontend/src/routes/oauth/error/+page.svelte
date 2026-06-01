@@ -1,6 +1,15 @@
 <script lang="ts">
+import { page } from '$app/state';
+
+  let provider = $state('OAuth');
+$effect(() => {
+    const providerParam = page.url.searchParams.get('provider') || 'Google';
+    provider = providerParam;
+  });
+
   function retry() {
-    window.location.href = '/api/auth/google';
+    const providerLower = provider.toLowerCase();
+    window.location.href = `/api/auth/${providerLower}`;
   }
 </script>
 
@@ -8,7 +17,7 @@
   <div class="flex flex-col items-center gap-4 w-full max-w-80 rounded-xl px-6 py-8 border border-slate-700 bg-slate-900/90 backdrop-blur-xs text-white text-sm text-center">
 
     <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-red-950 text-red-400">
-      Google OAuth
+      {provider} OAuth
     </span>
 
     <div class="w-16 h-16 rounded-full bg-red-950 flex items-center justify-center">
@@ -18,7 +27,7 @@
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-white">Google login failed</h2>
+      <h2 class="text-xl font-semibold text-white">{provider} login failed</h2>
       <p class="mt-1 text-slate-400 text-xs leading-relaxed">
         Something went wrong during authentication.<br>Please try again.
       </p>

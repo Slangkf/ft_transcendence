@@ -15,26 +15,13 @@ export function createAuthRouter(authService: AuthService): Router {
 
 
     //google oauth 2.0, redirecte vers google
-    router.get('/google', (req, res) =>{
-        const url = 'https://accounts.google.com/o/oauth2/v2/auth';
-        const options = {
-            client_id: process.env.GOOGLE_CLIENT_ID!,
-            redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
-            response_type: 'code',
-            //scope: tell what type of information we will get
-            scope: [
-                'openid',
-                'email',
-                'profile'
-            ].join(' '),
-            state: randomUUID(),
-        }
-        const qs = new URLSearchParams(options).toString();
-        return res.redirect(`${url}?${qs}`)
-    })
-
+    router.get('/google', authController.google);
     //callback to get all information
     router.get('/google/callback', authController.googleCallBack);
+
+    //github 
+    router.get('/github', authController.github);
+    router.get('/github/callback', authController.githubCallBack);
     router.get('/me', authController.getMe);
     
     return router;

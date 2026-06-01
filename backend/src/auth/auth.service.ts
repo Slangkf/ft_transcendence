@@ -1,5 +1,5 @@
 import {UserRepository} from '../User/user.repository';
-import type { LoginInput, RegisterInput, UserOutput, AuthResult } from '@shared/user.schema';
+import type { LoginInput, RegisterInput, UserOutput, AuthResult, OAuthUser } from '@shared/user.schema';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {randomUUID} from 'crypto';
@@ -11,6 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
     throw new Error("JWT_SECRET is not defined");
 }
+
 
 export  class AuthService{
 
@@ -116,11 +117,52 @@ export  class AuthService{
         }
     }
 
-    async googleLogin(code: string): Promise<AuthResult>{
-        //1. echange code contre un token
+    async oauthLogin(provider: 'GOOGLE' | 'GITHUB', code: string): Promise<AuthResult>{
+        let oauthUser;
+
+        if (provider === 'GOOGLE') {
+            oauthUser = await this.getGoogleUserInfo(code);
+        } else if (provider === 'GITHUB') {
+            oauthUser = await this.getGithubUserInfo(code);
+        } else {
+            throw new AppError('Invalid provider', ErrorCode.INVALID_PROVIDER, 400);
+        }
+        let user = await this.userrepository.find_by_oauth_id(provider, oauthUser.id);
+
+        if (!user) {
+            const email_exist = await this.userrepository.find_by_email(oauthUser.email);
+            if (email_exist) {
+                // link with the user 
+                user = await this.userrepository.link_oauth(email_exist.id, {
+                    provider,
+                    oauthId: oauthUser.id,
+                    url: email_exist.url ?? oauthUser.picture,
+                });
+            } else {
+                // create a new user
+                let username = oauthUser.name;
+                const username_exist = await this.userrepository.find_by_username(username);
+                if (username_exist) {
+                    username = `${username}_${oauthUser.id.slice(0, 4)}`;
+                }
+                user = await this.userrepository.createByOAuth({
+                    username,
+                    email: oauthUser.email,
+                    provider,
+                    oauthId: oauthUser.id,
+                    url: oauthUser.picture
+                });
+            }
+        }
+
+        const token = this.generateToken(user.id, user.username);
+        return { token, user: this.formatUserOutput(user) };
+    }
+
+    private async getGoogleUserInfo(code: string): Promise<OAuthUser> {
         const tokenres = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
                 client_id: process.env.GOOGLE_CLIENT_ID!,
                 client_secret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -129,58 +171,84 @@ export  class AuthService{
                 grant_type: 'authorization_code',
             }),
         });
+
         const tokenData = await tokenres.json();
-
-        const {access_token} = tokenData;
-
-        //get the information with token 
-        const userres = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-            headers: {Authorization: `Bearer ${access_token}`}
-        })
-        const googleUser = await userres.json();
-
-        console.log("googleId: ", googleUser.id);
-        //check googleid, if not found, check with email
-        let user = await this.userrepository.find_by_google_id(googleUser.id);
-        if (!user){
-            //check with the email
-            const email_exist = await this.userrepository.find_by_email(googleUser.email);
-            if (email_exist){
-                //link the user with google mail
-                user = await this.userrepository.link_google(email_exist.id, {
-                    googleId: googleUser.id,
-                    provider: 'GOOGLE',
-                    url: email_exist.url ?? googleUser.picture,
-                }
-                );
-            } else {
-                //check with the username
-                let username = googleUser.name
-                const username_exist = await this.userrepository.find_by_username(username);
-                if (username_exist){
-                    //get a new username for the user
-                    username = `${username}_${googleUser.id.slice(0,4)}`
-                }
-                user = await this.userrepository.createByGoogle({
-                    username,
-                    email: googleUser.email,
-                    provider: Provider.GOOGLE,
-                    googleId: googleUser.id,
-                    url: googleUser.picture
-                })
-            }
+        if (!tokenData.access_token) {
+            throw new AppError('Failed to get Google access token', ErrorCode.OAUTH_FAILED, 400);
         }
 
-        //jwt 
-        const token = jwt.sign({
-            id: user.id,
-            username: user.username,
-            nickname: user.username,
-            jti: randomUUID(),
-        },
-        JWT_SECRET!,
-        {expiresIn: '24h'},
-        )
-        return {token, user};
+        const userres = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
+        const googleUser = await userres.json();
+
+        return {
+            id: googleUser.id,
+            email: googleUser.email,
+            name: googleUser.name,
+            picture: googleUser.picture
+        };
+    }
+
+    private async getGithubUserInfo(code: string): Promise<OAuthUser> {
+        const tokenres = await fetch('https://github.com/login/oauth/access_token', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                client_id: process.env.GITHUB_CLIENT_ID!,
+                client_secret: process.env.GITHUB_CLIENT_SECRET!,
+                code,
+            }),
+        });
+
+        const tokenData = await tokenres.json();
+        if (!tokenData.access_token) {
+            throw new AppError('Failed to get GitHub access token', ErrorCode.OAUTH_FAILED, 400);
+        }
+
+        const userres = await fetch('https://api.github.com/user', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
+        const githubUser = await userres.json();
+
+        //get email 
+        let email = githubUser.email;
+        if (!email){
+            const emailres = await fetch('https://api.github.com/user/emails',{
+                headers: {Authorization: `Bearer ${tokenData.access_token}`,}
+            })
+            const emails = await emailres.json() as {email: string; primary: boolean }[];
+            console.log("emails: ", emails);
+            email = emails.find(e => e.primary)?.email ?? `${githubUser.id}@github.noemail`;
+        }
+
+        return {
+            id: githubUser.id.toString(),
+            email: email,
+            name: githubUser.login,
+            picture: githubUser.avatar_url
+        };
+    }
+
+    private generateToken(userId: number, username: string): string {
+        return jwt.sign(
+            {
+                id: userId,
+                username,
+                nickname: username,
+                jti: randomUUID(),
+            },
+            JWT_SECRET!,
+            { expiresIn: '24h' }
+        );
+    }
+
+    private formatUserOutput(user: any): UserOutput {
+        // remove information sensible
+        const { password, role, googleId, githubId, provider, ...userOutput } = user;
+        return userOutput as UserOutput;
     }
 }

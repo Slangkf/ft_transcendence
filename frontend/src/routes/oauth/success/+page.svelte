@@ -1,9 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/state';
 
   let progress = $state(0);
+  let provider = $state('OAuth');
 
   onMount(() => {
+    const providerParam = page.url.searchParams.get('provider') || 'Google';
+    provider = providerParam;
+
     const start = performance.now();
     const duration = 2000;
 
@@ -23,7 +28,7 @@
   <div class="flex flex-col items-center gap-4 w-full max-w-80 rounded-xl px-6 py-8 border border-slate-700 bg-slate-900/90 backdrop-blur-xs text-white text-sm text-center">
 
     <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-green-950 text-green-400">
-      Google OAuth
+      {provider} OAuth
     </span>
 
     <div class="w-16 h-16 rounded-full bg-green-950 flex items-center justify-center">
@@ -35,7 +40,7 @@
     <div>
       <h2 class="text-xl font-semibold text-white">Logged in successfully</h2>
       <p class="mt-1 text-slate-400 text-xs leading-relaxed">
-        Your Google account has been linked.<br>Redirecting you now…
+        Your {provider} account has been linked.<br>Redirecting you now…
       </p>
     </div>
 

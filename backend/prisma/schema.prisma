@@ -21,6 +21,7 @@ model User {
     status      UserStatus  @default(OFFLINE)
     role        Role        @default(USER)
     googleId    String?     @unique
+    githubId    String?     @unique
     provider    Provider    @default(LOCAL)
     quizzes     Quiz[]
 
@@ -145,4 +146,5 @@ enum    GameMode {
 enum    Provider {
     LOCAL
     GOOGLE
+    GITHUB
 }
