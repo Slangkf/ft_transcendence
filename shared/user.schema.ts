@@ -5,7 +5,7 @@ export const User_DB = z.object({
     id: z.number().int(),
     username: z.string().min(3).max(20),
     email: z.string().email(),
-    password: z.string() | z.null(),
+    password: z.string().nullable(),
     createdAt: z.date(),
     url: z.string().max(512).nullable().optional(),
     score: z.number().int().nullable().optional(),
@@ -13,7 +13,9 @@ export const User_DB = z.object({
     played: z.number().int().nullable().optional(),
     friendsNb: z.number().int().nullable().optional(),
     status: z.enum(['ONLINE', 'OFFLINE', 'AWAY', 'IN_GAME']).optional(),
-    role: z.enum(['USER', 'ADMIN']).optional()
+    role: z.enum(['USER', 'ADMIN']).optional(),
+    googleId: z.string().nullable().optional(),  
+    provider: z.enum(['LOCAL', 'GOOGLE']).optional()
 })
 export type UserDB = z.infer<typeof User_DB>;
 
