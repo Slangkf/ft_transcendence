@@ -15,6 +15,7 @@ export const User_DB = z.object({
     status: z.enum(['ONLINE', 'OFFLINE', 'AWAY', 'IN_GAME']).optional(),
     role: z.enum(['USER', 'ADMIN']).optional(),
     googleId: z.string().nullable().optional(),  
+    githubId: z.string().nullable().optional(),
     provider: z.enum(['LOCAL', 'GOOGLE']).optional()
 })
 export type UserDB = z.infer<typeof User_DB>;
@@ -102,9 +103,10 @@ export const Get_Profil_by_Id = z.object({
 })
 export type GetProfilByIdInput = z.infer<typeof Get_Profil_by_Id>;
 
-interface OAuthUser {
-    id: string;
-    email: string;
-    name: string;
-    picture: string;
-}
+export const OAuth_User = z.object({
+    id: z.string(),
+    email: z.string().email(),
+    name: z.string(),
+    picture: z.string()
+})
+export type OAuthUser = z.infer<typeof OAuth_User>;

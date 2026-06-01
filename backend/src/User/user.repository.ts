@@ -41,7 +41,7 @@ export class UserRepository{
             where: {email: identifiant}
         })
         if (!user)  return null 
-        return user
+        return user as UserDB
     }
     
     async find_by_username(identifiant: string): Promise<UserDB|null>{
@@ -49,7 +49,7 @@ export class UserRepository{
             where: {username: identifiant}
         })
         if (!user)  return null 
-        return user
+        return user as UserDB
     }
 
     async findByUsername(identifiant: string): Promise<UserDB|null>{
@@ -57,7 +57,7 @@ export class UserRepository{
             where: {username: identifiant}
         })
         if (!user)  return null 
-        return user
+        return user as UserDB
     }
 
     async find_by_id(userid: number): Promise<UserDB | null>{
@@ -65,7 +65,7 @@ export class UserRepository{
             where: {id: userid}
         })
         if (!user) return null
-        return user
+        return user as UserDB
     }
 
     async update_password(userid: number, new_pd: string){
@@ -129,13 +129,15 @@ export class UserRepository{
     // user/user.repository.ts
     async find_by_oauth_id(provider: 'GOOGLE' | 'GITHUB', oauthId: string): Promise<UserDB | null> {
         if (provider === 'GOOGLE') {
-            return await prisma.user.findUnique({
+            const user = await prisma.user.findUnique({
                 where: { googleId: oauthId }
             });
+            return user as UserDB
         } else if (provider === 'GITHUB') {
-            return await prisma.user.findUnique({
+            const user = await prisma.user.findUnique({
                 where: { githubId: oauthId }
             });
+            return user as UserDB
         }
         return null;
     }
@@ -145,7 +147,7 @@ export class UserRepository{
         profile: { provider: 'GOOGLE' | 'GITHUB'; oauthId: string; url: string }
     ): Promise<UserDB> {
         if (profile.provider === 'GOOGLE') {
-            return await prisma.user.update({
+            const user =  await prisma.user.update({
                 where: { id: userId },
                 data: {
                     googleId: profile.oauthId,
@@ -153,8 +155,9 @@ export class UserRepository{
                     url: profile.url
                 }
             });
+            return user as UserDB
         } else if (profile.provider === 'GITHUB') {
-            return await prisma.user.update({
+            const user = await prisma.user.update({
                 where: { id: userId },
                 data: {
                     githubId: profile.oauthId,
@@ -162,6 +165,7 @@ export class UserRepository{
                     url: profile.url
                 }
             });
+            return user as UserDB
         }
         throw new AppError('Invalid provider', ErrorCode.INVALID_PROVIDER, 400);
     }
@@ -187,7 +191,8 @@ export class UserRepository{
             data.githubId = profile.oauthId;
         }
 
-        return await prisma.user.create({ data });
+        const user = await prisma.user.create({ data });
+        return user as UserDB
     }
 }
 
