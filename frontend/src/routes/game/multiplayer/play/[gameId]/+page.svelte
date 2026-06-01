@@ -15,12 +15,13 @@
   type AnswerResultPayload = {
     gameId: string;
     status: 'playing' | 'finished';
-    lastAnswerUpdate: {
+    lastAnswerUpdate?: {
       playerId: string;
       isCorrect: boolean;
       correctAnswerIndex: number;
       correctText: string;
     };
+    timedOut?: boolean;
     nextQuestion?: PublicQuestion | null;
     players: Record<string, PlayerSnapshot>;
     finalScore?: FinalScore | null;
@@ -33,6 +34,7 @@
     | { type: 'in_game'; gameId: string; state: any };
 
   const REVEAL_DELAY_MS = 1500;
+  const QUESTION_TIMEOUT_MS = 30_000;
   const gameId = $derived(page.params.gameId);
 
   let currentQuestion = $state<PublicQuestion | null>(null);
@@ -47,8 +49,12 @@
   let selectedIndex = $state<number | null>(null);
   let correctIndex = $state<number | null>(null);
   let startedAt = $state<number | null>(null);
+  let questionStartedAt = $state<number | null>(null);
   let now = $state(Date.now());
   let tickHandle: ReturnType<typeof setInterval> | null = null;
+  // tournament games auto-redirect to the bracket on finish, so they don't need
+  // the "back to menu" button on the results screen — plain multiplayer does.
+  let inTournamentGame = $state(false);
 
   const elapsedMs = $derived(startedAt ? Math.max(0, now - startedAt) : 0);
   function formatTime(ms: number): string {
@@ -62,6 +68,12 @@
   let revealing = $state(false);
   let answered = $state(false);
 
+  const secondsLeft = $derived(
+    questionStartedAt && !revealing && !answered && !isFinished
+      ? Math.max(0, Math.ceil((QUESTION_TIMEOUT_MS - (now - questionStartedAt)) / 1000))
+      : null
+  );
+
   function resetReveal() {
     selectedIndex = null;
     correctIndex = null;
@@ -70,9 +82,9 @@
   }
 
   let backToBracketHandle: ReturnType<typeof setTimeout> | null = null;
-  function maybeReturnToBracket() {
-    let tid: string | null = null;
-    try { tid = sessionStorage.getItem('current_tournament_id'); } catch {}
+  function maybeReturnToBracket(explicitTid?: string) {
+    let tid: string | null = explicitTid ?? null;
+    if (!tid) { try { tid = sessionStorage.getItem('current_tournament_id'); } catch {} }
     if (!tid) return;
     if (backToBracketHandle) return;
     backToBracketHandle = setTimeout(() => {
@@ -94,37 +106,70 @@
     return `${base} bg-gray-500/25 hover:bg-gray-400/35 border-white/20 text-blue-100`;
   }
 
+  function transitionToFinished() {
+    revealing = false;
+    answered = false;
+    isFinished = true;
+    currentQuestion = null;
+    questionStartedAt = null;
+    feedback = '';
+    if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+    maybeReturnToBracket();
+  }
+
   function applyAnswerResult(info: AnswerResultPayload) {
     playersState = Object.values(info.players);
+    const correctText = info.lastAnswerUpdate?.correctText;
 
     if (info.status === 'finished') {
-      revealing = false;
-      answered = false;
-      isFinished = true;
       finalScore = info.finalScore ?? null;
-      currentQuestion = null;
-      feedback = '';
-      if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
-      maybeReturnToBracket();
+      // reveal the last answer first (same delay as other questions) before showing the end screen
+      const canReveal = !!currentQuestion && (!!correctText || info.timedOut);
+      if (canReveal) {
+        correctIndex = info.lastAnswerUpdate?.correctAnswerIndex ?? null;
+        revealing = true;
+        if (info.timedOut) {
+          feedback = correctText
+            ? `Temps écoulé ! Bonne réponse : ${correctText}`
+            : 'Temps écoulé !';
+        } else {
+          feedback = selectedIndex === null
+            ? `Correct answer: ${correctText}`
+            : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+        }
+        setTimeout(transitionToFinished, REVEAL_DELAY_MS);
+      } else {
+        transitionToFinished();
+      }
       return;
     }
 
-    const correctText = info.lastAnswerUpdate?.correctText;
-    if (!correctText) return; // round not yet complete (partial submit)
+    if (!correctText && !info.timedOut) return; // round not yet complete (partial submit)
 
     if (currentQuestion) {
-      correctIndex = info.lastAnswerUpdate.correctAnswerIndex;
+      correctIndex = info.lastAnswerUpdate?.correctAnswerIndex ?? null;
       revealing = true;
-      feedback = selectedIndex === null
-        ? `Correct answer: ${correctText}`
-        : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+      if (info.timedOut) {
+        feedback = correctText
+          ? `Temps écoulé ! Bonne réponse : ${correctText}`
+          : 'Temps écoulé !';
+      } else {
+        feedback = selectedIndex === null
+          ? `Correct answer: ${correctText}`
+          : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+      }
     }
 
     pendingNext = info.nextQuestion ?? null;
     setTimeout(() => {
       currentQuestion = pendingNext;
       pendingNext = null;
-      if (currentQuestion) questionNumber += 1;
+      if (currentQuestion) {
+        questionNumber += 1;
+        questionStartedAt = Date.now();
+      } else {
+        questionStartedAt = null;
+      }
       feedback = '';
       resetReveal();
     }, REVEAL_DELAY_MS);
@@ -135,7 +180,15 @@
 
     socket.off('answer_result');
     socket.off('session_reconnect');
+    socket.off('tournament_finished');
     socket.off('error');
+
+    // Finalists are on this page when the tournament ends; bring them back to the
+    // bracket so they see the final "Tournament over" ranking (not just their
+    // own match result). Robust even if the game_finished redirect timing slips.
+    socket.on('tournament_finished', (payload: { tournamentId: string }) => {
+      maybeReturnToBracket(payload.tournamentId);
+    });
 
     socket.on('answer_result', (info: AnswerResultPayload) => {
       applyAnswerResult(info);
@@ -143,17 +196,14 @@
 
     socket.off('game_finished');
     socket.on('game_finished', (payload: { gameId: string; state: any }) => {
-      revealing = false;
-      answered = false;
-      isFinished = true;
       finalScore = payload?.state?.finalScore ?? finalScore;
       if (payload?.state?.state?.player) {
         playersState = Object.values(payload.state.state.player);
       }
-      currentQuestion = null;
-      feedback = '';
-      if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
-      maybeReturnToBracket();
+      // if the answer_result for the last question already kicked off a reveal,
+      // let its timer perform the transition so the green/red feedback stays visible
+      if (revealing && currentQuestion) return;
+      transitionToFinished();
     });
 
     socket.on('session_reconnect', (payload: ReconnectPayload) => {
@@ -164,6 +214,7 @@
         questionNumber = (state.state?.currentQuestionIndex ?? 0) + 1;
         isFinished = state.status === 'finished';
         if (state.state?.startedAt && !startedAt) startedAt = state.state.startedAt;
+        if (state.state?.questionStartedAt) questionStartedAt = state.state.questionStartedAt;
         if (isFinished) {
           finalScore = state.finalScore ?? finalScore;
           if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
@@ -186,6 +237,7 @@
         currentQuestion = payload.question;
         questionNumber = 1;
         if (payload.startedAt) startedAt = payload.startedAt;
+        questionStartedAt = payload.startedAt ?? Date.now();
         sessionStorage.removeItem('mp_first_question');
       }
     } catch {}
@@ -213,6 +265,7 @@
   }
 
   onMount(() => {
+    try { inTournamentGame = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     setupSocket();
     loadInitialQuestion();
     // ask backend for current state via reconnection flow
@@ -270,6 +323,14 @@
       <p class="text-center text-sm text-blue-100/80 mb-2">
         Question {questionNumber}{#if totalQuestions > 0} / {totalQuestions}{/if}
       </p>
+      {#if secondsLeft !== null}
+        <p class="text-center mb-2">
+          <span class="inline-block font-mono text-lg font-bold
+            {secondsLeft <= 5 ? 'text-red-300 animate-pulse' : secondsLeft <= 10 ? 'text-yellow-200' : 'text-blue-100/80'}">
+            ⏱ {secondsLeft}s
+          </span>
+        </p>
+      {/if}
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         {currentQuestion.question}
       </h2>
@@ -308,6 +369,19 @@
           </div>
         {/each}
       </div>
+
+      {#if inTournamentGame}
+        <p class="text-center text-blue-100/70 text-sm mt-6">Retour au tournoi…</p>
+      {:else}
+        <div class="flex justify-center gap-4 mt-6">
+          <a href="/modes" class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition">
+            Back to menu
+          </a>
+          <a href="/game/multiplayer" class="px-6 py-3 rounded bg-white/10 hover:bg-white/20 border border-white/20 text-blue-100/80 transition">
+            Play again
+          </a>
+        </div>
+      {/if}
     </section>
   {/if}
 </div>

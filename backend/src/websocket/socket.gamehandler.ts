@@ -12,6 +12,8 @@ import { SessionService } from "../game/session.service";
 import { TournamentService } from "../tournament/tournament.service";
 import { GameMapper } from "src/game/game.mapper";
 import {SubmitAnswerReq} from "@shared/game.schema";
+import { QuestionTimerService } from "../game/question-timer.service";
+import { GameState } from "../game/game.types";
 
 type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
@@ -30,6 +32,7 @@ export class GameSocketHandler{
         private sessionService: SessionService,
         private tournamentService: TournamentService,
         private mapper: GameMapper,
+        private questionTimer: QuestionTimerService,
     ){}
 
     private gameuserkey(userId: string){
@@ -193,7 +196,8 @@ export class GameSocketHandler{
         await this.redis.del(this.gameuserkey(userId));
 
         // 给 60 秒重连窗口，超时才真正处理离开逻辑
-        await this.redis.set(this.disconnectkey(userId), '1', {EX: 60});
+        const RECONNECT_WINDOW_MS = 60_000;
+        await this.redis.set(this.disconnectkey(userId), '1', {EX: RECONNECT_WINDOW_MS / 1000});
 
         const timer =setTimeout(async () => {
 			this.disconnectTimers.delete(userId);
@@ -240,10 +244,110 @@ export class GameSocketHandler{
             }
             await this.sessionService.update(userId, {
                 status: "idle"});
-        }, 10_000);
+        }, RECONNECT_WINDOW_MS);
         this.disconnectTimers.set(userId, timer);
     }
     
+
+    /**
+     * Broadcast the post-answer state (or game-finished payload) for a room.
+     * Called both from a normal player answer and from the question-timeout
+     * force-advance path. When `lastAnswerUpdate` is undefined we treat it as
+     * a timeout and set `timedOut: true` on the emitted event.
+     */
+    async handlePostAnswer(
+        gamestate: GameState,
+        opts?: {
+            lastAnswerUpdate?: { playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string };
+            timedOut?: boolean;
+        },
+    ): Promise<void> {
+        if (!('roomId' in gamestate) || !gamestate.roomId) return;
+        const roomId = gamestate.roomId;
+        const gameId = gamestate.gameId;
+        const lastAnswerUpdate = opts?.lastAnswerUpdate;
+        const timedOut = !!opts?.timedOut;
+        const response = this.mapper.toUpdateResponse(gamestate, lastAnswerUpdate);
+
+        // Push a live snapshot to the tournament room so eliminated players can
+        // spectate the ongoing match (scoreboard + question progress). Players
+        // actively in the game ignore it (their page doesn't listen for it).
+        const tournamentId = (gamestate as any).tournamentId as string | undefined;
+        if (tournamentId) {
+            this.io.to(`tournament:${tournamentId}`).emit('spectator_update', {
+                tournamentId,
+                gameId,
+                status: gamestate.isFinished ? 'finished' : 'playing',
+                currentQuestionIndex: response.state.currentQuestionIndex,
+                totalQuestions: response.state.totalQuestions,
+                question: gamestate.isFinished ? null : response.nextQuestion,
+                players: response.state.player,
+            });
+        }
+
+        if (gamestate.isFinished) {
+            this.io.to(roomId).emit('answer_result', {
+                gameId,
+                status: 'finished',
+                lastAnswerUpdate,
+                timedOut,
+                nextQuestion: null,
+                players: response.state.player,
+                finalScore: response.finalScore,
+            });
+            this.io.to(roomId).emit('game_finished', {
+                gameId,
+                state: response,
+            });
+            this.questionTimer.cancel(gameId);
+
+            if (tournamentId) {
+                // Send BOTH players back to the bracket FIRST. onMatchFinished may
+                // promote the winner into the next match (createMatchRooms sets a
+                // fresh 'matched' + roomId session); doing this reset afterwards
+                // would clobber that promotion and strand the winner as 'in_tournament'
+                // with no room. Order matters: reset -> advance.
+                await Promise.all(
+                    Object.keys(gamestate.players).map(p =>
+                        this.sessionService.update(p, {
+                            status: 'in_tournament',
+                            gameId: undefined,
+                            roomId: undefined,
+                        })
+                    )
+                );
+                const winnerId = response.finalScore?.winnerId ?? '';
+                if (winnerId) {
+                    const stats = Object.values(gamestate.players).map(p => ({
+                        userId: p.id,
+                        correctAnswers: p.answers.filter(a => a.isCorrect).length,
+                        totalTime: p.Totaltime || 0,
+                    }));
+                    await this.tournamentService.onMatchFinished(tournamentId, gameId, winnerId, stats);
+                }
+            } else {
+                await Promise.all(
+                    Object.keys(gamestate.players).map(p =>
+                        this.sessionService.update(p, { status: 'idle' })
+                    )
+                );
+            }
+            await this.gameService.finalize(gameId);
+            return;
+        }
+
+        this.io.to(roomId).emit('answer_result', {
+            gameId,
+            status: 'playing',
+            lastAnswerUpdate,
+            timedOut,
+            nextQuestion: response.nextQuestion,
+            players: response.state.player,
+            finalScore: null,
+        });
+        // game continues — arm the deadline for the (possibly new) current question
+        await this.questionTimer.schedule(gameId);
+    }
 
     private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0], ack?: (response: any) => void): Promise<void> {
         try {
@@ -268,62 +372,11 @@ export class GameSocketHandler{
             const gamestate = await this.gamerepos.findById(gameId);
             if (!gamestate || !('roomId' in gamestate) || !gamestate.roomId)
                 return ;
-            //calcul finalscore
-            if (gamestate.isFinished)
-            {
-                const finalResponse = this.mapper.toUpdateResponse(gamestate);
-                this.io.to(gamestate.roomId).emit('answer_result', {
-                    gameId,
-                    status: result.status,
-                    lastAnswerUpdate: result.lastAnswerUpdate!,
-                    nextQuestion: null,
-                    players: finalResponse.state.player,
-                    finalScore: finalResponse.finalScore,
-                })
-                this.io.to(gamestate.roomId).emit('game_finished', {
-                    gameId: gamestate.gameId,
-                    state: finalResponse,
-                })
-
-                const tournamentId = (gamestate as any).tournamentId as string | undefined;
-                if (tournamentId) {
-                    // tournament match finished — bracket is updated; players stay in_tournament
-                    const winnerId = finalResponse.finalScore?.winnerId ?? '';
-                    if (winnerId) {
-                        await this.tournamentService.onMatchFinished(tournamentId, gameId, winnerId);
-                    }
-                    // sessions: drop gameId, keep tournamentId
-                    await Promise.all(
-                        Object.keys(gamestate.players).map(p =>
-                            this.sessionService.update(p, {
-                                status: 'in_tournament',
-                                gameId: undefined,
-                                roomId: undefined,
-                            })
-                        )
-                    )
-                } else {
-                    await Promise.all(
-                        Object.keys(gamestate.players).map(p =>
-                            this.sessionService.update(p, {status: 'idle'})
-                        )
-                    )
-                }
-                // persist match result to DB and clear Redis state now that everyone has been notified
-                await this.gameService.finalize(gameId);
-                return;
-            }
-            this.io.to(gamestate.roomId).emit('answer_result', {
-                gameId,
-                status: result.status,
-                lastAnswerUpdate:{
-                    ...result.lastAnswerUpdate!,
-                    correctText: result.lastAnswerUpdate?.correctText ?? "",
-                },
-                nextQuestion: result.nextQuestion,
-                players: result.state.player,
-                finalScore: result.finalScore,
-            })
+            const lastAnswer = result.lastAnswerUpdate ? {
+                ...result.lastAnswerUpdate,
+                correctText: result.lastAnswerUpdate.correctText ?? "",
+            } : undefined;
+            await this.handlePostAnswer(gamestate, { lastAnswerUpdate: lastAnswer });
         } catch (error) {
             console.error('Error submitting answer:', error);
             socket.emit('error', { message: 'Error submitting answer' });

@@ -10,6 +10,10 @@
   let info = $state('');
   let joinedTournament: string | null = null;
 
+  type LobbyPlayer = { userId: string; nickname: string };
+  let lobbyPlayers = $state<LobbyPlayer[]>([]);
+  let lobbySize = $state(4);
+
   async function ensureSocketConnected(): Promise<void> {
     const socket = getGameSocket();
     if (socket.connected) return;
@@ -29,11 +33,17 @@
   function setupListeners() {
     const socket = getGameSocket();
 
+    socket.off('lobby_update');
     socket.off('tournament_started');
     socket.off('bracket_update');
     socket.off('next_match_ready');
     socket.off('reconnect');
     socket.off('error');
+
+    socket.on('lobby_update', (payload: { size: number; players: LobbyPlayer[] }) => {
+      lobbySize = payload.size;
+      lobbyPlayers = payload.players ?? [];
+    });
 
     socket.on('tournament_started', (payload: { tournamentId: string }) => {
       joinedTournament = payload.tournamentId;
@@ -119,7 +129,12 @@
         return;
       }
 
-      info = 'Waiting for 4 players...';
+      // show the lobby immediately from the HTTP response (then live updates via socket)
+      if (result?.data?.lobby) {
+        lobbySize = result.data.lobby.size ?? 4;
+        lobbyPlayers = result.data.lobby.players ?? [];
+      }
+      info = `Waiting for ${lobbySize} players...`;
     } catch (err) {
       console.error('joinTournament error:', err);
       error = 'Network error or backend unreachable.';
@@ -127,9 +142,13 @@
     }
   }
 
-  function cancel() {
+  async function cancel() {
+    try {
+      await fetch('/api/tournament/leave', { method: 'POST', credentials: 'include' });
+    } catch {}
     waiting = false;
     info = '';
+    lobbyPlayers = [];
     disconnectGameSocket();
   }
 
@@ -164,7 +183,22 @@
     </div>
   {:else}
     <div class="text-center py-8">
-      <p class="text-blue-100 mb-4">{info}</p>
+      <p class="text-blue-100 mb-1">Salle d'attente du tournoi</p>
+      <p class="text-pink-200 font-bold mb-4">{lobbyPlayers.length} / {lobbySize} joueurs</p>
+
+      <ul class="max-w-sm mx-auto grid gap-2 mb-6">
+        {#each Array(lobbySize) as _, i}
+          {@const p = lobbyPlayers[i]}
+          <li class="flex items-center justify-between px-4 py-3 rounded border
+            {p ? 'bg-pink-500/15 border-pink-300/30 text-blue-100' : 'bg-gray-500/15 border-white/10 text-blue-100/40'}">
+            <span class="text-sm">Joueur {i + 1}</span>
+            <span class="font-semibold">
+              {#if p}{p.nickname}{:else}<span class="italic">en attente…</span>{/if}
+            </span>
+          </li>
+        {/each}
+      </ul>
+
       <div class="inline-block animate-spin h-8 w-8 border-4 border-pink-200 border-t-transparent rounded-full mb-4"></div>
       <div>
         <button
