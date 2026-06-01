@@ -50,6 +50,13 @@ export class UserService{
 				{userID: userid});
 
         }
+        if (!user.password) {
+        throw new AppError(
+            'User has no password set. Please login with Google.',
+            ErrorCode.INVALID_OLD_PASSWORD,
+            401,
+            {userID: userid});
+        }
 
         const is_valide = await bcrypt.compare(input.oldpassword, user.password);
         if (!is_valide){
