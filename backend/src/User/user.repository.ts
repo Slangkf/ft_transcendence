@@ -126,9 +126,7 @@ export class UserRepository{
     }
 
     async find_by_google_id(googleId: string): Promise<UserDB | null>{
-        console.log('find_by_google_id called with:', googleId);
-        console.trace();
-        if (!googleId) return;
+        if (!googleId) return null;
         return await prisma.user.findUnique({
             where: { googleId}
         })

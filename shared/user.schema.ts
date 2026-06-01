@@ -5,7 +5,7 @@ export const User_DB = z.object({
     id: z.number().int(),
     username: z.string().min(3).max(20),
     email: z.string().email(),
-    password: z.string(),
+    password: z.string() | z.null(),
     createdAt: z.date(),
     url: z.string().max(512).nullable().optional(),
     score: z.number().int().nullable().optional(),
