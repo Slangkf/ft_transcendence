@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {randomUUID} from 'crypto';
 import { AppError, ErrorCode } from '../error/apperror';
+import {Provider } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -121,7 +122,7 @@ export  class AuthService{
                     username,
                     email: profile.email,
                     githubId: profile.githubId,
-                    provider: 'github'
+                    provider: Provider.GITHUB,
                 })
             }
         }
