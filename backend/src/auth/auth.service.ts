@@ -65,6 +65,20 @@ export  class AuthService{
                 401)
         }
 
+        if (!user.password) {
+        throw new AppError(
+            'Please login with Google',
+            ErrorCode.AUTH_INVALID_MAIL,
+            401)
+        }
+
+        if (user.provider === Provider.GOOGLE){
+            throw new AppError(
+                'Please login with Google',
+                ErrorCode.AUTH_INVALID_MAIL,
+                401)
+        }
+
         //2. if exite check the password 
         const valide_password = await bcrypt.compare(input.password, user.password);
         if (!valide_password){
