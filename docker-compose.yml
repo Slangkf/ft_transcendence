@@ -1,7 +1,7 @@
 services:
   db:
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
       interval: 3s
       timeout: 3s
       retries: 10
@@ -22,7 +22,7 @@ services:
 
   redis:
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: "redis-cli ping"
       interval: 5s
       timeout: 3s
       retries: 10
@@ -37,16 +37,17 @@ services:
       - net.core.somaxconn=511
 
   backend:
-    healthcheck:
-      test:  ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 30s
-
     build: 
       context: .
       dockerfile: backend/Dockerfile
+    secrets:
+      - jwt_secret
+      - google_client_id
+      - google_client_secret
+      - google_callback_url
+      - github_client_id
+      - github_client_secret
+      - github_callback_url
     volumes:
         - ./backend:/app
         - /app/node_modules 
@@ -59,8 +60,9 @@ services:
       - "3000"
     environment:
       - DATABASE_URL=${DATABASE_URL_DOCKER}
-      - JWT_SECRET=${JWT_SECRET}
       - REDIS_URL=${REDIS_URL}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     depends_on:
       redis:
         condition: service_healthy
@@ -70,13 +72,6 @@ services:
       - .env
 
   frontend:
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5500"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 15s
-
     build: 
       context: ./frontend
       dockerfile: Dockerfile
@@ -91,10 +86,8 @@ services:
 
   nginx:
     depends_on:
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
+      - backend
+      - frontend
     build: ./nginx
     image: nginx:custom
     container_name: nginx
@@ -109,3 +102,19 @@ volumes:
 networks:
   transcendence_network:
     name: transcendence_network
+
+secrets:
+  jwt_secret:
+    external: true
+  google_client_id:
+    external: true
+  google_client_secret:
+    external: true
+  google_callback_url:
+    external: true
+  github_client_id:
+    external: true
+  github_client_secret:
+    external: true
+  github_callback_url:
+    external: true

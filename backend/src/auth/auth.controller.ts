@@ -91,6 +91,9 @@ export class AuthController{
     }
 
     githubCallback = async(req: Request, res: Response) => {
+        
+
+
         const code = req.query.code as string;
         try{
             const tokenres = await fetch('https://github.com/login/oauth/access_token',
@@ -104,11 +107,13 @@ export class AuthController{
                     code,})
                 })
             const token_github = await tokenres.json() as {access_token: string};
+            console.log("token: ", token_github);
 
             //get the profil of user with the token 
             const profilres = await fetch('https://api.github.com/user', {
                 headers: {
-                    Authorization: `Bearer ${token_github.access_token}`,
+                    Authorization: `token ${token_github.access_token}`,
+                                Accept: 'application/vnd.github+json',
                 }
             })
             const profil = await profilres.json() as {id: number; login: string; email:string};
@@ -117,7 +122,9 @@ export class AuthController{
             let email = profil.email;
             if (!email){
                 const emailres = await fetch('https://api.github.com/user/emails',{
-                    headers: {Authorization: `Bearer ${token_github.access_token}`,}
+                    headers: {
+                        Authorization: `token ${token_github.access_token}`,
+                                    Accept: 'application/vnd.github+json'}
                 })
                 const emails = await emailres.json() as {email: string; primary: boolean }[];
                 console.log("emails: ", emails);

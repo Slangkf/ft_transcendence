@@ -15,6 +15,9 @@ export function createAuthRouter(authService: AuthService): Router {
 
     router.get('/github', (req, res)=> {
         const url_base  = "https://github.com/login/oauth/authorize";
+        console.log("clientid: ", process.env.GITHUB_CLIENT_ID);
+        console.log("secret: ", process.env.GITHUB_CLIENT_SECRET);
+        console.log("url: ", process.env.GITHUB_CALLBACK_URL);
 
         const params = new URLSearchParams({
             client_id : process.env.GITHUB_CLIENT_ID!,

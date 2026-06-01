@@ -4,10 +4,10 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {randomUUID} from 'crypto';
 import { AppError, ErrorCode } from '../error/apperror';
-import {Provider } from '@prisma/client';
+import {Provider} from '@prisma/client';
+import { SecretsManager } from 'src/lib/secrets';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
+const JWT_SECRET = SecretsManager.getSecret('JWT_SECRET');
 if (!JWT_SECRET) {
     throw new Error("JWT_SECRET is not defined");
 }
