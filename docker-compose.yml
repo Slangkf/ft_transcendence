@@ -105,16 +105,16 @@ networks:
 
 secrets:
   jwt_secret:
-    external: true
+    file: ./secrets/jwt_secret
   google_client_id:
-    external: true
+    file: ./secrets/google_client_id
   google_client_secret:
-    external: true
+    file: ./secrets/google_client_secret
   google_callback_url:
-    external: true
+    file: ./secrets/google_callback_url
   github_client_id:
-    external: true
+    file: ./secrets/github_client_id
   github_client_secret:
-    external: true
+    file: ./secrets/github_client_secret
   github_callback_url:
-    external: true
+    file: ./secrets/github_callback_url
