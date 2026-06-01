@@ -35,6 +35,7 @@ export function createAuthRouter(authService: AuthService): Router {
 
     //callback to get all information
     router.get('/google/callback', authController.googleCallBack);
+    router.get('/me', authController.getMe);
     
     return router;
 }

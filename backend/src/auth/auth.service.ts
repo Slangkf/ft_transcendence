@@ -103,16 +103,6 @@ export  class AuthService{
     }
 
     async googleLogin(code: string): Promise<AuthResult>{
-const params = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID!,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-    code,
-    redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
-    grant_type: 'authorization_code',
-});
-console.log('=== params sent to Google ===', params.toString());
-
-
         //1. echange code contre un token
         const tokenres = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
@@ -121,14 +111,13 @@ console.log('=== params sent to Google ===', params.toString());
                 client_id: process.env.GOOGLE_CLIENT_ID!,
                 client_secret: process.env.GOOGLE_CLIENT_SECRET!,
                 code,
-                redirect_uri: process.env.GOOGLE_REDIRECT_URL!,
+                redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
                 grant_type: 'authorization_code',
             }),
         });
-const tokenData = await tokenres.json();
-console.log('=== tokenData ===', JSON.stringify(tokenData));
+        const tokenData = await tokenres.json();
 
-        const {access_token} = tokenData.access_token;
+        const {access_token} = tokenData;
 
         //get the information with token 
         const userres = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -178,7 +167,6 @@ console.log('=== tokenData ===', JSON.stringify(tokenData));
         JWT_SECRET!,
         {expiresIn: '24h'},
         )
-
         return {token, user};
     }
 }

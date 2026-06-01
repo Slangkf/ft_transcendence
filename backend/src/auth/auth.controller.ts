@@ -101,11 +101,40 @@ export class AuthController{
             //add the token in cookie
             res.cookie('auth_token', result.token, this.cookieOptions);
             //redirection vers le front 
-            res.redirect('https://localhost:5500/oauth/success')
+            res.redirect('https://localhost:8888/oauth/success')
         }catch(error){
             console.error('error in googlecallback: ', error);
                 console.error('error stack:', (error as Error).stack);  // 加这行
-            res.redirect('https://localhost:5500/oauth/error');
+            res.redirect('https://localhost:8888/oauth/error');
+        }
+    }
+
+    getMe = async(req: Request, res: Response) => {
+        try {
+            const token = req.cookies?.auth_token;
+            if (!token){
+                return res.status(401).json(
+                    Apiresponse.error('UNAUTHORIZED', 'No auth token provided')
+                )
+            }
+
+            const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
+            const { UserRepository } = await import('../User/user.repository');
+            const userRepo = new UserRepository();
+            const user = await userRepo.find_by_id(decoded.id);
+            
+            if (!user) {
+                return res.status(401).json(
+                    Apiresponse.error("USER_NOT_FOUND", "User not found")
+                );
+            }
+
+            res.json(user);
+        } catch (error){
+            console.error('Error in getMe: ', error);
+            res.status(401).json(
+                Apiresponse.error("UNAUTHORIZED", "Invalid auth token")
+            )
         }
     }
 }
