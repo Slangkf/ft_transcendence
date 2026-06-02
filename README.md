@@ -17,7 +17,7 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 *Before starting, please ensure that Docker Engine is installed.*
 
 
-1. ### **Go to the `env_template` directory and fill these variables with your own values**
+1. ### **At the root of the project, open the `env_template` file and fill in these variables with your own values:**
 	
 	- `POSTGRES_USER`: your database username.
 	- `POSTGRES_PASSWORD`: your database user password.
@@ -29,6 +29,8 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 	Rename the file to `.env` once all the values ​​have been entered.
 
 2. ### **Build and run the services**
+
+	Open a terminal.
 
 	Run `docker compose build` to build all services.
 
