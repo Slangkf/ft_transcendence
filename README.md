@@ -1,4 +1,4 @@
-﻿*This project has been created as part of the 42 curriculum by jmen, alandel, ikayiban, and tclouet.*
+*This project has been created as part of the 42 curriculum by jmen, alandel, ikayiban, and tclouet.*
 
 # Description
 
@@ -17,16 +17,20 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 *Before starting, please ensure that Docker Engine is installed.*
 
 
-1. ### **Go to the `secrets` directory and fill these files with your own values**
+1. ### **At the root of the project, open the `env_template` file and fill in these variables with your own values:**
 	
-	- `db_user.txt`: your database username.
-	- `db_user_password.txt`: your database user password.
-	- `db_admin_mail.txt`: your Prisma admin email address.
-	- `db_admin_password.txt`: your Prisma admin password.
-	- `jwt.txt`: your JWT secret key.
+	- `POSTGRES_USER`: your database username.
+	- `POSTGRES_PASSWORD`: your database user password.
+	- `ADMIN_EMAIL`: your Prisma admin email address.
+	- `ADMIN_PASSWORD`: your Prisma admin password.
+	- `JWT_SECRET`: your JWT secret key.
 
+#### Note:
+	Rename the file to `.env` once all the values ​​have been entered.
 
 2. ### **Build and run the services**
+
+	Open a terminal.
 
 	Run `docker compose build` to build all services.
 
@@ -195,9 +199,6 @@ Redis provides fast in-memory data storage, making it ideal for caching frequent
 - **Register / Login with email and password**  
 Allows users to create an account and authenticate using email credentials.  
 *Implemented by: jmen, ikayiban, tclouet*
-- **Register / Login with GitHub account**  
-OAuth authentication via GitHub for quick and secure login.  
-*Implemented by: jmen*
 - **Personnal profile management**  
 Users can view and edit their profile information.  
 *Implemented by: ikayiban, tclouet*
@@ -299,7 +300,7 @@ Authentication is required to secure user data and allow personalized features s
 
 **How?**  
 
-We implemented email/password authentication and GitHub OAuth. JWT tokens are used to manage sessions and protect API routes.  
+We implemented email/password authentication. JWT tokens are used to manage sessions and protect API routes.  
 
 *Implemented by: jmen, ikayiban, tclouet*
 
@@ -389,18 +390,6 @@ We implemented frontend notifications using showToast to display real-time feedb
 
 *Implemented by: tclouet*
 
-### - Implement remote authentication with OAuth 2.0 (GitHub).  
-
-**Why?**  
-
-To simplify user onboarding and provide an alternative secure login method.  
-
-**How?**  
-
-GitHub OAuth 2.0 was integrated into the authentication system, allowing users to log in using their GitHub account and receive a JWT session token.  
-
-*Implemented by: jmen*
-
 ### - Implement a tournament system.  
 
 **Why?**  
@@ -414,7 +403,7 @@ We implemented a tournament flow where players compete in multiple rounds, with 
 *Implemented by: jmen, alandel, tclouet*
 
 
-`TOTAL: 9 major modules + 4 minor modules = 18 + 4 = 22/14 points`
+`TOTAL: 9 major modules + 4 minor modules = 18 + 3 = 21/14 points`
 
 # Individual Contributions
 
@@ -424,7 +413,7 @@ We implemented a tournament flow where players compete in multiple rounds, with 
 
 - Developed the backend architecture of the application, including the REST API using Express.js and real-time communication using Socket.IO.
 
-- Implemented authentication flows (GitHub OAuth), session handling, and JWT-based security.
+- Implemented session handling, and JWT-based security.
 
 - Integrated Redis for caching and managing real-time game/session state.
 
