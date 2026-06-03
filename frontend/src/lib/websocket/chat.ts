@@ -18,18 +18,18 @@ function createWS() {
         reconnection: true,
     });
 
-	socket.on('connect', () => {
-      console.log(`✅ chat WS connected, id: ${socket.id}`);
-    });
+	// socket.on('connect', () => {
+    //   console.log(`✅ chat WS connected, id: ${socket.id}`);
+    // });
 
-    socket.on('connect_error', (err) => {
-        console.log(`❌ chat WS connect_error: ${err.message}`);
-		console.trace();
-    });
+    // socket.on('connect_error', (err) => {
+    //     console.log(`❌ chat WS connect_error: ${err.message}`);
+	// 	console.trace();
+    // });
 
-    socket.onAny((event, ...args) => {
-        console.log(`📨 event: ${event}`, JSON.stringify(args));
-    });
+    // socket.onAny((event, ...args) => {
+    //     console.log(`📨 event: ${event}`, JSON.stringify(args));
+    // });
 
 	return {
 		socket,

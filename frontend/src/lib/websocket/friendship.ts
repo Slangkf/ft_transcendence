@@ -17,18 +17,18 @@ export function connectWS(): Socket<FriendSocketEvents> {
         reconnection: true,
     });
 
-	socket.on('connect', () => {
-      console.log(`✅ friendship WS connected, id: ${socket.id}`);
-    });
+	// socket.on('connect', () => {
+    //   console.log(`✅ friendship WS connected, id: ${socket.id}`);
+    // });
 
-    socket.on('connect_error', (err) => {
-        console.log(`❌ friendship WS connect_error: ${err.message}`);
-		console.trace();
-    });
+    // socket.on('connect_error', (err) => {
+    //     console.log(`❌ friendship WS connect_error: ${err.message}`);
+	// 	console.trace();
+    // });
 
-    socket.onAny((event, ...args) => {
-        console.log(`📨 event: ${event}`, JSON.stringify(args));
-    });
+    // socket.onAny((event, ...args) => {
+    //     console.log(`📨 event: ${event}`, JSON.stringify(args));
+    // });
 
 	socket.on('friend_request', (data) => {
 		showToast(`${data.fromNickname} sent you a friend request.`);

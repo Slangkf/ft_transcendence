@@ -26,7 +26,8 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 	- `JWT_SECRET`: your JWT secret key.
 
 #### Note:
-	Rename the file to `.env` once all the values ​​have been entered.
+	- You can use a random key generator to generate a value for JWT_SECRET.
+	- Rename the file to `.env` once all the values ​​have been entered.
 
 2. ### **Build and run the services**
 
@@ -39,10 +40,20 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 
 3. ### **Once all services are running, the application will be available at:**
 
-		https://localhost:8888/  
+	https://localhost:8888/  
 
 #### Note:
 	The application uses a self-signed SSL certificate, so your browser may display a security warning.
+
+
+4. ### **Stop and clean up**
+
+	Press `CTRL+C` to stop the running containers.  
+	Then, use `docker compose down --volumes --rmi all` to remove the application.
+
+#### Note:
+	This removes all containers, images, and volumes for this project only.
+
 
 # Resources
 
@@ -107,6 +118,15 @@ Project Manager (PM) / Scrum Master: Facilitates team coordination and removes o
 - Ensures team communication.
 - Manages risks and blockers.
 
+### All team members
+
+Developers: Implement features and modules.
+
+- Write code for assigned features.
+- Participate in code reviews.
+- Test their implementations.
+- Document their work
+
 
 # Project Management
 
@@ -138,9 +158,9 @@ GitHub Actions was used to automatically verify code changes submitted to both p
 
 ### Frontend
 - SvelteKit for building the user interface and managing application routing.
+- Tailwind CSS for responsive and maintainable styling.
 - Socket.IO and HTTP requests for communication with the backend and live notifications.
 - Zod for client-side data validation and type-safe schema definitions.
-- Tailwind CSS for responsive and maintainable styling.
 
 **Why SvelteKit?**
 
@@ -199,12 +219,18 @@ Redis provides fast in-memory data storage, making it ideal for caching frequent
 - **Register / Login with email and password**  
 Allows users to create an account and authenticate using email credentials.  
 *Implemented by: jmen, ikayiban, tclouet*
-- **Personnal profile management**  
-Users can view and edit their profile information.  
-*Implemented by: ikayiban, tclouet*
 - **Logout**  
 Securely terminates the user session.  
 *Implemented by: jmen, ikayiban, tclouet*
+
+### User Management
+
+- **Personnal profile management**  
+Users can view and edit their profile information.  
+*Implemented by: ikayiban, tclouet*
+- **Notifications system**  
+Users receive notifications for actions.  
+*Implemented by: tclouet*
 
 ### Game system
 
@@ -222,7 +248,7 @@ Enables live multiplayer interactions with synchronized game state.
 *Implemented by: jmen, alandel*
 - **Game modes (solo, versus AI, multiplayer, tournament)**  
 Supports different gameplay modes depending on user choice.  
-**Implemented by: jmen, alandel, ikayiban, tclouet**
+*Implemented by: jmen, alandel, ikayiban, tclouet*
 
 ### Social features
 - **Friend requests**  
@@ -308,7 +334,7 @@ We implemented email/password authentication. JWT tokens are used to manage sess
 
 **Why?**  
 
-We implemented an AI opponent to allow users to play solo games without needing another player.  
+We implemented an AI opponent to allow users to play without needing another player.  
 
 **How?**  
 
@@ -481,15 +507,11 @@ We implemented a tournament flow where players compete in multiple rounds, with 
 
 - Designing an AI system that provides a balanced and engaging difficulty level.
 
-- Avoiding performance bottlenecks when querying relational data with complex relations.
-
 **Solutions:**
 
 - Refined the Prisma schema based on the evolution of functionalities.
 
 - Implemented AI logic with adjustable difficulty parameters.
-
-- Optimized database queries and relationships to reduce unnecessary joins and load.
 
 
 ## tclouet
@@ -506,7 +528,7 @@ We implemented a tournament flow where players compete in multiple rounds, with 
 
 - Managing real-time UI updates without causing state inconsistencies.
 
-- Designing a scalable frontend architecture for multiple complex features (chat, game, social).
+- Designing a scalable frontend architecture for multiple features (chat, game, social).
 
 - Handling synchronization between frontend state and backend events.
 
