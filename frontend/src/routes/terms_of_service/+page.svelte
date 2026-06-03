@@ -84,7 +84,7 @@
 	<section>
 		<h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4">9. Contact</h2>
 		<p class="text-sm sm:text-base md:text-xl p-4">
-			For any questions, please contact: contact@mail.com
+			For any questions, please contact: 42Braincontact@gmail.com
 		</p>
 	</section>
 </div>
