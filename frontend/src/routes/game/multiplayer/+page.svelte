@@ -51,6 +51,12 @@
   }
 
   onMount(() => {
+    // surface a notice if we were just bounced here (e.g. readiness timeout)
+    try {
+      const notice = sessionStorage.getItem('mp_notice');
+      if (notice) { error = notice; sessionStorage.removeItem('mp_notice'); }
+    } catch {}
+
     const socket = getGameSocket();
     if (!socket.connected) socket.connect();
     setupSocketListeners();

@@ -11,6 +11,7 @@ export function createTournamentRouter(tournamentService: TournamentService): Ro
     router.post('/join', controller.join);
     router.post('/leave', controller.leave);
     router.get('/my/room', controller.myRoom);
+    router.get('/:tournamentId/onchain', controller.onchain);
     router.get('/:tournamentId', controller.bracket);
 
     return router;

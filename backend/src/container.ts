@@ -40,6 +40,9 @@ import { TournamentService } from "./tournament/tournament.service";
 import { createTournamentRouter } from "./tournament/tournament.router";
 import { GameMapper } from "./game/game.mapper";
 import { PrismaGameRepository } from "./game/game.score";
+import { QuestionTimerService } from "./game/question-timer.service";
+import { ReadyTimerService } from "./game/ready-timer.service";
+import { BlockchainService } from "./blockchain/blockchain.service";
 
 
 export class Container{
@@ -72,6 +75,9 @@ export class Container{
     public chatService!: ChatService;
     public tournamentService!: TournamentService;
     public gamemapper!: GameMapper;
+    public questionTimer!: QuestionTimerService;
+    public readyTimer!: ReadyTimerService;
+    public blockchainService!: BlockchainService;
 
     //controller
     public friendController!: FriendshipController;
@@ -135,7 +141,16 @@ export class Container{
 
         this.gamemapper = new GameMapper(this.questionService);
 
-        //multigamefacade 
+        //per-question 30s deadline (server-authoritative)
+        this.questionTimer = new QuestionTimerService(this.gameRepo);
+
+        //per-room 45s readiness deadline (server-authoritative)
+        this.readyTimer = new ReadyTimerService(45_000);
+
+        //blockchain (Avalanche Fuji) — fail-soft if env is missing
+        this.blockchainService = new BlockchainService();
+
+        //multigamefacade
         this.multiplayerFacade = new MultiPlayerFacade(
             this.matchService,
             this.roomService,
@@ -145,6 +160,8 @@ export class Container{
             gameNs,
             redis,
             this.gamemapper,
+            this.questionTimer,
+            this.readyTimer,
         );
         //gameservice
         this.gameService = new GameService(
@@ -165,9 +182,13 @@ export class Container{
             this.gameEmitter,
             gameNs,
             redis,
+            this.readyTimer,
+            this.blockchainService,
         );
         // wire tournament back into the multiplayer facade so room→game linking can notify the bracket
         this.multiplayerFacade.setTournamentService(this.tournamentService);
+        // when a readiness deadline fires, resolve the stuck lobby (kick / forfeit)
+        this.readyTimer.setTimeoutCallback((roomId) => this.multiplayerFacade.handleReadyTimeout(roomId));
         
         //aiservice
         this.aiService = new AIService(this.gameService);
@@ -211,7 +232,11 @@ export class Container{
             this.sessionService,
             this.tournamentService,
             this.gamemapper,
+            this.questionTimer,
         );
+        // when the deadline fires, route the new state through the same broadcast/cleanup
+        // path used for a normal player answer
+        this.questionTimer.setAdvanceCallback((state, opts) => this.gameSocketHandler.handlePostAnswer(state, opts));
 
         this.friendSocketHandler = new FriendSocketHandler(
             friendNs,

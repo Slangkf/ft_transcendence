@@ -82,8 +82,15 @@ export class GameService{
         await this.gameRepository.delete(state.gameId);
         if (state.mode === 'MULTIPLAYER'){
             const roomId = state.roomId;
-            const userIds = Object.keys(state.players);
-            if (roomId){
+            if (state.tournamentId){
+                // Tournament matches: the TournamentService owns the player session
+                // lifecycle (promote winner to next match / spectator / finish).
+                // Only drop the finished match room — never reset sessions here,
+                // otherwise the winner already advanced to the next match is
+                // clobbered back to 'idle'.
+                if (roomId) await this.multiplayer.disbandRoom(roomId);
+            } else if (roomId){
+                const userIds = Object.keys(state.players);
                 await this.multiplayer.cleanupRoom(roomId, userIds);
             }
         }
