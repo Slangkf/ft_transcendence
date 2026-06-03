@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle est la capitale du Japon ?",
-      "options": ["Tokyo", "Osaka", "Kyoto", "Nagoya"],
-      "answer": "Tokyo"
+      "text": "Which US state is known as the 'Sunshine State'?",
+      "options": [
+        "California", 
+        "Texas", 
+        "Florida", 
+        "Arizona"
+      ],
+      "answer": "Florida"
     },
     {
-      "text": "François-Joseph Ier a été le dernier empereur d'Autriche.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Who wrote the 'I Have a Dream' speech?",
+      "options": [
+        "Malcolm X", 
+        "Martin Luther King Jr.", 
+        "Nelson Mandela", 
+        "Barack Obama"
+      ],
+      "answer": "Martin Luther King Jr."
     },
     {
-      "text": "Dans quel pays se trouve la plus haute chute d'eau du monde, le Salto Ángel ?",
-      "options": ["Venezuela", "Brésil", "Guyana", "Colombie"],
-      "answer": "Venezuela"
+      "text": "What is the name of the largest lake in Africa?",
+      "options": [
+        "Lake Malawi", 
+        "Lake Tanganyika", 
+        "Lake Victoria", 
+        "Lake Chad"
+      ],
+      "answer": "Lake Victoria"
     },
     {
-      "text": "Quelle est la capitale de l'Islande ?",
-      "options": ["Reykjavík", "Kópavogur", "Hafnarfjörður", "Akureyri"],
-      "answer": "Reykjavík"
+      "text": "Which famous wall was torn down in 1989?",
+      "options": [
+        "Hadrian's Wall", 
+        "Great Wall of China", 
+        "Berlin Wall", 
+        "Western Wall"
+      ],
+      "answer": "Berlin Wall"
     },
     {
-      "text": "Quelle mer se situe entre la Chine et la Corée ?",
-      "options": ["Mer Jaune", "Mer du Japon", "Mer de Chine orientale", "Mer de Chine méridionale"],
-      "answer": "Mer Jaune"
+      "text": "What is the capital city of Argentina?",
+      "options": [
+        "Santiago", 
+        "Montevideo", 
+        "Buenos Aires", 
+        "Rio de Janeiro"
+      ],
+      "answer": "Buenos Aires"
     },
     {
-      "text": "Kubilai Khan est le petit-fils de Gengis Khan.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who was the first man to reach the South Pole?",
+      "options": [
+        "Robert Falcon Scott", 
+        "Ernest Shackleton", 
+        "Roald Amundsen", 
+        "Edmund Hillary"
+      ],
+      "answer": "Roald Amundsen"
     },
     {
-      "text": "Laquelle de ces villes est la capitale de la Nouvelle-Zélande ?",
-      "options": ["Wellington", "Auckland", "Christchurch", "Hamilton"],
-      "answer": "Wellington"
+      "text": "Which country is known as the 'Land of the Rising Sun'?",
+      "options": [
+        "China", 
+        "Korea", 
+        "Japan", 
+        "Thailand"
+      ],
+      "answer": "Japan"
     },
     {
-      "text": "L'attaque de Pearl Harbor a eu lieu en quelle année ?",
-      "options": ["1941", "1940", "1942", "1939"],
-      "answer": "1941"
+      "text": "In which year did World War I begin?",
+      "options": [
+        "1912", 
+        "1913", 
+        "1914", 
+        "1915"
+      ],
+      "answer": "1914"
     },
     {
-      "text": "Qui était le chef de l'Union soviétique pendant la Seconde Guerre mondiale ?",
-      "options": ["Joseph Staline", "Vladimir Lénine", "Nikita Khrouchtchev", "Léon Trotski"],
-      "answer": "Joseph Staline"
+      "text": "What is the longest river in Europe?",
+      "options": [
+        "Danube River", 
+        "Rhine River", 
+        "Volga River", 
+        "Seine River"
+      ],
+      "answer": "Volga River"
     },
     {
-      "text": "Quel est le plus grand océan du monde ?",
-      "options": ["Océan Pacifique", "Océan Atlantique", "Océan Indien", "Océan Arctique"],
-      "answer": "Océan Pacifique"
+      "text": "Which ancient wonder was a giant statue of a Greek god?",
+      "options": [
+        "Colossus of Rhodes", 
+        "Statue of Zeus at Olympia", 
+        "Hanging Gardens", 
+        "Lighthouse of Alexandria"
+      ],
+      "answer": "Colossus of Rhodes"
     }
   ]
 }

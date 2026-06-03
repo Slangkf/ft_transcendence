@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Un donneur universel possède le groupe sanguin O négatif.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which animal is known as 'Man's Best Friend'?",
+      "options": [
+        "Cat", 
+        "Dog", 
+        "Horse", 
+        "Parrot"
+      ],
+      "answer": "Dog"
     },
     {
-      "text": "Quel est le poids d'un lingot d'or dans Fallout: New Vegas ?",
-      "options": ["35 livres", "30 livres", "40 livres", "32.50 livres"],
-      "answer": "35 livres"
+      "text": "What is the name of the Greek god of the sky?",
+      "options": [
+        "Ares", 
+        "Apollo", 
+        "Zeus", 
+        "Poseidon"
+      ],
+      "answer": "Zeus"
     },
     {
-      "text": "Quel est le mot allemand pour 'cuillère' ?",
-      "options": ["Löffel", "Gabel", "Messer", "Essstäbchen"],
-      "answer": "Löffel"
+      "text": "Which company is known for creating the iPhone?",
+      "options": [
+        "Samsung", 
+        "Google", 
+        "Microsoft", 
+        "Apple"
+      ],
+      "answer": "Apple"
     },
     {
-      "text": "Le jeu vidéo 'Donkey Kong' a été initialement conçu comme un jeu Popeye.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the fairy tale character who lost a glass slipper?",
+      "options": [
+        "Snow White", 
+        "Sleeping Beauty", 
+        "Cinderella", 
+        "Rapunzel"
+      ],
+      "answer": "Cinderella"
     },
     {
-      "text": "D'où est originaire l'ananas ?",
-      "options": ["Amérique du Sud", "Hawaï", "Europe", "Asie"],
-      "answer": "Amérique du Sud"
+      "text": "Who wrote 'The Adventures of Tom Sawyer'?",
+      "options": [
+        "Mark Twain", 
+        "Charles Dickens", 
+        "Ernest Hemingway", 
+        "Jane Austen"
+      ],
+      "answer": "Mark Twain"
     },
     {
-      "text": "Qui a inventé le Pastafarisme ?",
-      "options": ["Bobby Henderson", "Eric Tignor", "Bill Nye", "Zach Soldi"],
-      "answer": "Bobby Henderson"
+      "text": "What is the name of the famous clock tower in London?",
+      "options": [
+        "Big Ben", 
+        "Tower Bridge", 
+        "London Eye", 
+        "St. Paul's Cathedral"
+      ],
+      "answer": "Big Ben"
     },
     {
-      "text": "Laquelle des propositions suivantes décrit correctement l'ordre des mots en japonais ?",
-      "options": ["Sujet Objet Verbe", "Sujet Verbe Objet", "Verbe Sujet Objet", "Verbe Objet Sujet"],
-      "answer": "Sujet Objet Verbe"
+      "text": "Which sport is known as 'The Beautiful Game'?",
+      "options": [
+        "Basketball", 
+        "Tennis", 
+        "Football (Soccer)", 
+        "Baseball"
+      ],
+      "answer": "Football (Soccer)"
     },
     {
-      "text": "Le mot anglais 'news' provient des premières lettres des 4 directions cardinales (North, East, West, South).",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the first month of the year?",
+      "options": [
+        "December", 
+        "February", 
+        "January", 
+        "March"
+      ],
+      "answer": "January"
     },
     {
-      "text": "Quel type de bière est la bière mexicaine 'Corona' ?",
-      "options": ["Pale Lager", "India Pale Ale", "Pilsner", "Baltic Porter"],
-      "answer": "Pale Lager"
+      "text": "Which famous detective lives at 221B Baker Street?",
+      "options": [
+        "Hercule Poirot", 
+        "Sherlock Holmes", 
+        "Miss Marple", 
+        "Sam Spade"
+      ],
+      "answer": "Sherlock Holmes"
     },
     {
-      "text": "Comment s'appelle l'agence spatiale américaine ?",
-      "options": ["NASA", "ESA", "Roscosmos", "JAXA"],
-      "answer": "NASA"
+      "text": "What is the national flower of Japan?",
+      "options": [
+        "Rose", 
+        "Tulip", 
+        "Cherry Blossom", 
+        "Lotus"
+      ],
+      "answer": "Cherry Blossom"
     }
   ]
 }

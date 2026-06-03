@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Lequel de ces anciens États yougoslaves est enclavé (sans accès à la mer) ?",
-      "options": ["Serbie", "Bosnie-Herzégovine", "Monténégro", "Croatie"],
-      "answer": "Serbie"
+      "text": "Which European explorer discovered America in 1492?",
+      "options": [
+        "Ferdinand Magellan", 
+        "Marco Polo", 
+        "Christopher Columbus", 
+        "Vasco da Gama"
+      ],
+      "answer": "Christopher Columbus"
     },
     {
-      "text": "Lequel de ces noms de pays n'est pas écrit dans sa langue maternelle ?",
-      "options": ["Slovaško", "Suomi", "Schweiz", "Elláda"],
-      "answer": "Slovaško"
+      "text": "What is the longest wall in the world?",
+      "options": [
+        "Hadrian's Wall", 
+        "Berlin Wall", 
+        "Great Wall of China", 
+        "Western Wall"
+      ],
+      "answer": "Great Wall of China"
     },
     {
-      "text": "Laquelle de ces familles de langues est la plus controversée parmi les linguistes modernes ?",
-      "options": ["Altaïque", "Sino-tibétaine", "Dravidienne", "Indo-européenne"],
-      "answer": "Altaïque"
+      "text": "Which ocean is located between Africa and Australia?",
+      "options": [
+        "Atlantic Ocean",
+        "Pacific Ocean",
+        "Indian Ocean",
+        "Arctic Ocean"
+      ],
+      "answer": "Indian Ocean"
     },
     {
-      "text": "L'Érythrée, devenue le 182ème membre de l'ONU en 1993, se trouve sur quel continent ?",
-      "options": ["Afrique", "Europe", "Asie", "Amérique du Sud"],
-      "answer": "Afrique"
+      "text": "Who was the first President of the United States?",
+      "options": [
+        "Thomas Jefferson", 
+        "John Adams", 
+        "George Washington", 
+        "Benjamin Franklin"
+      ],
+      "answer": "George Washington"
     },
     {
-      "text": "L'archipel du Svalbard est une dépendance de quel pays ?",
-      "options": ["Norvège", "Danemark", "Islande", "Russie"],
-      "answer": "Norvège"
+      "text": "Which African country is the newest independent nation (gained independence in 2011)?",
+      "options": [
+        "South Sudan", 
+        "Eritrea", 
+        "Namibia", 
+        "Zimbabwe"
+      ],
+      "answer": "South Sudan"
     },
     {
-      "text": "En 1939, la Grande-Bretagne et la France ont déclaré la guerre à l'Allemagne après l'invasion de quel pays ?",
-      "options": ["Pologne", "Tchécoslovaquie", "Autriche", "Hongrie"],
-      "answer": "Pologne"
+      "text": "What is the name of the strait that separates Asia and North America?",
+      "options": [
+        "Strait of Gibraltar", 
+        "Bering Strait", 
+        "Strait of Malacca", 
+        "English Channel"
+      ],
+      "answer": "Bering Strait"
     },
     {
-      "text": "La guerre froide s'est terminée avec la mort de Joseph Staline.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which French leader was defeated at the Battle of Waterloo in 1815?",
+      "options": [
+        "Louis XIV", 
+        "Napoleon Bonaparte", 
+        "Charles de Gaulle", 
+        "Louis XVI"
+      ],
+      "answer": "Napoleon Bonaparte"
     },
     {
-      "text": "À quelle date la Déclaration d'indépendance des États-Unis a-t-elle été approuvée par le Second Congrès continental ?",
-      "options": ["4 juillet 1776", "4 juillet 1775", "4 juillet 1777", "4 juillet 1778"],
-      "answer": "4 juillet 1776"
+      "text": "Which river flows through Egypt?",
+      "options": [
+        "Niger River", 
+        "Congo River", 
+        "Nile River", 
+        "Zambezi River"
+      ],
+      "answer": "Nile River"
     },
     {
-      "text": "La bataille de Trafalgar a eu lieu le 23 octobre 1805.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which ancient wonder is located at Giza?",
+      "options": [
+        "Hanging Gardens", 
+        "Lighthouse of Alexandria", 
+        "Pyramids", 
+        "Colossus of Rhodes"
+      ],
+      "answer": "Pyramids"
     },
     {
-      "text": "Quel explorateur a mené la première expédition à faire le tour du monde ?",
-      "options": ["Fernand de Magellan", "Christophe Colomb", "Vasco de Gama", "James Cook"],
-      "answer": "Fernand de Magellan"
+      "text": "What is the smallest country in Europe by population?",
+      "options": [
+        "Monaco", 
+        "San Marino", 
+        "Liechtenstein", 
+        "Vatican City"
+      ],
+      "answer": "Vatican City"
     }
   ]
 }

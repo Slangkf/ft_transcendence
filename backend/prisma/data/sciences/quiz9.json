@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Les humains possèdent 23 paires de chromosomes.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which planet in our solar system rotates clockwise on its axis?",
+      "options": [
+        "Mars",
+        "Venus",
+        "Jupiter",
+        "Neptune"
+      ],
+      "answer": "Venus"
     },
     {
-      "text": "Que signifie 'WWW' ?",
-      "options": ["World Wide Web", "World Wide Word", "Web World Wide", "World Web Wide"],
-      "answer": "World Wide Web"
+      "text": "What is the name of the process by which liquid water turns into ice?",
+      "options": [
+        "Melting",
+        "Freezing",
+        "Condensation",
+        "Evaporation"
+      ],
+      "answer": "Freezing"
     },
     {
-      "text": "Une lentille convexe fait converger les rayons lumineux.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which part of a plant is responsible for making seeds or fruit?",
+      "options": [
+        "Root",
+        "Stem",
+        "Flower",
+        "Leaf"
+      ],
+      "answer": "Flower"
     },
     {
-      "text": "Lequel de ces termes est un langage de programmation ?",
-      "options": ["Python", "Anaconda", "Cobra", "Viper"],
-      "answer": "Python"
+      "text": "What is the common term for the reflection of sound waves back to the listener?",
+      "options": [
+        "Echo",
+        "Shadow",
+        "Vibration",
+        "Pitch"
+      ],
+      "answer": "Echo"
     },
     {
-      "text": "Combien de planètes compte notre système solaire ?",
-      "options": ["8", "7", "9", "10"],
-      "answer": "8"
+      "text": "Which gas gives protection against dangerous rays from space and makes up the ozone layer?",
+      "options": [
+        "Oxygen",
+        "Ozone",
+        "Hydrogen",
+        "Carbon Monoxide"
+      ],
+      "answer": "Ozone"
     },
     {
-      "text": "Quelle force attire les objets vers la Terre ?",
-      "options": ["Gravité", "Magnétisme", "Friction", "Inertie"],
-      "answer": "Gravité"
+      "text": "What is the largest organ on the outside of the human body?",
+      "options": [
+        "Liver",
+        "Brain",
+        "Skin",
+        "Lungs"
+      ],
+      "answer": "Skin"
     },
     {
-      "text": "Quel est le carré de 9 ?",
-      "options": ["81", "18", "72", "90"],
-      "answer": "81"
+      "text": "What type of energy does a stretched rubber band have before it is released?",
+      "options": [
+        "Kinetic Energy",
+        "Potential Energy",
+        "Sound Energy",
+        "Light Energy"
+      ],
+      "answer": "Potential Energy"
     },
     {
-      "text": "Quel est le plus petit nombre premier ?",
-      "options": ["2", "1", "3", "5"],
-      "answer": "2"
+      "text": "Which chemical element is found in all organic life forms on Earth?",
+      "options": [
+        "Carbon",
+        "Helium",
+        "Gold",
+        "Iron"
+      ],
+      "answer": "Carbon"
     },
     {
-      "text": "Quelle couleur peut être produite chez les roses, même par modification génétique ?",
-      "options": ["Bleu", "Noir", "Orange", "Marron"],
-      "answer": "Bleu"
+      "text": "What kind of simple machine is a steering wheel or a doorknob?",
+      "options": [
+        "Lever",
+        "Pulley",
+        "Wheel and Axle",
+        "Wedge"
+      ],
+      "answer": "Wheel and Axle"
     },
     {
-      "text": "Quel est le nom linnéen du pommier domestique ?",
-      "options": ["Malus pumila", "Malus americana", "Pomus domestica", "Appelus delectica"],
-      "answer": "Malus pumila"
+      "text": "Which unit is used to measure the intensity or loudness of a sound?",
+      "options": [
+        "Decibel",
+        "Watt",
+        "Volt",
+        "Meter"
+      ],
+      "answer": "Decibel"
     }
   ]
 }

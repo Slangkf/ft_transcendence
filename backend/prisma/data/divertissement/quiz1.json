@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quel était le vrai nom de l'actrice Frances Ethel Gumm ?",
-      "options": ["Judy Garland", "Doris Day", "Julie Andrews", "Marilyn Monroe"],
-      "answer": "Judy Garland"
+      "text": "In which animated movie do we find the character Simba?",
+      "options": [
+        "The Lion King",
+        "Aladdin",
+        "Beauty and the Beast",
+        "Tarzan"
+      ],
+      "answer": "The Lion King"
     },
     {
-      "text": "Qui a écrit 'Le Conte de deux cités' (A Tale of Two Cities) ?",
-      "options": ["Charles Dickens", "Charles Darwin", "Mark Twain", "Roald Dahl"],
-      "answer": "Charles Dickens"
+      "text": "Who directed the movie 'Titanic'?",
+      "options": [
+        "Steven Spielberg",
+        "James Cameron",
+        "Ridley Scott",
+        "Tim Burton"
+      ],
+      "answer": "James Cameron"
     },
     {
-      "text": "Quel est le nom du minigun du Heavy Weapons Guy dans Team Fortress 2 ?",
-      "options": ["Sasha", "Betty", "Anna", "Diana"],
-      "answer": "Sasha"
+      "text": "What is the name of Mickey Mouse's dog?",
+      "options": [
+        "Pluto",
+        "Goofy",
+        "Donald",
+        "Rantanplan"
+      ],
+      "answer": "Pluto"
     },
     {
-      "text": "Qui a créé la série 'Adventure Time' sur Cartoon Network ?",
-      "options": ["Pendleton Ward", "J. G. Quintel", "Ben Bocquelet", "Rebecca Sugar"],
-      "answer": "Pendleton Ward"
+      "text": "In which fictional city does Batman live?",
+      "options": [
+        "Metropolis",
+        "Gotham City",
+        "Central City",
+        "Star City"
+      ],
+      "answer": "Gotham City"
     },
     {
-      "text": "Dracula est détruit par le contact avec la lumière du soleil.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which actor plays Iron Man in the Marvel Cinematic Universe?",
+      "options": [
+        "Chris Evans",
+        "Robert Downey Jr.",
+        "Chris Hemsworth",
+        "Mark Ruffalo"
+      ],
+      "answer": "Robert Downey Jr."
     },
     {
-      "text": "Quel super-héros a été incarné au cinéma par les acteurs Michael Keaton, Val Kilmer, George Clooney et Christian Bale ?",
-      "options": ["Batman", "Superman", "Iron Man", "Spiderman"],
-      "answer": "Batman"
+      "text": "Which TV series features the Stark and Lannister families?",
+      "options": [
+        "Game of Thrones",
+        "Vikings",
+        "The Witcher",
+        "Breaking Bad"
+      ],
+      "answer": "Game of Thrones"
     },
     {
-      "text": "Michael Jackson avait un python de compagnie nommé 'Crusher'.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the wizarding school in Harry Potter?",
+      "options": [
+        "Hogwarts",
+        "Beauxbatons",
+        "Durmstrang",
+        "Ilvermorny"
+      ],
+      "answer": "Hogwarts"
     },
     {
-      "text": "Dans le 9ème film Pokémon, qui est le Prince de la Mer ?",
-      "options": ["Manaphy", "Ash", "May", "Phantom"],
-      "answer": "Manaphy"
+      "text": "Which animation studio created the movie 'Toy Story'?",
+      "options": [
+        "DreamWorks",
+        "Pixar",
+        "Disney",
+        "Illumination"
+      ],
+      "answer": "Pixar"
     },
     {
-      "text": "Il y a un total de 20 courses dans la saison 2016 de Formule 1.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Who is the main character in the 'Matrix' saga?",
+      "options": [
+        "Neo",
+        "Morpheus",
+        "Trinity",
+        "Agent Smith"
+      ],
+      "answer": "Neo"
     },
     {
-      "text": "En quelle année est sorti le tube de Rick Astley 'Never Gonna Give You Up' ?",
-      "options": ["1987", "1985", "1986", "1988"],
-      "answer": "1987"
+      "text": "Which of these is NOT one of the six main characters in the series 'Friends'?",
+      "options": [
+        "Rachel",
+        "Monica",
+        "Gunther",
+        "Joey"
+      ],
+      "answer": "Gunther"
     }
   ]
 }

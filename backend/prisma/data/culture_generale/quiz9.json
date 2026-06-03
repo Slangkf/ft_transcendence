@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Que fabrique et vend un chapelier ?",
-      "options": ["Des chapeaux", "Des chaussures", "Des ceintures", "Des chemises"],
-      "answer": "Des chapeaux"
+      "text": "What is the mathematical value of 5 factorial (5!)?",
+      "options": [
+        "25",
+        "60",
+        "120",
+        "500"
+      ],
+      "answer": "120"
     },
     {
-      "text": "Dans quel pays la Hyundai Motor Company a-t-elle été fondée ?",
-      "options": ["Corée du Sud", "Russie", "Japon", "Chine"],
-      "answer": "Corée du Sud"
+      "text": "Which writer created the character of Sherlock Holmes?",
+      "options": [
+        "Agatha Christie",
+        "Arthur Conan Doyle",
+        "Edgar Allan Poe",
+        "Jules Verne"
+      ],
+      "answer": "Arthur Conan Doyle"
     },
     {
-      "text": "Dans quel État américain se trouve la Zone 51 ?",
-      "options": ["Nevada", "Arizona", "Nouveau-Mexique", "Utah"],
-      "answer": "Nevada"
+      "text": "What is the chemical symbol for iron?",
+      "options": [
+        "Ir",
+        "Fe",
+        "Au",
+        "F"
+      ],
+      "answer": "Fe"
     },
     {
-      "text": "Laquelle de ces entreprises ne fabrique PAS d'automobiles ?",
-      "options": ["Ducati", "Nissan", "GMC", "Fiat"],
-      "answer": "Ducati"
+      "text": "What is the capital of Poland?",
+      "options": [
+        "Krakow",
+        "Warsaw",
+        "Gdansk",
+        "Poznan"
+      ],
+      "answer": "Warsaw"
     },
     {
-      "text": "Un escargot peut dormir pendant trois ans.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which Queen of France was the wife of Louis XVI?",
+      "options": [
+        "Marie de' Medici",
+        "Catherine de' Medici",
+        "Marie Antoinette",
+        "Anne of Austria"
+      ],
+      "answer": "Marie Antoinette"
     },
     {
-      "text": "Le cœur d'une crevette est situé dans sa tête.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "In which country is the Taj Mahal located?",
+      "options": [
+        "India",
+        "Egypt",
+        "Turkey",
+        "China"
+      ],
+      "answer": "India"
     },
     {
-      "text": "En quelle année le robot jouet RoboSapien est-il sorti ?",
-      "options": ["2004", "2000", "2001", "2006"],
-      "answer": "2004"
+      "text": "In what year did the Berlin Wall fall?",
+      "options": [
+        "1985",
+        "1989",
+        "1991",
+        "1993"
+      ],
+      "answer": "1989"
     },
     {
-      "text": "Comment décrire au mieux le Quadrangularis Reversum ?",
-      "options": ["Un instrument de percussion", "Un bâtiment de l'Université d'Oxford", "Un coup d'échecs", "Un théorème géométrique"],
-      "answer": "Un instrument de percussion"
+      "text": "What is the largest organ in the human body?",
+      "options": [
+        "The liver",
+        "The brain",
+        "The skin",
+        "The lungs"
+      ],
+      "answer": "The skin"
     },
     {
-      "text": "Dans un calendrier grégorien standard, combien de mois commencent par la lettre 'J' ?",
-      "options": ["3", "2", "4", "1"],
-      "answer": "3"
+      "text": "Other than Mexico and Canada, what country's territory lies closest to the United States?",
+      "options": [
+        "Russia",
+        "Cuba",
+        "The Bahamas",
+        "The United Kingdom"
+      ],
+      "answer": "Russia"
     },
     {
-      "text": "Quelle est la capitale de l'Allemagne ?",
-      "options": ["Berlin", "Munich", "Hambourg", "Francfort"],
-      "answer": "Berlin"
+      "text": "Who directed the movie 'Jurassic Park'?",
+      "options": [
+        "George Lucas",
+        "James Cameron",
+        "Steven Spielberg",
+        "Ridley Scott"
+      ],
+      "answer": "Steven Spielberg"
     }
   ]
 }

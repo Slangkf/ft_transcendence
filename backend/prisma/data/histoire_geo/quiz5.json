@@ -4,54 +4,94 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle est la plus grande île du monde ?",
-      "options": ["Groenland", "Nouvelle-Guinée", "Bornéo", "Madagascar"],
-      "answer": "Groenland"
+      "text": "In which century did the French Revolution take place?",
+      "options": [
+        "16th century",
+        "17th century",
+        "18th century",
+        "19th century"
+      ],
+      "answer": "18th century"
     },
     {
-      "text": "Quel pays est aussi connu sous le nom de Terre du Soleil Levant ?",
-      "options": ["Japon", "Chine", "Thaïlande", "Corée du Sud"],
-      "answer": "Japon"
+      "text": "What event is considered the symbolic start of the French Revolution?",
+      "options": [
+        "The Tennis Court Oath",
+        "The Storming of the Bastille",
+        "The Declaration of the Rights of Man and of the Citizen",
+        "The Reign of Terror"
+      ],
+      "answer": "The Storming of the Bastille"
     },
     {
-      "text": "La majorité des personnes vivant sous l'Empire byzantin s'appelaient elles-mêmes Romains.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What was the main slogan of the French Revolution?",
+      "options": [
+        "Peace, Bread, Land",
+        "Liberty, Equality, Fraternity",
+        "Workers of the world, unite!",
+        "God, King, and Country"
+      ],
+      "answer": "Liberty, Equality, Fraternity"
     },
     {
-      "text": "Le mont Everest est situé à la frontière entre quels pays ?",
-      "options": ["Népal et Chine", "Inde et Népal", "Bhoutan et Chine", "Inde et Chine"],
-      "answer": "Népal et Chine"
+      "text": "What year was the First French Republic proclaimed?",
+      "options": [
+        "1789",
+        "1792",
+        "1799",
+        "1804"
+      ],
+      "answer": "1792"
     },
     {
-      "text": "La mer Morte est située entre quels pays ?",
-      "options": ["Jordanie et Israël", "Jordanie et Égypte", "Israël et Égypte", "Syrie et Israël"],
-      "answer": "Jordanie et Israël"
+      "text": "What season does Australia experience in December?",
+      "options": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Autumn"
+      ],
+      "answer": "Summer"
     },
     {
-      "text": "Le char M41 Walker Bulldog est toujours en service dans certains pays aujourd'hui.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which European country is shaped like a boot?",
+      "options": [
+        "Spain",
+        "France",
+        "Greece",
+        "Italy"
+      ],
+      "answer": "Italy"
     },
     {
-      "text": "Quelle est la capitale du Brésil ?",
-      "options": ["Brasília", "Rio de Janeiro", "São Paulo", "Salvador"],
-      "answer": "Brasília"
+      "text": "In which country can you find the ancient monument Stonehenge?",
+      "options": [
+        "England",
+        "Scotland",
+        "Ireland",
+        "France"
+      ],
+      "answer": "England"
     },
     {
-      "text": "Quel empire était dirigé par Gengis Khan ?",
-      "options": ["Empire Mongol", "Empire Ottoman", "Empire Romain", "Empire Moghol"],
-      "answer": "Empire Mongol"
+      "text": "What is the capital city of Australia?",
+      "options": [
+        "Sydney",
+        "Melbourne",
+        "Canberra",
+        "Brisbane"
+      ],
+      "answer": "Canberra"
     },
     {
-      "text": "En quelle année la mission Apollo 11 a-t-elle atterri sur la lune ?",
-      "options": ["1969", "1968", "1970", "1971"],
-      "answer": "1969"
-    },
-    {
-      "text": "Qui était l'auteur principal de la Déclaration d'indépendance des États-Unis ?",
-      "options": ["Thomas Jefferson", "Benjamin Franklin", "George Washington", "John Adams"],
-      "answer": "Thomas Jefferson"
+      "text": "Which famous ocean liner sank in the North Atlantic Ocean in 1912?",
+      "options": [
+        "Titanic",
+        "Britannic",
+        "Olympic",
+        "Lusitania"
+      ],
+      "answer": "Titanic"
     }
   ]
 }

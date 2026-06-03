@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quel canal relie la mer Méditerranée à la mer Rouge ?",
-      "options": ["Canal de Suez", "Canal de Panama", "Canal du Sinaï", "Canal du Karakoum"],
-      "answer": "Canal de Suez"
+      "text": "Which fruit is known for keeping doctors away?",
+      "options": [
+        "Orange", 
+        "Banana", 
+        "Apple", 
+        "Grape"
+      ],
+      "answer": "Apple"
     },
     {
-      "text": "Un double magnum de champagne contient 3 litres.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the pirate in Peter Pan?",
+      "options": [
+        "Blackbeard", 
+        "Long John Silver", 
+        "Captain Hook", 
+        "Jack Sparrow"
+      ],
+      "answer": "Captain Hook"
     },
     {
-      "text": "Quelle montagne possède le plus haut sommet d'Europe ?",
-      "options": ["Mont Elbrouz, Russie", "Chkhara, Géorgie", "Mont Ararat, Turquie", "Mont Blanc, France"],
-      "answer": "Mont Elbrouz, Russie"
+      "text": "Which country is famous for pizza and pasta?",
+      "options": [
+        "France", 
+        "Spain", 
+        "Greece", 
+        "Italy"
+      ],
+      "answer": "Italy"
     },
     {
-      "text": "Quel est le plus long pont du monde ?",
-      "options": ["Grand pont de Danyang-Kunshan", "Chaussée du lac Pontchartrain", "Pont du marais de Manchac", "Pont de la baie de Hangzhou"],
-      "answer": "Grand pont de Danyang-Kunshan"
+      "text": "How many days are there in a leap year?",
+      "options": [
+        "365", 
+        "364", 
+        "366", 
+        "367"
+      ],
+      "answer": "366"
     },
     {
-      "text": "La baleine bleue est le plus grand animal ayant jamais vécu.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who is the main character in 'The Legend of Zelda' video game series?",
+      "options": [
+        "Zelda", 
+        "Link", 
+        "Ganon", 
+        "Epona"
+      ],
+      "answer": "Link"
     },
     {
-      "text": "Qui détient le record du monde du 100 m sprint ?",
-      "options": ["Usain Bolt", "Tyson Gay", "Yohan Blake", "Justin Gatlin"],
-      "answer": "Usain Bolt"
+      "text": "What is the name of the toy cowboy in 'Toy Story'?",
+      "options": [
+        "Buzz Lightyear", 
+        "Woody", 
+        "Jessie", 
+        "Rex"
+      ],
+      "answer": "Woody"
     },
     {
-      "text": "Quel est le plus grand organe du corps humain ?",
-      "options": ["La peau", "Le foie", "Les poumons", "Le cerveau"],
-      "answer": "La peau"
+      "text": "Which gas do plants absorb from the air?",
+      "options": [
+        "Oxygen", 
+        "Nitrogen", 
+        "Hydrogen", 
+        "Carbon Dioxide"
+      ],
+      "answer": "Carbon Dioxide"
     },
     {
-      "text": "Dans le jeu 'Cluedo', lequel de ces personnages n'est PAS jouable ?",
-      "options": ["Professeur Violet", "Mademoiselle Rose", "Révérend Olive", "Madame Brunette"],
-      "answer": "Madame Brunette"
+      "text": "What is the name of the Disney movie about a lion cub prince?",
+      "options": [
+        "Tarzan", 
+        "The Jungle Book", 
+        "The Lion King", 
+        "Brother Bear"
+      ],
+      "answer": "The Lion King"
     },
     {
-      "text": "Le point d'exclamation était à l'origine utilisé comme symbole de question dans certaines langues.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which country has the flag with a maple leaf?",
+      "options": [
+        "United States", 
+        "Canada", 
+        "Australia", 
+        "Ireland"
+      ],
+      "answer": "Canada"
     },
     {
-      "text": "Quel est le nom de la monnaie utilisée au Japon ?",
-      "options": ["Yen", "Won", "Yuan", "Ringgit"],
-      "answer": "Yen"
+      "text": "What is the name of the wizarding school in 'Harry Potter'?",
+      "options": [
+        "Beauxbatons", 
+        "Durmstrang", 
+        "Hogwarts", 
+        "Ilvermorny"
+      ],
+      "answer": "Hogwarts"
     }
   ]
 }

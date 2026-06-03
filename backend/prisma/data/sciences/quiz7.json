@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "La lumière est à la fois une particule et une onde.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which planet is the coldest planet in our solar system?",
+      "options": [
+        "Mars",
+        "Jupiter",
+        "Neptune",
+        "Uranus"
+      ],
+      "answer": "Uranus"
     },
     {
-      "text": "Que signifie 'USB' ?",
-      "options": ["Universal Serial Bus", "Universal Smart Bus", "Unique Serial Bus", "User Serial Bus"],
-      "answer": "Universal Serial Bus"
+      "text": "What is the name of the energy stored in food and batteries?",
+      "options": [
+        "Kinetic Energy",
+        "Chemical Energy",
+        "Thermal Energy",
+        "Light Energy"
+      ],
+      "answer": "Chemical Energy"
     },
     {
-      "text": "Quel moteur de recherche est le plus utilisé au monde ?",
-      "options": ["Google", "Bing", "Yahoo", "DuckDuckGo"],
-      "answer": "Google"
+      "text": "Which material is a natural magnet found in the ground?",
+      "options": [
+        "Lodestone",
+        "Copper",
+        "Gold",
+        "Aluminum"
+      ],
+      "answer": "Lodestone"
     },
     {
-      "text": "Qui a développé la théorie de la relativité ?",
-      "options": ["Albert Einstein", "Isaac Newton", "Galileo Galilei", "Stephen Hawking"],
-      "answer": "Albert Einstein"
+      "text": "What type of cloud is fluffy, white, and looks like cotton candy?",
+      "options": [
+        "Stratus",
+        "Cumulus",
+        "Cirrus",
+        "Nimbus"
+      ],
+      "answer": "Cumulus"
     },
     {
-      "text": "Quelle planète est la plus proche du Soleil ?",
-      "options": ["Mercure", "Vénus", "Terre", "Mars"],
-      "answer": "Mercure"
+      "text": "Which part of the bird's body helps it control its direction while flying?",
+      "options": [
+        "Beak",
+        "Wings",
+        "Tail",
+        "Talons"
+      ],
+      "answer": "Tail"
     },
     {
-      "text": "Combien de côtés a un triangle ?",
-      "options": ["3", "4", "5", "6"],
-      "answer": "3"
+      "text": "What is the term for an animal that naturally hunts and eats other animals?",
+      "options": [
+        "Prey",
+        "Predator",
+        "Producer",
+        "Herbivore"
+      ],
+      "answer": "Predator"
     },
     {
-      "text": "Combien font 15 % de 100 ?",
-      "options": ["15", "10", "20", "5"],
-      "answer": "15"
+      "text": "Which human sense relies on the olfactory nerve?",
+      "options": [
+        "Sight",
+        "Hearing",
+        "Smell",
+        "Taste"
+      ],
+      "answer": "Smell"
     },
     {
-      "text": "Quel est le plus grand organe du corps humain ?",
-      "options": ["Peau", "Foie", "Cerveau", "Cœur"],
-      "answer": "Peau"
+      "text": "What color is created when you mix all the colors of light together?",
+      "options": [
+        "Black",
+        "White",
+        "Brown",
+        "Gray"
+      ],
+      "answer": "White"
     },
     {
-      "text": "Quel est le symbole chimique de l'Or ?",
-      "options": ["Au", "Ag", "Fe", "Pb"],
-      "answer": "Au"
+      "text": "What is the name of the hard outer shell that protects insects?",
+      "options": [
+        "Endoskeleton",
+        "Exoskeleton",
+        "Spine",
+        "Cartilage"
+      ],
+      "answer": "Exoskeleton"
     },
     {
-      "text": "Un triangle équilatéral a trois côtés égaux.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which chemical element gives a diamond its structure?",
+      "options": [
+        "Carbon",
+        "Oxygen",
+        "Silicon",
+        "Iron"
+      ],
+      "answer": "Carbon"
     }
   ]
 }

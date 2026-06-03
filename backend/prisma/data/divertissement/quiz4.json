@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle actrice a épousé Michael Douglas en 2000 ?",
-      "options": ["Catherine Zeta-Jones", "Ruth Jones", "Pam Ferris", "Sara Sugarman"],
-      "answer": "Catherine Zeta-Jones"
+      "text": "In which fictional town does the Simpson family live?",
+      "options": [
+        "Shelbyville",
+        "Springfield",
+        "Quahog",
+        "South Park"
+      ],
+      "answer": "Springfield"
     },
     {
-      "text": "Dans 'Les Quatre Filles du docteur March', laquelle des sœurs March a épousé Laurie ?",
-      "options": ["Amy", "Beth", "Jo", "Meg"],
-      "answer": "Amy"
+      "text": "What is Homer Simpson's job?",
+      "options": [
+        "Safety Inspector at the nuclear power plant",
+        "Police officer",
+        "School principal",
+        "Bar owner"
+      ],
+      "answer": "Safety Inspector at the nuclear power plant"
     },
     {
-      "text": "Dans la série de jeux 'The Legend of Zelda', quel a été le premier jeu en 3D ?",
-      "options": ["Ocarina of Time", "Majora's Mask", "A Link to the Past", "The Wind Waker"],
-      "answer": "Ocarina of Time"
+      "text": "What is the name of the family dog?",
+      "options": [
+        "Snowball",
+        "Pluto",
+        "Santa's Little Helper",
+        "Snoopy"
+      ],
+      "answer": "Santa's Little Helper"
     },
     {
-      "text": "Le film 'L'Étrange Noël de monsieur Jack' a été entièrement réalisé avec des objets physiques.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What musical instrument does Lisa play?",
+      "options": [
+        "Violin",
+        "Flute",
+        "Saxophone",
+        "Piano"
+      ],
+      "answer": "Saxophone"
     },
     {
-      "text": "Nickelodeon appartient à quelle société mère ?",
-      "options": ["Viacom", "CBS", "FOX", "ABC"],
-      "answer": "Viacom"
+      "text": "Who is the creator of The Simpsons?",
+      "options": [
+        "Matt Groening",
+        "Seth MacFarlane",
+        "Stephen Hillenburg",
+        "Trey Parker"
+      ],
+      "answer": "Matt Groening"
     },
     {
-      "text": "Dans le film 'Harry Potter et l'Ordre du Phénix', pourquoi le cri de Harry Potter après la mort de Sirius Black a-t-il été coupé ?",
-      "options": ["Trop déchirant", "Trop fort", "Trop dur", "Trop violent"],
-      "answer": "Trop déchirant"
+      "text": "What is the name of Homer's favorite beer?",
+      "options": [
+        "Duff",
+        "Budweiser",
+        "Puff",
+        "Buzz Beer"
+      ],
+      "answer": "Duff"
     },
     {
-      "text": "Shaquille O’Neal n'a réussi qu'un seul panier à trois points dans sa carrière.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who is the ultra-religious neighbor of the family?",
+      "options": [
+        "Moe Szyslak",
+        "Ned Flanders",
+        "Seymour Skinner",
+        "Barney Gumble"
+      ],
+      "answer": "Ned Flanders"
     },
     {
-      "text": "Dans 'One Piece', qui confirme l'existence du trésor légendaire, le One Piece ?",
-      "options": ["Edward 'Barbe Blanche' Newgate", "L'ancien amiral en chef Sengoku", "Le Roi des Pirates Gol D Roger", "Silvers Rayleigh"],
-      "answer": "Edward 'Barbe Blanche' Newgate"
+      "text": "What is the name of the clown from Bart and Lisa's favorite TV show?",
+      "options": [
+        "Krusty the Clown",
+        "Sideshow Bob",
+        "Pennywise",
+        "Ronald McDonald"
+      ],
+      "answer": "Krusty the Clown"
     },
     {
-      "text": "Dans Resident Evil 4, le Chicago Typewriter a des munitions infinies.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the baby of the family?",
+      "options": [
+        "Maggie",
+        "Bart",
+        "Lisa",
+        "Hugo"
+      ],
+      "answer": "Maggie"
     },
     {
-      "text": "Quel est le nom de famille du personnage de Daryl dans la série d'AMC 'The Walking Dead' ?",
-      "options": ["Dixon", "Grimes", "Dickinson", "Dicketson"],
-      "answer": "Dixon"
+      "text": "Who runs the local tavern where Homer spends his time?",
+      "options": [
+        "Barney Gumble",
+        "Ned Flanders",
+        "Moe Szyslak",
+        "Apu Nahasapeemapetilon"
+      ],
+      "answer": "Moe Szyslak"
     }
   ]
 }

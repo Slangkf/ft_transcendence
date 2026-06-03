@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Qui est considéré comme le père de l'ordinateur ?",
-      "options": ["Charles Babbage", "Alan Turing", "Ada Lovelace", "Steve Jobs"],
-      "answer": "Charles Babbage"
+      "text": "Which celestial body is the Earth's only natural satellite?",
+      "options": [
+        "The Sun",
+        "The Moon",
+        "Mars",
+        "Venus"
+      ],
+      "answer": "The Moon"
     },
     {
-      "text": "Quel est le langage principal utilisé pour le développement web ?",
-      "options": ["HTML", "Python", "Java", "C++"],
-      "answer": "HTML"
+      "text": "What is the common name for the chemical compound Sodium Chloride?",
+      "options": [
+        "Sugar",
+        "Baking Soda",
+        "Table Salt",
+        "Vinegar"
+      ],
+      "answer": "Table Salt"
     },
     {
-      "text": "Quelle est la plus grande planète de notre système solaire ?",
-      "options": ["Jupiter", "Saturne", "Terre", "Mars"],
-      "answer": "Jupiter"
+      "text": "Which organ in the human body is responsible for filtering waste from the blood?",
+      "options": [
+        "Stomach",
+        "Kidneys",
+        "Heart",
+        "Lungs"
+      ],
+      "answer": "Kidneys"
     },
     {
-      "text": "Quel est le nom de l'étoile la plus proche de la Terre ?",
-      "options": ["Le Soleil", "Proxima Centauri", "Sirius", "Bételgeuse"],
-      "answer": "Le Soleil"
+      "text": "What pigment in human red blood cells carries oxygen throughout the body?",
+      "options": [
+        "Melanin",
+        "Chlorophyll",
+        "Hemoglobin",
+        "Insulin"
+      ],
+      "answer": "Hemoglobin"
     },
     {
-      "text": "En Python, 'list.append()' ajoute un élément au début de la liste.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What type of animal feeds exclusively on plants?",
+      "options": [
+        "Carnivore",
+        "Herbivore",
+        "Omnivore",
+        "Detritivore"
+      ],
+      "answer": "Herbivore"
     },
     {
-      "text": "Combien de secondes y a-t-il dans une heure ?",
-      "options": ["3600", "60", "1200", "2400"],
-      "answer": "3600"
+      "text": "Which instrument is used by scientists to see tiny organisms like bacteria?",
+      "options": [
+        "Telescope",
+        "Periscope",
+        "Microscope",
+        "Stethoscope"
+      ],
+      "answer": "Microscope"
     },
     {
-      "text": "Quelle est la somme des angles d'un triangle ?",
-      "options": ["180", "90", "360", "270"],
-      "answer": "180"
+      "text": "What is the primary source of light and energy for our solar system?",
+      "options": [
+        "The Sun",
+        "The Milky Way",
+        "The Earth's Core",
+        "The Moon"
+      ],
+      "answer": "The Sun"
     },
     {
-      "text": "Quelle planète est surnommée la Planète Rouge ?",
-      "options": ["Mars", "Vénus", "Jupiter", "Saturne"],
-      "answer": "Mars"
+      "text": "What is the lightest chemical element on the periodic table?",
+      "options": [
+        "Helium",
+        "Hydrogen",
+        "Oxygen",
+        "Lithium"
+      ],
+      "answer": "Hydrogen"
     },
     {
-      "text": "Un 'bit' est la plus petite unité de données dans un ordinateur.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which geological feature is formed when hot magma erupts through the Earth's crust?",
+      "options": [
+        "Canyon",
+        "Glacier",
+        "Volcano",
+        "Mountain Pass"
+      ],
+      "answer": "Volcano"
     },
     {
-      "text": "Quel est le symbole chimique de l'eau ?",
-      "options": ["H2O", "O2", "CO2", "HO"],
-      "answer": "H2O"
+      "text": "What temperature scale is widely used in science alongside the Celsius scale?",
+      "options": [
+        "Fahrenheit",
+        "Kelvin",
+        "Rankine",
+        "Newton"
+      ],
+      "answer": "Kelvin"
     }
   ]
 }

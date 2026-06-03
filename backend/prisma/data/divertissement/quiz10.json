@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Dans la série 'The Office', avec qui Michael Scott finit-il par s'installer ?",
-      "options": ["Holly Flax", "Angela Martin", "Jan Levinson", "Pam Beesly"],
-      "answer": "Holly Flax"
+      "text": "Who directed the movie 'Inception'?",
+      "options": [
+        "Steven Spielberg",
+        "Christopher Nolan",
+        "Quentin Tarantino",
+        "James Cameron"
+      ],
+      "answer": "Christopher Nolan"
     },
     {
-      "text": "Twenty One Pilots a créé la chanson 'The Motion' avec Sampha.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "In the series 'Friends', how many seasons are there?",
+      "options": [
+        "8",
+        "9",
+        "10",
+        "12"
+      ],
+      "answer": "10"
     },
     {
-      "text": "Quel album de Coldplay a remporté le Grammy du meilleur album rock en 2009 ?",
-      "options": ["Viva La Vida", "X&Y", "Mylo Xyloto", "A Rush Of Blood"],
-      "answer": "Viva La Vida"
+      "text": "Which movie won the Oscar for Best Picture in 2020?",
+      "options": [
+        "1917",
+        "Parasite",
+        "Joker",
+        "Once Upon a Time in Hollywood"
+      ],
+      "answer": "Parasite"
     },
     {
-      "text": "Qui a interprété le solo de guitare sur le tube 'Beat It' de Michael Jackson ?",
-      "options": ["Eddie Van Halen", "Steve Vai", "Kirk Hammett", "Zakk Wylde"],
-      "answer": "Eddie Van Halen"
+      "text": "Who plays the character of Jack Sparrow in 'Pirates of the Caribbean'?",
+      "options": [
+        "Brad Pitt",
+        "Johnny Depp",
+        "Orlando Bloom",
+        "Tom Cruise"
+      ],
+      "answer": "Johnny Depp"
     },
     {
-      "text": "Le film d'animation 'Le Voyage de Chihiro' a remporté l'Oscar du meilleur film d'animation.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the fictional continent where the action of 'Game of Thrones' mainly takes place?",
+      "options": [
+        "Middle-earth",
+        "Westeros",
+        "Essos",
+        "Narnia"
+      ],
+      "answer": "Westeros"
     },
     {
-      "text": "Qui est l'artiste de l'album 'the Uncanny Valley' ?",
-      "options": ["Perturbator", "Carpenter Brut", "GOST", "Dan Terminus"],
-      "answer": "Perturbator"
+      "text": "Which actor plays the role of Iron Man in the Marvel Cinematic Universe?",
+      "options": [
+        "Chris Evans",
+        "Robert Downey Jr.",
+        "Chris Hemsworth",
+        "Mark Ruffalo"
+      ],
+      "answer": "Robert Downey Jr."
     },
     {
-      "text": "Quelle chanson de Tina Turner est le thème de Mad Max au-delà du dôme du tonnerre ?",
-      "options": ["We Don't Need Another Hero", "Let's Stay Together", "What's Love Got To Do With It", "I Don't Wanna Lose You"],
-      "answer": "We Don't Need Another Hero"
+      "text": "In 'The Matrix', what color is the pill Neo takes?",
+      "options": [
+        "Blue",
+        "Red",
+        "Green",
+        "Yellow"
+      ],
+      "answer": "Red"
     },
     {
-      "text": "Quel duo français a eu des succès au Royaume-Uni en 1998 avec 'Sexy Boy' ?",
-      "options": ["Air", "Fire", "Earth", "Water"],
-      "answer": "Air"
+      "text": "What is the best-selling album of all time?",
+      "options": [
+        "Back in Black (AC/DC)",
+        "Thriller (Michael Jackson)",
+        "The Dark Side of the Moon (Pink Floyd)",
+        "Their Greatest Hits (The Eagles)"
+      ],
+      "answer": "Thriller (Michael Jackson)"
     },
     {
-      "text": "Aziz Ansari est né en Caroline du Sud.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What are the names of Ursula's hench-eels in the Disney movie 'The Little Mermaid'?",
+      "options": [
+        "Rip and Current",
+        "Flotsam and Jetsam",
+        "Ebb and Flow",
+        "Shock and Awe"
+      ],
+      "answer": "Flotsam and Jetsam"
     },
     {
-      "text": "Qui a écrit la composition musicale 'Rhapsody In Blue' ?",
-      "options": ["George Gershwin", "Irving Berlin", "Duke Ellington", "Johnny Mandel"],
-      "answer": "George Gershwin"
+      "text": "Where does Mr. Toad live in the Disney animated segment 'The Wind in the Willows' from 'The Adventures of Ichabod and Mr. Toad'?",
+      "options": [
+        "Nottingham, England",
+        "London, England",
+        "Liverpool, England",
+        "Manchester, England"
+      ],
+      "answer": "London, England"
     }
   ]
 }

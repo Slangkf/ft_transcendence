@@ -4,54 +4,102 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Combien de poids Chris Pratt a-t-il perdu pour son rôle de Star-Lord dans 'Les Gardiens de la Galaxie' ?",
-      "options": ["60 lbs", "30 lbs", "50 lbs", "70 lbs"],
-      "answer": "60 lbs"
+      "text": "What is the capital of France?",
+      "options": [
+        "Berlin",
+        "Madrid",
+        "Paris",
+        "Rome"
+      ],
+      "answer": "Paris"
     },
     {
-      "text": "Le roman 'Des souris et des hommes' a été écrit par quel auteur ?",
-      "options": ["John Steinbeck", "George Orwell", "Mark Twain", "Harper Lee"],
-      "answer": "John Steinbeck"
+      "text": "In the classic movie 'Mary Poppins,' what animal is carved on the talking handle of her magical umbrella?",
+      "options": [
+        "A Parrot",
+        "A Tiger",
+        "A Dove",
+        "A Lion"
+      ],
+      "answer": "A Parrot"
     },
     {
-      "text": "Dans Overwatch, quel âge a Reinhardt Wilhelm ?",
-      "options": ["61", "59", "65", "62"],
-      "answer": "61"
+      "text": "In the famous Disney animated movie, what is Cinderella's slipper made out of?",
+      "options": [
+        "Glass",
+        "Wood",
+        "Gold",
+        "Silver"
+      ],
+      "answer": "Glass"
     },
     {
-      "text": "TF2 : La réduction des dégâts des roquettes de la sentinelle est calculée en fonction de la distance entre la sentinelle et l'enn.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which series features the character Walter White, a chemistry teacher turned drug lord?",
+      "options": [
+        "Dexter",
+        "The Wire",
+        "Breaking Bad",
+        "Ozark"
+      ],
+      "answer": "Breaking Bad"
     },
     {
-      "text": "Dans South Park, quel est le nom de famille de Stan ?",
-      "options": ["Marsh", "Stotch", "Broflovski", "Tweak"],
-      "answer": "Marsh"
+      "text": "In which year did the Titanic sink?",
+      "options": [
+        "1905",
+        "1912",
+        "1920",
+        "1931"
+      ],
+      "answer": "1912"
     },
     {
-      "text": "La Formule E est une série de courses automobiles qui utilise des voitures de course électriques hybrides.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which movie features the character Jack Sparrow?",
+      "options": [
+        "Titanic", 
+        "Pirates of the Caribbean", 
+        "Avatar", 
+        "Harry Potter"
+      ],
+      "answer": "Pirates of the Caribbean"
     },
     {
-      "text": "Ce film contient la citation : 'Ce que nous avons ici, c'est un manque de communication.'",
-      "options": ["Cool Hand Luke", "Bonnie and Clyde", "The Graduate", "In the Heat of the Night"],
-      "answer": "Cool Hand Luke"
+      "text": "Who is the main character in the Mario video game series?",
+      "options": [
+        "Luigi", 
+        "Mario", 
+        "Peach", 
+        "Bowser"
+      ],
+      "answer": "Mario"
     },
     {
-      "text": "Qui était le réalisateur du film d'animation de 1988 'Le Tombeau des lucioles' ?",
-      "options": ["Isao Takahata", "Hayao Miyazaki", "Satoshi Kon", "Sunao Katabuchi"],
-      "answer": "Isao Takahata"
+      "text": "Which band released the song 'Bohemian Rhapsody'?",
+      "options": [
+        "The Beatles", 
+        "Queen", "ABBA", 
+        "Coldplay"
+      ],
+      "answer": "Queen"
     },
     {
-      "text": "Dans le Star Wars original (Un Nouvel Espoir), Han Solo est le premier à tirer avec son blaster lors d'une conversation avec Greedo.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the wizard school in Harry Potter?",
+      "options": ["Durmstrang", 
+      "Beauxbatons", 
+      "Hogwarts", 
+      "Ilvermorny"
+    ],
+      "answer": "Hogwarts"
     },
     {
-      "text": "Dans la série 'Futurama', quel est le nom complet de Fry ?",
-      "options": ["Philip J. Fry", "Fry J. Philip", "Fry Rodríguez", "Fry Philip"],
-      "answer": "Philip J. Fry"
+      "text": "Which superhero is known as the Dark Knight?",
+      "options": [
+        "Superman", 
+        "Batman", 
+        "Iron Man", 
+        "Spider-Man"
+      ],
+      "answer": "Batman"
     }
   ]
 }

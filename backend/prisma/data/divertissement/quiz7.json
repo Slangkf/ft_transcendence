@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "S'il était encore en vie, en quelle année Elvis Presley fêterait-il son 100ème anniversaire ?",
-      "options": ["2035", "2030", "2040", "2045"],
-      "answer": "2035"
+      "text": "Which TV series features the character Walter White?",
+      "options": [
+        "Breaking Bad", 
+        "The Office",
+        "Friends",
+        "Game of Thrones"
+      ],
+      "answer": "Breaking Bad"
     },
     {
-      "text": "Dans le roman 'Le Seigneur des Anneaux', combien d'anneaux de pouvoir ont été donnés à la race des hommes ?",
-      "options": ["9", "5", "11", "13"],
-      "answer": "9"
+      "text": "Which game features battle royale gameplay with a shrinking map?",
+      "options": [
+        "Minecraft",
+        "Fortnite",
+        "The Sims",
+        "GTA V"
+      ],
+      "answer": "Fortnite"
     },
     {
-      "text": "La chanson 'Scatman's World' est sortie après 'Scatman (Ski-Ba-Bop-Ba-Dop-Bop)'.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who is the creator of the manga One Piece?",
+      "options": [
+        "Masashi Kishimoto",
+        "Eiichiro Oda", 
+        "Tite Kubo", 
+        "Akira Toriyama"
+      ],
+      "answer": "Eiichiro Oda"
     },
     {
-      "text": "Lequel de ces noms n'est PAS celui d'une ville sur l'île principale de PLAYERUNKNOWN'S BATTLEGROUNDS ?",
-      "options": ["Belushya Guba", "Yasnaya Polyana", "Pochinki", "Georgopol"],
-      "answer": "Belushya Guba"
+      "text": "Which movie features the quote 'I'll be back'?",
+      "options": [
+        "The Terminator", 
+        "Rocky", 
+        "Die Hard", 
+        "Rambo"
+      ],
+      "answer": "The Terminator"
     },
     {
-      "text": "Quel était le nom du chien de Jonny dans 'Les Aventures de Jonny Quest' ?",
-      "options": ["Bandit", "Lucky", "Rocky", "Max"],
-      "answer": "Bandit"
+      "text": "Which artist is known for the song 'Shape of You'?",
+      "options": [
+        "Ed Sheeran", 
+        "Justin Bieber", 
+        "Shawn Mendes", 
+        "Bruno Mars"
+      ],
+      "answer": "Ed Sheeran"
     },
     {
-      "text": "Donald Duck a joué le rôle de Bob Cratchit dans l'adaptation de Disney de 1983 de 'Un chant de Noël'.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which anime features the character Goku?",
+      "options": [
+        "Naruto", 
+        "Bleach", 
+        "Dragon Ball", 
+        "One Punch Man"
+      ],
+      "answer": "Dragon Ball"
     },
     {
-      "text": "Quel film ne mettait PAS en vedette le regretté acteur John Candy ?",
-      "options": ["Ghostbusters", "Little Shop Of Horrors", "Home Alone", "Planes Trains and Automobiles"],
-      "answer": "Ghostbusters"
+      "text": "Which company developed the PlayStation?",
+      "options": [
+        "Microsoft", 
+        "Nintendo", 
+        "Sony", 
+        "Sega"
+      ],
+      "answer": "Sony"
     },
     {
-      "text": "Dans la série 'La Mélancolie de Haruhi Suzumiya', la chef du club de la Brigade SOS est inconsciemment traitée comme une __ par ses pairs.",
-      "options": ["Déesse", "Aliène", "Voyageuse du temps", "Esper"],
-      "answer": "Déesse"
+      "text": "Which movie is about a blue alien race called the Na'vi?",
+      "options": [
+        "Avatar", 
+        "Star Trek", 
+        "Interstellar", 
+        "Guardians of the Galaxy"
+      ],
+      "answer": "Avatar"
     },
     {
-      "text": "Le film fictif 'Rochelle, Rochelle' apparaît dans quelle sitcom ?",
-      "options": ["Seinfeld", "Frasier", "Cheers", "Friends"],
-      "answer": "Seinfeld"
+      "text": "Which singer is known as the 'Queen of Pop'?",
+      "options": [
+        "Madonna", 
+        "Beyoncé", 
+        "Lady Gaga", 
+        "Rihanna"
+      ],
+      "answer": "Madonna"
     },
     {
-      "text": "'Une nuit sur le mont Chauve' était l'une des pièces musicales présentées dans le film Fantasia de Disney de 1940.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which video game features the character Link?",
+      "options": [
+        "Final Fantasy", 
+        "The Legend of Zelda", 
+        "Elden Ring", 
+        "Dark Souls"
+      ],
+      "answer": "The Legend of Zelda"
     }
   ]
 }
