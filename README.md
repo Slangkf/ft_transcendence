@@ -158,9 +158,9 @@ GitHub Actions was used to automatically verify code changes submitted to both p
 
 ### Frontend
 - SvelteKit for building the user interface and managing application routing.
+- Tailwind CSS for responsive and maintainable styling.
 - Socket.IO and HTTP requests for communication with the backend and live notifications.
 - Zod for client-side data validation and type-safe schema definitions.
-- Tailwind CSS for responsive and maintainable styling.
 
 **Why SvelteKit?**
 
