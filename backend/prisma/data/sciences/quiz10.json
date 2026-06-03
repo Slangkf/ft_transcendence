@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quel composant informatique est considéré comme le 'cerveau' de la machine ?",
-      "options": ["CPU", "GPU", "RAM", "HDD"],
-      "answer": "CPU"
+      "text": "Which planet is known as the 'Morning Star' or 'Evening Star' because it shines so brightly?",
+      "options": [
+        "Mars",
+        "Venus",
+        "Jupiter",
+        "Mercury"
+      ],
+      "answer": "Venus"
     },
     {
-      "text": "Quel est le système d'exploitation le plus populaire pour les téléphones mobiles ?",
-      "options": ["Android", "iOS", "Windows Phone", "BlackBerry OS"],
-      "answer": "Android"
+      "text": "What is the common name for the clear, liquid part of an egg?",
+      "options": [
+        "Yolk",
+        "Albumen",
+        "Shell",
+        "Embryo"
+      ],
+      "answer": "Albumen"
     },
     {
-      "text": "Quel est le symbole chimique de l'Argent ?",
-      "options": ["Ag", "Si", "Au", "Sl"],
-      "answer": "Ag"
+      "text": "Which type of rocks are formed from cooled and hardened lava or magma?",
+      "options": [
+        "Sedimentary",
+        "Metamorphic",
+        "Igneous",
+        "Sandstone"
+      ],
+      "answer": "Igneous"
     },
     {
-      "text": "Quel instrument est utilisé pour observer les objets lointains dans l'espace ?",
-      "options": ["Télescope", "Microscope", "Périscope", "Stéthoscope"],
-      "answer": "Télescope"
+      "text": "What is the name of the tube that connects the mouth to the stomach?",
+      "options": [
+        "Trachea",
+        "Esophagus",
+        "Artery",
+        "Intestine"
+      ],
+      "answer": "Esophagus"
     },
     {
-      "text": "Quelle est la valeur de 2 à la puissance 5 ?",
-      "options": ["32", "10", "16", "64"],
-      "answer": "32"
+      "text": "What property of a material allows it to bend easily without breaking?",
+      "options": [
+        "Hardness",
+        "Flexibility",
+        "Density",
+        "Brittleness"
+      ],
+      "answer": "Flexibility"
     },
     {
-      "text": "La vitesse du son est plus rapide que la vitesse de la lumière.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which gas is lighter than air and often used to make blimps or airships float?",
+      "options": [
+        "Helium",
+        "Oxygen",
+        "Carbon Dioxide",
+        "Chlorine"
+      ],
+      "answer": "Helium"
     },
     {
-      "text": "Comment appelle-t-on un polygone à 4 côtés égaux et des angles à 90 degrés ?",
-      "options": ["Carré", "Rectangle", "Losange", "Trapèze"],
-      "answer": "Carré"
+      "text": "What do we call animals that are active mostly during the night?",
+      "options": [
+        "Diurnal",
+        "Nocturnal",
+        "Marine",
+        "Terrestrial"
+      ],
+      "answer": "Nocturnal"
     },
     {
-      "text": "Comment appelle-t-on l'étude des organismes vivants ?",
-      "options": ["Biologie", "Chimie", "Physique", "Géologie"],
-      "answer": "Biologie"
+      "text": "Which part of the human ear collects sound waves from the air?",
+      "options": [
+        "Eardrum",
+        "Cochlea",
+        "Outer Ear",
+        "Auditory Nerve"
+      ],
+      "answer": "Outer Ear"
     },
     {
-      "text": "Quel gaz est utilisé par les plantes pour la photosynthèse ?",
-      "options": ["Dioxyde de carbone", "Oxygène", "Azote", "Hélium"],
-      "answer": "Dioxyde de carbone"
+      "text": "What type of energy is stored in the core of an atom?",
+      "options": [
+        "Chemical Energy",
+        "Nuclear Energy",
+        "Solar Energy",
+        "Electrical Energy"
+      ],
+      "answer": "Nuclear Energy"
     },
     {
-      "text": "L'eau se dilate lorsqu'elle gèle.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which unit is used to measure the amount of electrical current flowing through a circuit?",
+      "options": [
+        "Volt",
+        "Ohm",
+        "Ampere",
+        "Watt"
+      ],
+      "answer": "Ampere"
     }
   ]
 }

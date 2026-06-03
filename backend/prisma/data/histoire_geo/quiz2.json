@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Theodore Roosevelt Jr. était le seul général impliqué dans l'assaut initial du jour J.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which ancient civilization built the pyramids of Giza?",
+      "options": [
+        "Roman",
+        "Greek",
+        "Egyptian",
+        "Mesopotamian"
+      ],
+      "answer": "Egyptian"
     },
     {
-      "text": "Dans quelle ville canadienne se trouve le 'Big Nickel' ?",
-      "options": ["Sudbury, Ontario", "Calgary, Alberta", "Halifax, Nouvelle-Écosse", "Victoria, Colombie-Britannique"],
-      "answer": "Sudbury, Ontario"
+      "text": "Who was the first Emperor of Rome?",
+      "options": [
+        "Julius Caesar",
+        "Nero",
+        "Augustus",
+        "Constantine"
+      ],
+      "answer": "Augustus"
     },
     {
-      "text": "Quelle est la capitale du Danemark ?",
-      "options": ["Copenhague", "Aarhus", "Odense", "Aalborg"],
-      "answer": "Copenhague"
+      "text": "What event is generally considered to have marked the beginning of the Middle Ages in Europe?",
+      "options": [
+        "The Fall of the Roman Empire",
+        "The Norman Conquest",
+        "The Black Death",
+        "The Renaissance"
+      ],
+      "answer": "The Fall of the Roman Empire"
     },
     {
-      "text": "Les manifestations de la place Tian'anmen en 1989 ont eu lieu à Hong Kong.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which explorer is credited with the first circumnavigation of the Earth?",
+      "options": [
+        "Christopher Columbus",
+        "Ferdinand Magellan",
+        "Vasco da Gama",
+        "Marco Polo"
+      ],
+      "answer": "Ferdinand Magellan"
     },
     {
-      "text": "Lequel des pays suivants est le plus petit au monde par sa superficie ?",
-      "options": ["Vatican", "Monaco", "Nauru", "Tuvalu"],
-      "answer": "Vatican"
-    },
-    {
-      "text": "Quel est le nom de la plus grande ville de l'État américain d'Hawaï ?",
-      "options": ["Honolulu", "Pearl City", "Hilo", "Kailua"],
-      "answer": "Honolulu"
-    },
-    {
-      "text": "La masse terrestre de quel continent ne se trouve pas entièrement dans l'hémisphère nord ?",
-      "options": ["Afrique", "Europe", "Amérique du Nord", "Asie"],
-      "answer": "Afrique"
-    },
-    {
-      "text": "Qui a été le premier humain à voyager dans l'espace ?",
-      "options": ["Yuri Gagarine", "Neil Armstrong", "Buzz Aldrin", "John Glenn"],
-      "answer": "Yuri Gagarine"
-    },
-    {
-      "text": "En quelle année la Révolution française a-t-elle commencé ?",
-      "options": ["1789", "1799", "1779", "1809"],
+      "text": "The French Revolution began in which year?",
+      "options": [
+        "1776",
+        "1789",
+        "1815",
+        "1914"
+      ],
       "answer": "1789"
     },
     {
-      "text": "Quelle civilisation a construit les pyramides de Gizeh ?",
-      "options": ["Égyptienne", "Maya", "Aztèque", "Romaine"],
-      "answer": "Égyptienne"
+      "text": "Who was the leader of the Bolsheviks during the Russian Revolution?",
+      "options": [
+        "Joseph Stalin",
+        "Leon Trotsky",
+        "Vladimir Lenin",
+        "Mikhail Gorbachev"
+      ],
+      "answer": "Vladimir Lenin"
+    },
+    {
+      "text": "World War I began in which year?",
+      "options": [
+        "1905",
+        "1914",
+        "1939",
+        "1945"
+      ],
+      "answer": "1914"
+    },
+    {
+      "text": "What was the name of the policy of appeasement adopted by Britain and France towards Nazi Germany before World War II?",
+      "options": [
+        "Containment",
+        "Détente",
+        "Isolationism",
+        "Appeasement"
+      ],
+      "answer": "Appeasement"
+    },
+    {
+      "text": "The Cold War was a period of geopolitical tension between the United States and which other superpower?",
+      "options": [
+        "China",
+        "Germany",
+        "Japan",
+        "Soviet Union"
+      ],
+      "answer": "Soviet Union"
+    },
+    {
+      "text": "Nelson Mandela was a prominent leader in the fight against which system of institutionalized racial segregation and discrimination in South Africa?",
+      "options": [
+        "Communism",
+        "Apartheid",
+        "Fascism",
+        "Colonialism"
+      ],
+      "answer": "Apartheid"
     }
   ]
 }

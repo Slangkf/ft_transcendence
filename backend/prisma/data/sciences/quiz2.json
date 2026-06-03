@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Lequel des composants informatiques suivants peut être construit en utilisant uniquement des portes NON-ET (NAND) ?",
-      "options": ["ALU", "CPU", "RAM", "Registre"],
-      "answer": "ALU"
+      "text": "Which planet is the largest in our solar system?",
+      "options": [
+        "Earth",
+        "Mars",
+        "Jupiter",
+        "Saturn"
+      ],
+      "answer": "Jupiter"
     },
     {
-      "text": "Quelle vulnérabilité était classée n°1 au Top 10 d'OWASP en 2013 ?",
-      "options": ["Injection", "Authentification brisée", "Cross-Site Scripting", "Références directes non sécurisées aux objets"],
-      "answer": "Injection"
+      "text": "What is the chemical symbol for water?",
+      "options": [
+        "CO2",
+        "H2O",
+        "O2",
+        "NaCl"
+      ],
+      "answer": "H2O"
     },
     {
-      "text": "Quel est le nom de la société qui a publié la série 'Grand Theft Auto' ?",
-      "options": ["Rockstar Games", "Ubisoft", "Electronic Arts", "Activision"],
-      "answer": "Rockstar Games"
+      "text": "Which instrument is used to measure atmospheric pressure?",
+      "options": [
+        "Thermometer",
+        "Barometer",
+        "Microscope",
+        "Speedometer"
+      ],
+      "answer": "Barometer"
     },
     {
-      "text": "Lequel de ces systèmes n'est PAS un système d'exploitation en temps réel ?",
-      "options": ["Windows 10", "QNX", "FreeRTOS", "VxWorks"],
-      "answer": "Windows 10"
+      "text": "What is the primary gas found in the air we breathe on Earth?",
+      "options": [
+        "Oxygen",
+        "Nitrogen",
+        "Carbon Dioxide",
+        "Hydrogen"
+      ],
+      "answer": "Nitrogen"
     },
     {
-      "text": "Les remontées d'eau (upwelling) dans l'océan fournissent de l'eau plus froide et riche en nutriments pour les plantes et les décomposeurs.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "How long does it take for the Earth to complete one full orbit around the Sun?",
+      "options": [
+        "24 hours",
+        "30 days",
+        "365 days",
+        "12 hours"
+      ],
+      "answer": "365 days"
     },
     {
-      "text": "Quel est le terme mathématique pour une forme à 8 côtés ?",
-      "options": ["Octogone", "Hexagone", "Pentagone", "Heptagone"],
-      "answer": "Octogone"
+      "text": "What pigment gives plants their green color?",
+      "options": [
+        "Hemoglobin",
+        "Chlorophyll",
+        "Melanin",
+        "Carotene"
+      ],
+      "answer": "Chlorophyll"
     },
     {
-      "text": "Quelle est la valeur de Pi arrondie à deux décimales ?",
-      "options": ["3.14", "3.16", "3.12", "3.18"],
-      "answer": "3.14"
+      "text": "Which of the following is a mammal that can fly?",
+      "options": [
+        "Eagle",
+        "Bat",
+        "Ostrich",
+        "Flying Squirrel"
+      ],
+      "answer": "Bat"
     },
     {
-      "text": "Une plante qui a un cycle de vie de plus d'un an est appelée une plante annuelle.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the freezing point of pure water in degrees Celsius?",
+      "options": [
+        "-10°C",
+        "0°C",
+        "32°C",
+        "100°C"
+      ],
+      "answer": "0°C"
     },
     {
-      "text": "L'étude du comportement de la lumière est connue sous le nom de :",
-      "options": ["Optique", "Acoustique", "Mécanique", "Thermodynamique"],
-      "answer": "Optique"
+      "text": "Which basic force keeps us from floating away into space?",
+      "options": [
+        "Friction",
+        "Gravity",
+        "Magnetism",
+        "Inertia"
+      ],
+      "answer": "Gravity"
     },
     {
-      "text": "Quel élément a pour symbole chimique 'O' ?",
-      "options": ["Oxygène", "Or", "Argent", "Fer"],
-      "answer": "Oxygène"
+      "text": "What are the most basic building blocks of all matter called?",
+      "options": [
+        "Cells",
+        "Atoms",
+        "Molecules",
+        "Bacteria"
+      ],
+      "answer": "Atoms"
     }
   ]
 }

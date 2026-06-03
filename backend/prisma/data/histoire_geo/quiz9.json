@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle chaîne de montagnes longe la côte ouest de l'Amérique du Sud ?",
-      "options": ["Andes", "Rocheuses", "Appalaches", "Atlas"],
-      "answer": "Andes"
+      "text": "Which country is both a continent and a country?",
+      "options": [
+        "Greenland", 
+        "Iceland", 
+        "Australia", 
+        "Antarctica"
+      ],
+      "answer": "Australia"
     },
     {
-      "text": "Quel pays abrite la ville de Tombouctou ?",
-      "options": ["Mali", "Niger", "Tchad", "Mauritanie"],
-      "answer": "Mali"
+      "text": "Who discovered penicillin in 1928?",
+      "options": [
+        "Louis Pasteur", 
+        "Marie Curie", 
+        "Alexander Fleming", 
+        "Gregor Mendel"
+      ],
+      "answer": "Alexander Fleming"
     },
     {
-      "text": "Quelle est la capitale de l'Égypte ?",
-      "options": ["Le Caire", "Alexandrie", "Gizeh", "Suez"],
-      "answer": "Le Caire"
+      "text": "What is the capital of Egypt?",
+      "options": [
+        "Alexandria", 
+        "Giza", 
+        "Luxor", 
+        "Cairo"
+      ],
+      "answer": "Cairo"
     },
     {
-      "text": "Quelle île est partagée par Haïti et la République dominicaine ?",
-      "options": ["Hispaniola", "Cuba", "Jamaïque", "Porto Rico"],
-      "answer": "Hispaniola"
+      "text": "Which famous ship was nicknamed 'Old Ironsides'?",
+      "options": [
+        "USS Constitution", 
+        "HMS Victory", 
+        "Mayflower", 
+        "Santa Maria"
+      ],
+      "answer": "USS Constitution"
     },
     {
-      "text": "La guerre de Corée s'est terminée en 1953 sans aucun cessez-le-feu.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the longest river in Asia?",
+      "options": [
+        "Yellow River",
+        "Mekong River",
+        "Yangtze",
+        "Indus River"
+      ],
+      "answer": "Yangtze"
     },
     {
-      "text": "Quelle est la capitale de la Finlande ?",
-      "options": ["Helsinki", "Espoo", "Tampere", "Vantaa"],
-      "answer": "Helsinki"
+      "text": "Who was the Roman emperor when Jesus Christ was born?",
+      "options": [
+        "Julius Caesar", 
+        "Nero", 
+        "Augustus", 
+        "Tiberius"
+      ],
+      "answer": "Augustus"
     },
     {
-      "text": "La guerre de Cent Ans a duré plus de 100 ans.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the longest river in South America?",
+      "options": [
+        "Parana River", 
+        "Orinoco River", 
+        "Amazon River", 
+        "São Francisco River"
+      ],
+      "answer": "Amazon River"
     },
     {
-      "text": "La Magna Carta a été signée par quel roi ?",
-      "options": ["Jean sans Terre", "Richard Cœur de Lion", "Henri II", "Édouard Ier"],
-      "answer": "Jean sans Terre"
+      "text": "Which US president is known for the Emancipation Proclamation?",
+      "options": [
+        "George Washington", 
+        "Thomas Jefferson", 
+        "Abraham Lincoln", 
+        "Andrew Jackson"
+      ],
+      "answer": "Abraham Lincoln"
     },
     {
-      "text": "Qui a dirigé l'armée française pendant la guerre de Cent Ans et est devenue une sainte ?",
-      "options": ["Jeanne d'Arc", "Napoléon Bonaparte", "Marie-Antoinette", "Catherine de Médicis"],
-      "answer": "Jeanne d'Arc"
+      "text": "What is the capital of Thailand?",
+      "options": [
+        "Phnom Penh", 
+        "Hanoi", 
+        "Bangkok", 
+        "Jakarta"
+      ],
+      "answer": "Bangkok"
     },
     {
-      "text": "Quel monument célèbre se trouve à Agra, en Inde ?",
-      "options": ["Taj Mahal", "Angkor Wat", "Petra", "Le Colisée"],
-      "answer": "Taj Mahal"
+      "text": "Which famous volcano destroyed the Roman city of Pompeii?",
+      "options": [
+        "Mount Etna", 
+        "Mount Vesuvius", 
+        "Mount St. Helens", 
+        "Krakatoa"
+      ],
+      "answer": "Mount Vesuvius"
     }
   ]
 }

@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "La bataille de Trafalgar a eu lieu le 23 octobre 1805.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which ocean is the deepest in the world?",
+      "options": [
+        "Atlantic Ocean", 
+        "Indian Ocean", 
+        "Arctic Ocean", 
+        "Pacific Ocean"
+      ],
+      "answer": "Pacific Ocean"
     },
     {
-      "text": "Quel désert est situé dans le nord du Chili ?",
-      "options": ["Atacama", "Mojave", "Sonora", "Chihuahua"],
-      "answer": "Atacama"
+      "text": "Who was the first Emperor of China?",
+      "options": [
+        "Kublai Khan", 
+        "Qin Shi Huang", 
+        "Genghis Khan", 
+        "Sun Yat-sen"
+      ],
+      "answer": "Qin Shi Huang"
     },
     {
-      "text": "Quelle est la capitale du Portugal ?",
-      "options": ["Lisbonne", "Porto", "Coimbra", "Braga"],
-      "answer": "Lisbonne"
+      "text": "What is the capital of the Netherlands?",
+      "options": [
+        "Rotterdam", 
+        "The Hague", 
+        "Amsterdam", 
+        "Utrecht"
+      ],
+      "answer": "Amsterdam"
     },
     {
-      "text": "L'équateur traverse lequel de ces pays ?",
-      "options": ["Équateur", "Mexique", "Australie", "Thaïlande"],
-      "answer": "Équateur"
+      "text": "Which war was fought between the North and South regions of the United States?",
+      "options": [
+        "Revolutionary War", 
+        "Civil War", 
+        "War of 1812", 
+        "Spanish-American War"
+      ],
+      "answer": "Civil War"
     },
     {
-      "text": "Quel pays européen est divisé en 'cantons' ?",
-      "options": ["Suisse", "Belgique", "Pays-Bas", "Autriche"],
-      "answer": "Suisse"
+      "text": "Which country has the most natural lakes in the world?",
+      "options": [
+        "USA", 
+        "Russia", 
+        "Canada", 
+        "China"
+      ],
+      "answer": "Canada"
     },
     {
-      "text": "En quelle année la guerre de Sécession s'est-elle terminée ?",
-      "options": ["1865", "1863", "1867", "1861"],
-      "answer": "1865"
+      "text": "Who was the famous nurse known for her work during the Crimean War?",
+      "options": [
+        "Clara Barton", 
+        "Florence Nightingale", 
+        "Mother Teresa", 
+        "Dorothea Dix"
+      ],
+      "answer": "Florence Nightingale"
     },
     {
-      "text": "Quelle est la capitale de la Norvège ?",
-      "options": ["Oslo", "Bergen", "Trondheim", "Stavanger"],
-      "answer": "Oslo"
+      "text": "What is the capital of Turkey?",
+      "options": [
+        "Istanbul", 
+        "Izmir", 
+        "Ankara", 
+        "Bursa"
+      ],
+      "answer": "Ankara"
     },
     {
-      "text": "Au cours de quel siècle la peste noire a-t-elle frappé l'Europe ?",
-      "options": ["14ème siècle", "12ème siècle", "13ème siècle", "15ème siècle"],
-      "answer": "14ème siècle"
+      "text": "Which ancient civilization is known for creating the first written laws (Code of Hammurabi)?",
+      "options": [
+        "Egyptians", 
+        "Greeks", 
+        "Romans", 
+        "Babylonians"
+      ],
+      "answer": "Babylonians"
     },
     {
-      "text": "Qui était le roi de Macédoine qui a créé l'un des plus grands empires du monde ?",
-      "options": ["Alexandre le Grand", "Philippe II", "Darius le Grand", "Cyrus le Grand"],
-      "answer": "Alexandre le Grand"
+      "text": "What is the smallest continent by land area?",
+      "options": [
+        "Europe", 
+        "Antarctica", 
+        "Australia", 
+        "South America"
+      ],
+      "answer": "Australia"
     },
     {
-      "text": "Quelle est la monnaie officielle de l'Union européenne ?",
-      "options": ["Euro", "Livre", "Franc", "Mark"],
-      "answer": "Euro"
+      "text": "Who was the famous Viking explorer who reached North America around 1000 AD?",
+      "options": [
+        "Erik the Red", 
+        "Leif Erikson", 
+        "Ragnar Lothbrok", 
+        "Bjorn Ironside"
+      ],
+      "answer": "Leif Erikson"
     }
   ]
 }

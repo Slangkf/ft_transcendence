@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Le canal de Panama relie quels océans ?",
-      "options": ["Atlantique et Pacifique", "Atlantique et Indien", "Pacifique et Indien", "Arctique et Atlantique"],
-      "answer": "Atlantique et Pacifique"
+      "text": "Which US state is known as the 'Golden State'?",
+      "options": [
+        "Nevada", 
+        "Colorado", 
+        "California", 
+        "Alaska"
+      ],
+      "answer": "California"
     },
     {
-      "text": "Quel pays africain était autrefois connu sous le nom d'Abyssinie ?",
-      "options": ["Éthiopie", "Ghana", "Zimbabwe", "République démocratique du Congo"],
-      "answer": "Éthiopie"
+      "text": "Who was the ancient Greek god of the underworld?",
+      "options": [
+        "Zeus", 
+        "Poseidon", 
+        "Apollo", 
+        "Hades"
+      ],
+      "answer": "Hades"
     },
     {
-      "text": "Quelle est la capitale de la Corée du Sud ?",
-      "options": ["Séoul", "Busan", "Incheon", "Daegu"],
-      "answer": "Séoul"
+      "text": "What is the capital of Kenya?",
+      "options": [
+        "Nairobi", 
+        "Mombasa", 
+        "Kisumu", 
+        "Dar es Salaam"
+      ],
+      "answer": "Nairobi"
     },
     {
-      "text": "Quel pays est le plus grand d'Amérique du Sud ?",
-      "options": ["Brésil", "Argentine", "Pérou", "Colombie"],
-      "answer": "Brésil"
+      "text": "Which famous battle took place in 1066?",
+      "options": [
+        "Battle of Hastings", 
+        "Battle of Waterloo", 
+        "Battle of Agincourt", 
+        "Battle of Trafalgar"
+      ],
+      "answer": "Battle of Hastings"
     },
     {
-      "text": "Quelle est la capitale du Canada ?",
-      "options": ["Ottawa", "Toronto", "Montréal", "Vancouver"],
-      "answer": "Ottawa"
+      "text": "Which country has the most islands in the world?",
+      "options": [
+        "Indonesia", 
+        "Philippines", 
+        "Sweden", 
+        "Norway"
+      ],
+      "answer": "Sweden"
     },
     {
-      "text": "Abraham Lincoln a été le premier président américain né hors des treize États d'origine.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who was the first European to sail around the Cape of Good Hope?",
+      "options": [
+        "Christopher Columbus", 
+        "Vasco da Gama", 
+        "Bartolomeu Dias", 
+        "Ferdinand Magellan"
+      ],
+      "answer": "Bartolomeu Dias"
     },
     {
-      "text": "Dans quel pays européen la Renaissance a-t-elle commencé ?",
-      "options": ["Italie", "France", "Espagne", "Allemagne"],
-      "answer": "Italie"
+      "text": "What is the capital of Ireland?",
+      "options": [
+        "Cork", 
+        "Galway", 
+        "Limerick", 
+        "Dublin"
+      ],
+      "answer": "Dublin"
     },
     {
-      "text": "La guerre froide s'est terminée avec la mort de Joseph Staline.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which empire was ruled by emperors like Trajan and Hadrian?",
+      "options": [
+        "Greek Empire", 
+        "Persian Empire", 
+        "Roman Empire", 
+        "Ottoman Empire"
+      ],
+      "answer": "Roman Empire"
     },
     {
-      "text": "Quel traité a mis fin à la Première Guerre mondiale ?",
-      "options": ["Traité de Versailles", "Traité de Paris", "Traité d'Utrecht", "Traité de Gand"],
-      "answer": "Traité de Versailles"
+      "text": "What is the name of the waterfall located on the border of the US and Canada?",
+      "options": [
+        "Angel Falls", 
+        "Victoria Falls", 
+        "Niagara Falls", 
+        "Iguazu Falls"
+      ],
+      "answer": "Niagara Falls"
     },
     {
-      "text": "Qui a été la première personne à faire le tour du monde ?",
-      "options": ["Fernand de Magellan", "Christophe Colomb", "Vasco de Gama", "James Cook"],
-      "answer": "Fernand de Magellan"
+      "text": "Who was the famous queen of ancient Egypt who had a relationship with Julius Caesar?",
+      "options": [
+        "Nefertiti", 
+        "Hatshepsut", 
+        "Cleopatra", 
+        "Ankhesenamun"
+      ],
+      "answer": "Cleopatra"
     }
   ]
 }

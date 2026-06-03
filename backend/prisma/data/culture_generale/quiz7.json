@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quel est le nom de la plus grande lune de Saturne ?",
-      "options": ["Titan", "Encelade", "Mimas", "Rhéa"],
-      "answer": "Titan"
+      "text": "What is the name of the fastest land animal?",
+      "options": [
+        "Lion", 
+        "Cheetah", 
+        "Leopard", 
+        "Tiger"
+      ],
+      "answer": "Cheetah"
     },
     {
-      "text": "En anglais, un groupe de corbeaux est appelé un 'murder'.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which superhero is known as the 'Dark Knight'?",
+      "options": [
+        "Superman", 
+        "Spiderman", 
+        "Batman", 
+        "Iron Man"
+      ],
+      "answer": "Batman"
     },
     {
-      "text": "Lequel de ces éléments a le numéro atomique 1 ?",
-      "options": ["Hydrogène", "Hélium", "Oxygène", "Carbone"],
-      "answer": "Hydrogène"
+      "text": "What is the name of the ship that sank in 1912?",
+      "options": [
+        "Lusitania", 
+        "Britannic", 
+        "Titanic", 
+        "Olympic"
+      ],
+      "answer": "Titanic"
     },
     {
-      "text": "La licorne est l'animal national de l'Écosse.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which country is famous for the Great Wall?",
+      "options": [
+        "India", 
+        "Japan", 
+        "Korea", 
+        "China"
+      ],
+      "answer": "China"
     },
     {
-      "text": "En quelle année le Titanic a-t-il coulé ?",
-      "options": ["1912", "1905", "1921", "1898"],
-      "answer": "1912"
+      "text": "What is the name of Santa's reindeer with a red nose?",
+      "options": [
+        "Dasher", 
+        "Comet", 
+        "Rudolph", 
+        "Blitzen"
+      ],
+      "answer": "Rudolph"
     },
     {
-      "text": "Qui a écrit 'Roméo et Juliette' ?",
-      "options": ["William Shakespeare", "Charles Dickens", "Mark Twain", "Jane Austen"],
-      "answer": "William Shakespeare"
+      "text": "Who painted the ceiling of the Sistine Chapel?",
+      "options": [
+        "Leonardo da Vinci", 
+        "Michelangelo", 
+        "Raphael", 
+        "Caravaggio"
+      ],
+      "answer": "Michelangelo"
     },
     {
-      "text": "Quel gaz les plantes absorbent-elles dans l'atmosphère ?",
-      "options": ["Dioxyde de carbone", "Oxygène", "Azote", "Hydrogène"],
-      "answer": "Dioxyde de carbone"
+      "text": "What is the name of the yellow sponge who lives in a pineapple under the sea?",
+      "options": [
+        "Patrick Star", 
+        "Squidward", 
+        "SpongeBob SquarePants", 
+        "Mr. Krabs"
+      ],
+      "answer": "SpongeBob SquarePants"
     },
     {
-      "text": "Les noix de coco sont techniquement des noix.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which planet is known as the 'Red Planet'?",
+      "options": [
+        "Jupiter", 
+        "Saturn", 
+        "Venus", 
+        "Mars"
+      ],
+      "answer": "Mars"
     },
     {
-      "text": "Quelle est la substance naturelle la plus dure sur Terre ?",
-      "options": ["Diamant", "Or", "Fer", "Quartz"],
-      "answer": "Diamant"
+      "text": "What is the name of the famous detective created by Agatha Christie?",
+      "options": [
+        "Sherlock Holmes", 
+        "Hercule Poirot", 
+        "Father Brown", 
+        "Nancy Drew"
+      ],
+      "answer": "Hercule Poirot"
     },
     {
-      "text": "Quelle est la capitale de l'Italie ?",
-      "options": ["Rome", "Milan", "Naples", "Florence"],
-      "answer": "Rome"
+      "text": "Which drink is made from fermented grapes?",
+      "options": [
+        "Beer", 
+        "Whiskey", 
+        "Wine", 
+        "Vodka"
+      ],
+      "answer": "Wine"
     }
   ]
 }

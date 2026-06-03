@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle est la capitale de l'Australie ?",
-      "options": ["Canberra", "Sydney", "Melbourne", "Brisbane"],
-      "answer": "Canberra"
+      "text": "Which mountain range separates Europe from Asia?",
+      "options": [
+        "The Alps", 
+        "The Himalayas", 
+        "The Andes", 
+        "The Ural Mountains"
+      ],
+      "answer": "The Ural Mountains"
     },
     {
-      "text": "La chaîne de montagnes qui sépare l'Europe de l'Asie est ?",
-      "options": ["L'Oural", "Les Alpes", "L'Himalaya", "Les Pyrénées"],
-      "answer": "L'Oural"
+      "text": "Who was the British Prime Minister during World War II?",
+      "options": [
+        "Neville Chamberlain", 
+        "Clement Attlee", 
+        "Winston Churchill", 
+        "Anthony Eden"
+      ],
+      "answer": "Winston Churchill"
     },
     {
-      "text": "Quel est le nom du plus long fleuve du monde ?",
-      "options": ["Le Nil", "L'Amazone", "Le Yangtsé", "Le Mississippi"],
-      "answer": "Le Nil"
+      "text": "Which country is the largest in South America by area?",
+      "options": [
+        "Argentina", 
+        "Brazil", 
+        "Peru", 
+        "Colombia"
+      ],
+      "answer": "Brazil"
     },
     {
-      "text": "La guerre de Cent Ans a duré plus de 100 ans.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the capital of Portugal?",
+      "options": [
+        "Madrid", 
+        "Barcelona", 
+        "Lisbon", 
+        "Porto"
+      ],
+      "answer": "Lisbon"
     },
     {
-      "text": "Quel pays possède le plus grand nombre de lacs naturels ?",
-      "options": ["Canada", "États-Unis", "Russie", "Brésil"],
-      "answer": "Canada"
+      "text": "Who was the first woman to fly solo across the Atlantic Ocean?",
+      "options": [
+        "Amelia Earhart", 
+        "Bessie Coleman", 
+        "Harriet Quimby", 
+        "Jacqueline Cochran"
+      ],
+      "answer": "Amelia Earhart"
     },
     {
-      "text": "Quel est le plus grand désert du monde ?",
-      "options": ["Le Sahara", "Le Gobi", "Le Kalahari", "Le désert d'Arabie"],
-      "answer": "Le Sahara"
+      "text": "Which desert is the largest non-polar desert in the world?",
+      "options": [
+        "Gobi Desert", 
+        "Arabian Desert", 
+        "Sahara Desert", 
+        "Kalahari Desert"
+      ],
+      "answer": "Sahara Desert"
     },
     {
-      "text": "Qui a été le premier empereur de Rome ?",
-      "options": ["Auguste", "Jules César", "Néron", "Tibère"],
-      "answer": "Auguste"
+      "text": "Which ancient civilization built Machu Picchu?",
+      "options": [
+        "Aztecs", 
+        "Mayans", 
+        "Incas", 
+        "Olmecs"
+      ],
+      "answer": "Incas"
     },
     {
-      "text": "En quelle année la Magna Carta a-t-elle été signée ?",
-      "options": ["1215", "1225", "1205", "1235"],
-      "answer": "1215"
-    },
-    {
-      "text": "Quelle ville a été divisée par un mur de 1961 à 1989 ?",
-      "options": ["Berlin", "Vienne", "Prague", "Budapest"],
+      "text": "What is the national capital of Germany?",
+      "options": [
+        "Munich", 
+        "Hamburg", 
+        "Frankfurt", 
+        "Berlin"
+      ],
       "answer": "Berlin"
     },
     {
-      "text": "Lequel de ces pays ne fait pas partie de la Scandinavie ?",
-      "options": ["Islande", "Norvège", "Suède", "Danemark"],
-      "answer": "Islande"
+      "text": "Who was the famous Carthaginian general who crossed the Alps with elephants?",
+      "options": [
+        "Hannibal", 
+        "Scipio", 
+        "Hamilcar", 
+        "Hasdrubal"
+      ],
+      "answer": "Hannibal"
+    },
+    {
+      "text": "The division of Germany into East and West after World War II led to the construction of which infamous barrier?",
+      "options": [
+        "The Berlin Wall",
+        "The Maginot Line",
+        "The Atlantic Wall",
+        "The Iron Curtain"
+      ],
+      "answer": "The Berlin Wall"
     }
   ]
 }

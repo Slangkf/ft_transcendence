@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "La racine carrée d'un nombre négatif est toujours un nombre imaginaire.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which planet is famous for its beautiful and extensive ring system?",
+      "options": [
+        "Mars",
+        "Neptune",
+        "Saturn",
+        "Mercury"
+      ],
+      "answer": "Saturn"
     },
     {
-      "text": "Que signifie 'GUI' ?",
-      "options": ["Interface Graphique Utilisateur", "Interface Générale Utilisateur", "Interaction Graphique Utilisée", "Index Global Utilisateur"],
-      "answer": "Interface Graphique Utilisateur"
+      "text": "What is the outside layer of the Earth called?",
+      "options": [
+        "Core",
+        "Mantle",
+        "Crust",
+        "Atmosphere"
+      ],
+      "answer": "Crust"
     },
     {
-      "text": "Quelle entreprise a développé le système d'exploitation Windows ?",
-      "options": ["Microsoft", "Apple", "IBM", "Google"],
-      "answer": "Microsoft"
+      "text": "What is the common name for the gas that gives soda its fizz?",
+      "options": [
+        "Oxygen",
+        "Carbon Dioxide",
+        "Nitrogen",
+        "Helium"
+      ],
+      "answer": "Carbon Dioxide"
     },
     {
-      "text": "Quelle est la substance naturelle la plus dure sur Terre ?",
-      "options": ["Diamant", "Or", "Fer", "Quartz"],
-      "answer": "Diamant"
+      "text": "Which large mammal is known for having a trunk?",
+      "options": [
+        "Rhino",
+        "Hippo",
+        "Elephant",
+        "Giraffe"
+      ],
+      "answer": "Elephant"
     },
     {
-      "text": "Quel est le nom du processus par lequel les plantes fabriquent leur propre nourriture ?",
-      "options": ["Photosynthèse", "Respiration", "Digestion", "Transpiration"],
-      "answer": "Photosynthèse"
+      "text": "What kind of energy is produced by vibrations traveling through a medium?",
+      "options": [
+        "Sound Energy",
+        "Light Energy",
+        "Nuclear Energy",
+        "Magnetic Energy"
+      ],
+      "answer": "Sound Energy"
     },
     {
-      "text": "Quelle est la valeur de 5 au carré ?",
-      "options": ["25", "10", "15", "20"],
-      "answer": "25"
+      "text": "What is the name of the green material in plants used to trap sunlight?",
+      "options": [
+        "Cytoplasm",
+        "Chlorophyll",
+        "Cellulose",
+        "Keratin"
+      ],
+      "answer": "Chlorophyll"
     },
     {
-      "text": "Comment appelle-t-on un polygone à 5 côtés ?",
-      "options": ["Pentagone", "Hexagone", "Carré", "Octogone"],
-      "answer": "Pentagone"
+      "text": "Which human organ allows us to breathe and exchange oxygen and carbon dioxide?",
+      "options": [
+        "Stomach",
+        "Lungs",
+        "Kidneys",
+        "Liver"
+      ],
+      "answer": "Lungs"
     },
     {
-      "text": "Quel gaz les humains rejettent-ils en respirant ?",
-      "options": ["Dioxyde de carbone", "Oxygène", "Azote", "Hydrogène"],
-      "answer": "Dioxyde de carbone"
+      "text": "What gas fills a balloon to make it float high in the air?",
+      "options": [
+        "Argon",
+        "Helium",
+        "Carbon Monoxide",
+        "Chlorine"
+      ],
+      "answer": "Helium"
     },
     {
-      "text": "Le son voyage plus vite dans l'eau que dans l'air.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What type of scientist studies rocks, Earth's layers, and earthquakes?",
+      "options": [
+        "Biologist",
+        "Chemist",
+        "Geologist",
+        "Astronomer"
+      ],
+      "answer": "Geologist"
     },
     {
-      "text": "Combien d'os compte le corps humain adulte ?",
-      "options": ["206", "180", "250", "210"],
-      "answer": "206"
+      "text": "What is the process called when a solid turns directly into a liquid?",
+      "options": [
+        "Freezing",
+        "Melting",
+        "Condensation",
+        "Sublimation"
+      ],
+      "answer": "Melting"
     }
   ]
 }

@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle ville est située sur deux continents ?",
-      "options": ["Istanbul", "Le Caire", "Moscou", "Bakou"],
-      "answer": "Istanbul"
+      "text": "Which city is known as the 'City of Light'?",
+      "options": [
+        "Rome", 
+        "London", 
+        "Paris", 
+        "New York"
+      ],
+      "answer": "Paris"
     },
     {
-      "text": "Quel est le plus petit océan du monde ?",
-      "options": ["Océan Arctique", "Océan Indien", "Océan Austral", "Océan Atlantique"],
-      "answer": "Océan Arctique"
+      "text": "Who was the Mongol leader who created one of the largest empires in history?",
+      "options": [
+        "Kublai Khan", 
+        "Genghis Khan", 
+        "Attila the Hun", 
+        "Tamerlane"
+      ],
+      "answer": "Genghis Khan"
     },
     {
-      "text": "Quel pays a la plus grande population au monde ?",
-      "options": ["Chine", "Inde", "États-Unis", "Russie"],
-      "answer": "Chine"
+      "text": "What is the capital of Sweden?",
+      "options": [
+        "Gothenburg", 
+        "Malmo", 
+        "Uppsala", 
+        "Stockholm"
+      ],
+      "answer": "Stockholm"
     },
     {
-      "text": "La Grande Barrière de corail se trouve au off des côtes de quel pays ?",
-      "options": ["Australie", "Indonésie", "Afrique du Sud", "Papouasie-Nouvelle-Guinée"],
-      "answer": "Australie"
+      "text": "Which US state was the last to join the Union?",
+      "options": [
+        "Alaska", 
+        "Hawaii", 
+        "Arizona", 
+        "New Mexico"
+      ],
+      "answer": "Hawaii"
     },
     {
-      "text": "Quelle est la capitale de la Suisse ?",
-      "options": ["Berne", "Zurich", "Genève", "Bâle"],
-      "answer": "Berne"
+      "text": "Which mountain is the highest peak in Africa?",
+      "options": [
+        "Mount Kenya", 
+        "Mount Elbrus", 
+        "Kilimanjaro", 
+        "Mount Stanley"
+      ],
+      "answer": "Kilimanjaro"
     },
     {
-      "text": "En quelle année le mur de Berlin a-t-il été abattu ?",
-      "options": ["1989", "1991", "1987", "1990"],
-      "answer": "1989"
+      "text": "Which of the following explorers successfully reached or sailed into the Pacific Ocean?",
+      "options": [
+        "Bartolomeu Dias",
+        "Vasco da Gama",
+        "Ferdinand Magellan",
+        "Christopher Columbus"
+      ],
+      "answer": "Ferdinand Magellan"
     },
     {
-      "text": "Qui a été la Première ministre du Royaume-Uni de 1979 à 1990 ?",
-      "options": ["Margaret Thatcher", "Theresa May", "Angela Merkel", "Indira Gandhi"],
-      "answer": "Margaret Thatcher"
+      "text": "What is the name of the largest city in Australia?",
+      "options": [
+        "Sydney",
+        "Melbourne",
+        "Brisbane",
+        "Perth"
+      ],
+      "answer": "Sydney"
     },
     {
-      "text": "Quelle guerre a opposé les régions du Nord et du Sud des États-Unis ?",
-      "options": ["Guerre de Sécession", "Guerre d'Indépendance", "Guerre de 1812", "Guerre hispano-américaine"],
-      "answer": "Guerre de Sécession"
+      "text": "Which treaty ended World War I?",
+      "options": [
+        "Treaty of Versailles", 
+        "Treaty of Paris", 
+        "Treaty of Ghent", 
+        "Treaty of Tordesillas"
+      ],
+      "answer": "Treaty of Versailles"
     },
     {
-      "text": "Les États-Unis étaient membres de la Société des Nations.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which country is the largest producer of coffee in the world?",
+      "options": [
+        "Colombia", 
+        "Vietnam", 
+        "Indonesia", 
+        "Brazil"
+      ],
+      "answer": "Brazil"
     },
     {
-      "text": "Quel pays européen est célèbre pour ses fjords ?",
-      "options": ["Norvège", "Suède", "Finlande", "Danemark"],
-      "answer": "Norvège"
+      "text": "Who was the first person to circumnavigate the globe?",
+      "options": [
+        "Christopher Columbus", 
+        "Ferdinand Magellan", 
+        "Juan Sebastian Elcano", 
+        "James Cook"
+      ],
+      "answer": "Juan Sebastian Elcano"
     }
   ]
 }

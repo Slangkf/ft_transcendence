@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Stagecoach possédait 'South West Trains' avant de perdre les droits au profit de FirstGroup et MTR en mars 2017.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which King of France was nicknamed the 'Sun King'?",
+      "options": [
+        "Louis XIV",
+        "Louis XVI",
+        "Henri IV",
+        "Charlemagne"
+      ],
+      "answer": "Louis XIV"
     },
     {
-      "text": "Dans Half-Life, quel est le nom de l'extraterrestre qui s'attache aux têtes ?",
-      "options": ["Crabe de tête (Headcrab)", "Bullsquid", "Vortigaunt", "Facehugger"],
-      "answer": "Crabe de tête (Headcrab)"
+      "text": "Which country's capital is Reykjavik?",
+      "options": [
+        "Norway",
+        "Iceland",
+        "Finland",
+        "Sweden"
+      ],
+      "answer": "Iceland"
     },
     {
-      "text": "Le Soleil est une étoile.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the chemical formula for water?",
+      "options": [
+        "CO2",
+        "NaCl",
+        "H2O",
+        "O2"
+      ],
+      "answer": "H2O"
     },
     {
-      "text": "Que signifie le 'G' dans 'G-Man' ?",
-      "options": ["Gouvernement", "Going", "Ghost", "Geronimo"],
-      "answer": "Gouvernement"
+      "text": "How many bones are there in an adult human body?",
+      "options": [
+        "106",
+        "206",
+        "306",
+        "406"
+      ],
+      "answer": "206"
     },
     {
-      "text": "Quel fruit est un ingrédient traditionnel de la Forêt-Noire ?",
-      "options": ["Cerises", "Abricots", "Raisins", "Pommes"],
-      "answer": "Cerises"
+      "text": "In what year did World War I begin?",
+      "options": [
+        "1914",
+        "1918",
+        "1939",
+        "1945"
+      ],
+      "answer": "1914"
     },
     {
-      "text": "Quel constructeur automobile italien a pris le contrôle majoritaire de Chrysler en 2011 ?",
-      "options": ["Fiat", "Maserati", "Alfa Romeo", "Ferrari"],
-      "answer": "Fiat"
+      "text": "Who is the author of the play 'Romeo and Juliet'?",
+      "options": [
+        "Molière",
+        "William Shakespeare",
+        "Victor Hugo",
+        "Arthur Conan Doyle"
+      ],
+      "answer": "William Shakespeare"
     },
     {
-      "text": "Quel est le nom du groupe antagoniste dans 'Danganronpa Another Episode: Ultra Despair Girls' ?",
-      "options": ["Guerriers de l'Espoir", "Les Monokubs", "Guerriers du Désespoir", "L'Ultime Désespoir"],
-      "answer": "Guerriers de l'Espoir"
+      "text": "Which planet is closest to the Sun?",
+      "options": [
+        "Venus",
+        "Mars",
+        "Mercury",
+        "Jupiter"
+      ],
+      "answer": "Mercury"
     },
     {
-      "text": "La capitale des États-Unis est New York.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the largest living land mammal?",
+      "options": [
+        "The Blue Whale",
+        "The African Elephant",
+        "The Giraffe",
+        "The Hippopotamus"
+      ],
+      "answer": "The African Elephant"
     },
     {
-      "text": "Quelle est la deuxième langue maternelle la plus parlée en Espagne en nombre de locuteurs ?",
-      "options": ["Catalan", "Portugais", "Espagnol", "Français"],
-      "answer": "Catalan"
+      "text": "What is the first book of the Bible?",
+      "options": [
+        "Exodus",
+        "Genesis",
+        "Leviticus",
+        "Psalms"
+      ],
+      "answer": "Genesis"
     },
     {
-      "text": "Quel sophisme consiste à attaquer le caractère de son adversaire plutôt que ses arguments ?",
-      "options": ["Ad Hominem", "Pente glissante", "Homme de paille", "Faux dilemme"],
-      "answer": "Ad Hominem"
+      "text": "What Roman numeral is equal to 2159?",
+      "options": [
+        "MMCLIX",
+        "MMDXLIX",
+        "MMDCLIX",
+        "MMMDCL"
+      ],
+      "answer": "MMCLIX"
     }
   ]
 }

@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Laquelle de ces mers est la plus grande du monde ?",
-      "options": ["Mer des Philippines", "Mer de Corail", "Mer d'Arabie", "Mer de Chine méridionale"],
-      "answer": "Mer des Philippines"
+      "text": "Which event is generally considered the start of World War II in Europe?",
+      "options": [
+        "The German invasion of Poland",
+        "The bombing of Pearl Harbor",
+        "The Battle of Britain",
+        "The signing of the Munich Agreement"
+      ],
+      "answer": "The German invasion of Poland"
     },
     {
-      "text": "Les chutes Victoria sont situées sur quel fleuve ?",
-      "options": ["Zambèze", "Nil", "Congo", "Limpopo"],
-      "answer": "Zambèze"
+      "text": "Who were the main Axis powers during World War II?",
+      "options": [
+        "Germany, Italy, and Japan",
+        "United States, United Kingdom, and Soviet Union",
+        "France, Poland, and Belgium",
+        "China, India, and Australia"
+      ],
+      "answer": "Germany, Italy, and Japan"
     },
     {
-      "text": "Quelle est la capitale de la Thaïlande ?",
-      "options": ["Bangkok", "Phuket", "Chiang Mai", "Pattaya"],
-      "answer": "Bangkok"
+      "text": "What was the codename for the Allied invasion of Normandy on June 6, 1944?",
+      "options": [
+        "Operation Overlord",
+        "Operation Barbarossa",
+        "Operation Torch",
+        "Operation Market Garden"
+      ],
+      "answer": "Operation Overlord"
     },
     {
-      "text": "Quel pays possède le plus grand nombre de fuseaux horaires ?",
-      "options": ["France", "Russie", "États-Unis", "Chine"],
-      "answer": "France"
+      "text": "The systematic persecution and murder of six million Jews by the Nazi regime and its collaborators is known as:",
+      "options": [
+        "The Holocaust",
+        "The Blitz",
+        "The Final Solution",
+        "Kristallnacht"
+      ],
+      "answer": "The Holocaust"
     },
     {
-      "text": "Laquelle de ces villes n'est PAS une ville d'Égypte ?",
-      "options": ["Adana", "Alexandrie", "Louxor", "Gizeh"],
-      "answer": "Adana"
+      "text": "Which two Japanese cities were targeted by atomic bombs in August 1945?",
+      "options": [
+        "Hiroshima and Nagasaki",
+        "Tokyo and Osaka",
+        "Kyoto and Kobe",
+        "Yokohama and Sapporo"
+      ],
+      "answer": "Hiroshima and Nagasaki"
     },
     {
-      "text": "Dans quel pays actuel se trouve l'ancienne cité de Pétra ?",
-      "options": ["Jordanie", "Égypte", "Syrie", "Irak"],
-      "answer": "Jordanie"
+      "text": "What international organization was founded in 1945 to promote peace and security?",
+      "options": [
+        "The United Nations",
+        "The League of Nations",
+        "NATO",
+        "The European Union"
+      ],
+      "answer": "The United Nations"
     },
     {
-      "text": "La quatrième croisade a duré de 1095 à 1099 après J.-C.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "The period of geopolitical tension between the United States and the Soviet Union after World War II is known as:",
+      "options": [
+        "The Cold War",
+        "The Space Race",
+        "The Iron Curtain",
+        "Détente"
+      ],
+      "answer": "The Cold War"
     },
     {
-      "text": "Qui était le principal dirigeant du mouvement pour l'indépendance de l'Inde ?",
-      "options": ["Mahatma Gandhi", "Jawaharlal Nehru", "Subhas Chandra Bose", "Sardar Patel"],
-      "answer": "Mahatma Gandhi"
+      "text": "What was the purpose of the Marshall Plan after World War II?",
+      "options": [
+        "To provide economic aid to Western Europe",
+        "To establish a military alliance in Asia",
+        "To rebuild infrastructure in North Africa",
+        "To fund scientific research in the Soviet Union"
+      ],
+      "answer": "To provide economic aid to Western Europe"
     },
     {
-      "text": "En quelle année les États-Unis sont-ils entrés dans la Première Guerre mondiale ?",
-      "options": ["1917", "1914", "1918", "1916"],
-      "answer": "1917"
+      "text": "Who was the Prime Minister of the United Kingdom for most of World War II?",
+      "options": [
+        "Winston Churchill",
+        "Neville Chamberlain",
+        "Clement Attlee",
+        "Margaret Thatcher"
+      ],
+      "answer": "Winston Churchill"
     },
     {
-      "text": "Lequel de ces États américains est surnommé le 'Sunshine State' ?",
-      "options": ["Floride", "Californie", "Texas", "Arizona"],
-      "answer": "Floride"
+      "text": "In what country is the Yellow River found?",
+      "options": [
+        "India",
+        "China",
+        "Egypt",
+        "Brazil"
+      ],
+      "answer": "China"
     }
   ]
 }

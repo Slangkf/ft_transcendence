@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Le premier e-mail a été envoyé en 1971.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which bird is a symbol of peace?",
+      "options": [
+        "Eagle", 
+        "Owl", 
+        "Dove", 
+        "Raven"
+      ],
+      "answer": "Dove"
     },
     {
-      "text": "Le miel ne se périme jamais.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the name of the bear in 'The Jungle Book'?",
+      "options": [
+        "Yogi", 
+        "Baloo", 
+        "Winnie the Pooh", 
+        "Paddington"
+      ],
+      "answer": "Baloo"
     },
     {
-      "text": "Qui a joué le général Aladeen dans le film 'The Dictator' ?",
-      "options": ["Sacha Baron Cohen", "Johnny Depp", "James Franco", "Leonardo DiCaprio"],
-      "answer": "Sacha Baron Cohen"
+      "text": "Which city is known as the 'Big Apple'?",
+      "options": [
+        "Los Angeles", 
+        "Chicago", 
+        "New York City", 
+        "Boston"
+      ],
+      "answer": "New York City"
     },
     {
-      "text": "De quel pays européen est originaire la salade de chou (coleslaw) ?",
-      "options": ["Pays-Bas", "Royaume-Uni", "Danemark", "Allemagne"],
-      "answer": "Pays-Bas"
+      "text": "Who invented the light bulb?",
+      "options": [
+        "Nikola Tesla", 
+        "Albert Einstein", 
+        "Thomas Edison", 
+        "Alexander Graham Bell"
+      ],
+      "answer": "Thomas Edison"
     },
     {
-      "text": "Laquelle de ces couleurs ne figure PAS dans le logo de Google ?",
-      "options": ["Rose", "Jaune", "Bleu", "Vert"],
-      "answer": "Rose"
+      "text": "What is the name of the Greek goddess of love?",
+      "options": [
+        "Athena", 
+        "Hera", 
+        "Artemis", 
+        "Aphrodite"
+      ],
+      "answer": "Aphrodite"
     },
     {
-      "text": "Sur un jeu de fléchettes, quel nombre est directement opposé au n°1 ?",
-      "options": ["19", "20", "12", "15"],
-      "answer": "19"
+      "text": "Which movie features a character named Jack Dawson?",
+      "options": [
+        "The Revenant", 
+        "Inception", 
+        "The Departed", 
+        "Titanic"
+      ],
+      "answer": "Titanic"
     },
     {
-      "text": "Le cœur d'une crevette se trouve dans sa tête.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the national sport of the United States?",
+      "options": [
+        "Basketball", 
+        "Football", 
+        "Baseball", 
+        "Soccer"
+      ],
+      "answer": "Baseball"
     },
     {
-      "text": "Quel organe du corps produit la bile ?",
-      "options": ["Le foie", "La vésicule biliaire", "Le pancréas", "L'estomac"],
-      "answer": "Le foie"
+      "text": "Which animal is the symbol of Australia?",
+      "options": [
+        "Koala", 
+        "Platypus", 
+        "Kangaroo", 
+        "Wombat"
+      ],
+      "answer": "Kangaroo"
     },
     {
-      "text": "Quelle est la durée de vie moyenne d'une fourmi de jardin ?",
-      "options": ["15 ans", "2 ans", "6 mois", "5 ans"],
-      "answer": "15 ans"
+      "text": "Who wrote 'Pride and Prejudice'?",
+      "options": [
+        "Emily Brontë", 
+        "Charlotte Brontë", 
+        "Jane Austen", 
+        "Louisa May Alcott"
+      ],
+      "answer": "Jane Austen"
     },
     {
-      "text": "Quelle est la capitale de la France ?",
-      "options": ["Paris", "Lyon", "Marseille", "Bordeaux"],
-      "answer": "Paris"
+      "text": "What is the name of the first man-made satellite launched into space?",
+      "options": [
+        "Explorer 1", 
+        "Voyager 1", 
+        "Sputnik 1", 
+        "Apollo 11"
+      ],
+      "answer": "Sputnik 1"
     }
   ]
 }

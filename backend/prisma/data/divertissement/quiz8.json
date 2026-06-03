@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Bob Ross était un pilote de l'armée de l'air américaine.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which movie features the character Tony Stark?",
+      "options": [
+        "Spider-Man", 
+        "Iron Man", 
+        "Batman", 
+        "Superman"
+      ],
+      "answer": "Iron Man"
     },
     {
-      "text": "Lequel de ces clubs de football anglais est basé à Liverpool ?",
-      "options": ["Everton", "West Ham United", "Crystal Palace", "Arsenal"],
-      "answer": "Everton"
+      "text": "Which game franchise includes the character Master Chief?",
+      "options": [
+        "Halo", 
+        "Call of Duty", 
+        "Battlefield", 
+        "Destiny"
+      ],
+      "answer": "Halo"
     },
     {
-      "text": "Michael Jackson a écrit la chanson des Simpsons 'Do the Bartman'.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which band is known for the song 'Yesterday'?",
+      "options": [
+        "The Beatles", 
+        "The Rolling Stones", 
+        "Queen", 
+        "U2"
+      ],
+      "answer": "The Beatles"
     },
     {
-      "text": "Quel lutteur professionnel a fait une chute mortelle depuis les chevrons lors d'un événement en direct en 1999 ?",
-      "options": ["Owen Hart", "Chris Benoit", "Lex Luger", "Al Snow"],
-      "answer": "Owen Hart"
+      "text": "Which anime features the character Naruto Uzumaki?",
+      "options": [
+        "Naruto", 
+        "Bleach", 
+        "Attack on Titan", 
+        "Demon Slayer"
+      ],
+      "answer": "Naruto"
     },
     {
-      "text": "Quelle équipe de football a remporté la Copa América Centenario 2016 ?",
-      "options": ["Chili", "Argentine", "Brésil", "Colombie"],
-      "answer": "Chili"
+      "text": "Which movie series features the character Frodo Baggins?",
+      "options": [
+        "Harry Potter", 
+        "The Lord of the Rings", 
+        "The Hobbit", 
+        "Narnia"
+      ],
+      "answer": "The Lord of the Rings"
     },
     {
-      "text": "Le tout premier épisode de Family Guy a été diffusé le 1er janvier 2002.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which video game features the city of Vice City?",
+      "options": [
+        "GTA III", 
+        "GTA Vice City", 
+        "GTA San Andreas", 
+        "Watch Dogs"
+      ],
+      "answer": "GTA Vice City"
     },
     {
-      "text": "Quel joueur détient le record de la LNH avec 2 857 points ?",
-      "options": ["Wayne Gretzky", "Mario Lemieux", "Sidney Crosby", "Gordie Howe"],
-      "answer": "Wayne Gretzky"
+      "text": "Who sings the song 'Bad Guy'?",
+      "options": [
+        "Billie Eilish", 
+        "Ariana Grande", 
+        "Taylor Swift", 
+        "Dua Lipa"
+      ],
+      "answer": "Billie Eilish"
     },
     {
-      "text": "Quel constructeur automobile a remporté les 24 Heures du Mans 2016 ?",
-      "options": ["Porsche", "Toyota", "Audi", "Ferrari"],
-      "answer": "Porsche"
+      "text": "Which superhero is part of the Justice League?",
+      "options": [
+        "Batman", 
+        "Deadpool", 
+        "Wolverine", 
+        "Iron Man"
+      ],
+      "answer": "Batman"
     },
     {
-      "text": "De quel pays le Kabaddi, un sport de contact impliquant des plaquages, est-il originaire ?",
-      "options": ["Inde", "Australie", "Turquie", "Cambodge"],
-      "answer": "Inde"
+      "text": "Which game features blocks and crafting mechanics?",
+      "options": [
+        "Minecraft", 
+        "Roblox", 
+        "Terraria", 
+        "Fortnite"
+      ],
+      "answer": "Minecraft"
     },
     {
-      "text": "De quelle ville l'ancienne équipe de la LNH 'Les Nordiques' était-elle originaire ?",
-      "options": ["Québec", "Houston", "Montréal", "New York"],
-      "answer": "Québec"
+      "text": "Which film features the character Neo?",
+      "options": [
+        "Inception", 
+        "The Matrix", 
+        "Interstellar", 
+        "Blade Runner"
+      ],
+      "answer": "The Matrix"
     }
   ]
 }

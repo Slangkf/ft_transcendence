@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quelle est l'unité standard de puissance ?",
-      "options": ["Watt", "Joule", "Volt", "Ampère"],
-      "answer": "Watt"
+      "text": "Which planet is the hottest in our solar system?",
+      "options": [
+        "Mercury",
+        "Venus",
+        "Mars",
+        "Jupiter"
+      ],
+      "answer": "Venus"
     },
     {
-      "text": "Quel est le nom du premier ordinateur électronique d'usage général ?",
-      "options": ["ENIAC", "UNIVAC", "EDVAC", "Z3"],
-      "answer": "ENIAC"
+      "text": "What is the name of the liquid part of human blood?",
+      "options": [
+        "Plasma",
+        "Platelet",
+        "Hemoglobin",
+        "Glucose"
+      ],
+      "answer": "Plasma"
     },
     {
-      "text": "Quel est le symbole chimique du Fer ?",
-      "options": ["Fe", "Ir", "In", "I"],
-      "answer": "Fe"
+      "text": "Which gas is used by electric signs to create a bright reddish-orange glow?",
+      "options": [
+        "Oxygen",
+        "Neon",
+        "Hydrogen",
+        "Nitrogen"
+      ],
+      "answer": "Neon"
     },
     {
-      "text": "Quel est le plus grand mammifère au monde ?",
-      "options": ["Baleine bleue", "Éléphant", "Girafe", "Hippopotame"],
-      "answer": "Baleine bleue"
+      "text": "What is the name for a scientist who studies weather and climate?",
+      "options": [
+        "Archaeologist",
+        "Meteorologist",
+        "Geologist",
+        "Biologist"
+      ],
+      "answer": "Meteorologist"
     },
     {
-      "text": "Quelle est la valeur de 3 au cube ?",
-      "options": ["27", "9", "12", "18"],
-      "answer": "27"
+      "text": "What type of simple machine is a flat surface tilted at an angle, like a ramp?",
+      "options": [
+        "Lever",
+        "Pulley",
+        "Inclined Plane",
+        "Screw"
+      ],
+      "answer": "Inclined Plane"
     },
     {
-      "text": "Le Soleil est une étoile.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which part of the human eye adjusts to control the amount of light entering?",
+      "options": [
+        "Retina",
+        "Iris",
+        "Lens",
+        "Cornea"
+      ],
+      "answer": "Iris"
     },
     {
-      "text": "Un 'kilo-octet' (kilobyte) fait exactement 1000 octets.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the name of the process by which a gas changes directly into a solid?",
+      "options": [
+        "Deposition",
+        "Sublimation",
+        "Condensation",
+        "Evaporation"
+      ],
+      "answer": "Deposition"
     },
     {
-      "text": "Combien de millimètres y a-t-il dans un centimètre ?",
-      "options": ["10", "100", "1", "1000"],
-      "answer": "10"
+      "text": "Which type of animal is born from an egg but feeds its young with milk?",
+      "options": [
+        "Reptile",
+        "Amphibian",
+        "Platypus",
+        "Marsupial"
+      ],
+      "answer": "Platypus"
     },
     {
-      "text": "Quelle planète est célèbre pour ses anneaux ?",
-      "options": ["Saturne", "Jupiter", "Uranus", "Neptune"],
-      "answer": "Saturne"
+      "text": "What is the common term for the sudden shaking of the ground caused by movements in the Earth's crust?",
+      "options": [
+        "Tornado",
+        "Earthquake",
+        "Tsunami",
+        "Hurricane"
+      ],
+      "answer": "Earthquake"
     },
     {
-      "text": "Comment s'appelle le centre d'un atome ?",
-      "options": ["Noyau", "Proton", "Neutron", "Électron"],
-      "answer": "Noyau"
+      "text": "Which unit is commonly used by scientists to measure the frequency of sound or waves?",
+      "options": [
+        "Joule",
+        "Hertz",
+        "Newton",
+        "Watt"
+      ],
+      "answer": "Hertz"
     }
   ]
 }

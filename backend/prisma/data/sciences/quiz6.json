@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "En informatique, que signifie 'RAM' ?",
-      "options": ["Random Access Memory", "Read Access Memory", "Rapid Action Memory", "Run Access Memory"],
-      "answer": "Random Access Memory"
+      "text": "Which planet is closest in size to Earth?",
+      "options": [
+        "Mars",
+        "Venus",
+        "Mercury",
+        "Neptune"
+      ],
+      "answer": "Venus"
     },
     {
-      "text": "Lequel de ces éléments est un exemple de périphérique d'entrée ?",
-      "options": ["Clavier", "Moniteur", "Imprimante", "Haut-parleurs"],
-      "answer": "Clavier"
+      "text": "What is the name of the long sleep some animals take during the winter?",
+      "options": [
+        "Migration",
+        "Hibernation",
+        "Adaptation",
+        "Mutation"
+      ],
+      "answer": "Hibernation"
     },
     {
-      "text": "Un octet (byte) est composé de 8 bits.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which part of the plant holds it firmly in the ground and absorbs water?",
+      "options": [
+        "Leaf",
+        "Stem",
+        "Flower",
+        "Root"
+      ],
+      "answer": "Root"
     },
     {
-      "text": "Comment appelle-t-on la distance autour d'un cercle ?",
-      "options": ["Circonférence", "Diamètre", "Rayon", "Aire"],
-      "answer": "Circonférence"
+      "text": "What is the name of the process where water vapor cools down and turns back into liquid?",
+      "options": [
+        "Evaporation",
+        "Condensation",
+        "Freezing",
+        "Melting"
+      ],
+      "answer": "Condensation"
     },
     {
-      "text": "La valeur de 'e' est d'environ 2,718.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which basic unit is used to measure the weight or mass of an object?",
+      "options": [
+        "Meter",
+        "Liter",
+        "Gram",
+        "Second"
+      ],
+      "answer": "Gram"
     },
     {
-      "text": "Quel instrument est utilisé pour mesurer la pression atmosphérique ?",
-      "options": ["Baromètre", "Thermomètre", "Anémomètre", "Hygromètre"],
-      "answer": "Baromètre"
+      "text": "What protects our body from germs and holds everything together on the outside?",
+      "options": [
+        "Skin",
+        "Muscles",
+        "Bones",
+        "Blood"
+      ],
+      "answer": "Skin"
     },
     {
-      "text": "Combien font 100 divisé par 4 ?",
-      "options": ["25", "20", "50", "40"],
-      "answer": "25"
+      "text": "What type of animal can live both in water and on land?",
+      "options": [
+        "Mammal",
+        "Reptile",
+        "Amphibian",
+        "Bird"
+      ],
+      "answer": "Amphibian"
     },
     {
-      "text": "Quel est le nombre suivant dans la suite : 2, 4, 8, 16... ?",
-      "options": ["32", "24", "20", "64"],
-      "answer": "32"
+      "text": "Which instrument is used to check a person's body temperature?",
+      "options": [
+        "Barometer",
+        "Thermometer",
+        "Microscope",
+        "Telescope"
+      ],
+      "answer": "Thermometer"
     },
     {
-      "text": "Quelle partie de la plante réalise la photosynthèse ?",
-      "options": ["Feuilles", "Racines", "Tige", "Fleurs"],
-      "answer": "Feuilles"
+      "text": "What is the name of the closest star to the Earth?",
+      "options": [
+        "Alpha Centauri",
+        "The Sun",
+        "Sirius",
+        "Polaris"
+      ],
+      "answer": "The Sun"
     },
     {
-      "text": "Quel est l'organe principal qui pompe le sang dans le corps humain ?",
-      "options": ["Cœur", "Poumons", "Cerveau", "Foie"],
-      "answer": "Cœur"
+      "text": "What type of electrical charge does an electron carry?",
+      "options": [
+        "Positive",
+        "Negative",
+        "Neutral",
+        "No charge"
+      ],
+      "answer": "Negative"
     }
   ]
 }

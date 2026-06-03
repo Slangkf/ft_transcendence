@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "En quelle année le site web Reddit a-t-il été fondé ?",
-      "options": ["2005", "2008", "2004", "2006"],
-      "answer": "2005"
+      "text": "Which country is famous for the Taj Mahal?",
+      "options": [
+        "Egypt",
+        "India",
+        "China",
+        "Thailand"
+      ],
+      "answer": "India"
     },
     {
-      "text": "Dans quel jeu Waluigi a-t-il fait sa première apparition ?",
-      "options": ["Mario Tennis 64 (N64)", "Wario Land: Super Mario Land 3", "Mario Party (N64)", "Super Smash Bros. Ultimate"],
-      "answer": "Mario Tennis 64 (N64)"
+      "text": "What is the hardest natural substance on Earth?",
+      "options": [
+        "Gold",
+        "Iron",
+        "Diamond",
+        "Marble"
+      ],
+      "answer": "Diamond"
     },
     {
-      "text": "Le Gumbo est un ragoût originaire de Louisiane.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who was the first man to walk on the Moon?",
+      "options": [
+        "Neil Armstrong",
+        "Buzz Aldrin",
+        "Yuri Gagarin",
+        "Elon Musk"
+      ],
+      "answer": "Neil Armstrong"
     },
     {
-      "text": "Quel pays conduit du côté gauche de la route ?",
-      "options": ["Japon", "Allemagne", "Russie", "Chine"],
-      "answer": "Japon"
+      "text": "Which currency is used in Japan?",
+      "options": [
+        "Yuan",
+        "Euro",
+        "Dollar",
+        "Yen"
+      ],
+      "answer": "Yen"
     },
     {
-      "text": "Dans les bandes dessinées DC, où vit Green Arrow (Oliver Queen) ?",
-      "options": ["Star City", "Central City", "Gotham City", "Metropolis"],
-      "answer": "Star City"
+      "text": "What major Japanese city was spared atomic bombing damage during WWII because of its immense cultural and historical value?",
+      "options": [
+        "Tokyo",
+        "Kyoto",
+        "Osaka",
+        "Nagoya"
+      ],
+      "answer": "Kyoto"
     },
     {
-      "text": "Quel est le vrai nom du célèbre mème Internet 'Grumpy Cat' ?",
-      "options": ["Tardar Sauce", "Lil Bub", "Maru", "Colonel Meow"],
-      "answer": "Tardar Sauce"
+      "text": "Which animal is known as the 'Ship of the Desert'?",
+      "options": [
+        "Horse",
+        "Camel",
+        "Elephant",
+        "Donkey"
+      ],
+      "answer": "Camel"
     },
     {
-      "text": "Quel produit la société de télécommunications Nokia vendait-elle à l'origine ?",
-      "options": ["Papier", "Téléphones", "Ordinateurs", "Processeurs"],
-      "answer": "Papier"
+      "text": "Who wrote the play 'Romeo and Juliet'?",
+      "options": [
+        "Charles Dickens",
+        "William Shakespeare",
+        "Mark Twain",
+        "Jane Austen"
+      ],
+      "answer": "William Shakespeare"
     },
     {
-      "text": "En quelle année Walt Disney est-il né ?",
-      "options": ["1901", "1902", "1899", "1905"],
-      "answer": "1901"
+      "text": "What is the capital city of Italy?",
+      "options": [
+        "Venice",
+        "Milan",
+        "Rome",
+        "Naples"
+      ],
+      "answer": "Rome"
     },
     {
-      "text": "Quelle est la capitale de l'Islande ?",
-      "options": ["Reykjavík", "Copenhague", "Oslo", "Helsinki"],
-      "answer": "Reykjavík"
+      "text": "Which element does the chemical symbol 'O' represent?",
+      "options": [
+        "Gold",
+        "Oxygen",
+        "Osmium",
+        "Iron"
+      ],
+      "answer": "Oxygen"
     },
     {
-      "text": "Quelle boisson est connue comme 'le champagne des thés' ?",
-      "options": ["Darjeeling", "Earl Grey", "Matcha", "Oolong"],
-      "answer": "Darjeeling"
+      "text": "Who recorded the famous pop song 'Poker Face'?",
+      "options": [
+        "Madonna",
+        "Katy Perry",
+        "Lady Gaga",
+        "Britney Spears"
+      ],
+      "answer": "Lady Gaga"
     }
   ]
 }

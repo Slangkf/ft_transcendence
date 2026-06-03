@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Dans le script original de 'Matrix', les machines utilisaient les humains comme puissance de calcul supplémentaire au lieu de piles.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "In which year was the first 'Star Wars' movie released in theaters?",
+      "options": [
+        "1975",
+        "1977",
+        "1980",
+        "1983"
+      ],
+      "answer": "1977"
     },
     {
-      "text": "Quelle est la taille de Tom Cruise ?",
-      "options": ["1m70 (5′ 7″)", "1m75 (5′ 9″)", "1m63 (5′ 4″)", "1m65 (5′ 5″)"],
-      "answer": "1m70 (5′ 7″)"
+      "text": "Who directed the sci-fi movie 'Inception'?",
+      "options": [
+        "Steven Spielberg",
+        "Christopher Nolan",
+        "Quentin Tarantino",
+        "Martin Scorsese"
+      ],
+      "answer": "Christopher Nolan"
     },
     {
-      "text": "Dans le roman 1984, quel est le nom du régime totalitaire qui contrôle l'Océania ?",
-      "options": ["INGSOC", "Néo-Bolchévisme", "Oblitération du Soi", "Alliance Terrestre"],
-      "answer": "INGSOC"
+      "text": "What is the name of the main continent where the story of 'Game of Thrones' takes place?",
+      "options": [
+        "Westeros",
+        "Essos",
+        "Middle-earth",
+        "Narnia"
+      ],
+      "answer": "Westeros"
     },
     {
-      "text": "De quoi le jeu par navigateur Kantai Collection est-il fortement inspiré ?",
-      "options": ["La Seconde Guerre mondiale", "Un Manga", "World of Warcraft", "Un Anime"],
-      "answer": "La Seconde Guerre mondiale"
+      "text": "Which actor played the character of Jack Dawson in the movie 'Titanic'?",
+      "options": [
+        "Brad Pitt",
+        "Johnny Depp",
+        "Leonardo DiCaprio",
+        "Matt Damon"
+      ],
+      "answer": "Leonardo DiCaprio"
     },
     {
-      "text": "Qui a prêté sa voix au Génie dans le 'Aladdin' de Disney ?",
-      "options": ["Robin Williams", "Billy Crystal", "Adam Sandler", "Jim Carrey"],
-      "answer": "Robin Williams"
+      "text": "In the series 'Breaking Bad', what subject does Walter White teach at the high school?",
+      "options": [
+        "Physics",
+        "Chemistry",
+        "Biology",
+        "History"
+      ],
+      "answer": "Chemistry"
     },
     {
-      "text": "David Baszucki était un cofondateur de ROBLOX Corporation.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which Disney movie features the famous song 'Under the Sea'?",
+      "options": [
+        "Moana",
+        "The Little Mermaid",
+        "Aladdin",
+        "Finding Nemo"
+      ],
+      "answer": "The Little Mermaid"
     },
     {
-      "text": "Dans le film de Noël de 1974 'The Year Without a Santa Claus', quels sont les noms des deux elfes qui aident Mme Noël à sauver Noël ?",
-      "options": ["Jingle & Jangle", "Buddy & Bobby", "Holly & Jolly", "Snowflake & Icicle"],
-      "answer": "Jingle & Jangle"
+      "text": "Which actor plays the main protagonist in the 'Indiana Jones' film series?",
+      "options": [
+        "Harrison Ford",
+        "George Lucas",
+        "Steven Spielberg",
+        "Sean Connery"
+      ],
+      "answer": "Harrison Ford"
     },
     {
-      "text": "Dans JoJo's Bizarre Adventure, quel personnage est capable d'accélérer le temps ?",
-      "options": ["Enrico Pucci", "Jotaro Kujo", "Jolyne Cujoh", "Kujo Jotaro"],
-      "answer": "Enrico Pucci"
+      "text": "Which movie won the Oscar for Best Picture in 2020, becoming the first non-English language film to do so?",
+      "options": [
+        "1917",
+        "Joker",
+        "Parasite",
+        "Once Upon a Time in Hollywood"
+      ],
+      "answer": "Parasite"
     },
     {
-      "text": "En Rugby à XIII, effectuer un '40-20' est puni par un coup franc pour l'équipe adverse.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the name of the coffee shop where the main characters of the series 'Friends' regularly hang out?",
+      "options": [
+        "Central Park",
+        "Central Perk",
+        "Central Station",
+        "Monk's Cafe"
+      ],
+      "answer": "Central Perk"
     },
     {
-      "text": "Quel acteur incarne Hogan 'Wash' Washburne dans la série télévisée Firefly ?",
-      "options": ["Alan Tudyk", "Adam Baldwin", "Nathan Fillion", "Sean Maher"],
-      "answer": "Alan Tudyk"
+      "text": "Who is the creator of the famous animated series 'The Simpsons'?",
+      "options": [
+        "Matt Groening",
+        "Seth MacFarlane",
+        "Trey Parker",
+        "Stephen Hillenburg"
+      ],
+      "answer": "Matt Groening"
     }
   ]
 }

@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "La 'théorie des cuillères' utilise les cuillères comme métaphore de l'énergie disponible dans une journée.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the capital of Australia?",
+      "options": [
+        "Sydney",
+        "Melbourne",
+        "Canberra",
+        "Brisbane"
+      ],
+      "answer": "Canberra"
     },
     {
-      "text": "Quel fleuve traverse la ville écossaise de Glasgow ?",
-      "options": ["Clyde", "Tay", "Dee", "Tweed"],
-      "answer": "Clyde"
+      "text": "In which year did the French Revolution begin?",
+      "options": [
+        "1789",
+        "1799",
+        "1804",
+        "1776"
+      ],
+      "answer": "1789"
     },
     {
-      "text": "Lequel de ces monuments n'est PAS situé à New York ?",
-      "options": ["Lincoln Memorial", "Empire State Building", "Times Square", "Central Park"],
-      "answer": "Lincoln Memorial"
+      "text": "What is the largest ocean on Earth?",
+      "options": [
+        "Atlantic Ocean",
+        "Indian Ocean",
+        "Pacific Ocean",
+        "Arctic Ocean"
+      ],
+      "answer": "Pacific Ocean"
     },
     {
-      "text": "Quelle est la langue officielle et la plus parlée à Cuba ?",
-      "options": ["Espagnol", "Portugais", "Français", "Italien"],
-      "answer": "Espagnol"
+      "text": "Who painted the famous 'Mona Lisa'?",
+      "options": [
+        "Michelangelo",
+        "Leonardo da Vinci",
+        "Raphael",
+        "Vincent van Gogh"
+      ],
+      "answer": "Leonardo da Vinci"
     },
     {
-      "text": "Toutes les fraises sont rouges.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which country won the 2018 FIFA World Cup?",
+      "options": [
+        "Croatia",
+        "France",
+        "Germany",
+        "Brazil"
+      ],
+      "answer": "France"
     },
     {
-      "text": "Avant le 19ème siècle, le 'salon' (living room) s'appelait à l'origine le...",
-      "options": ["Parlor", "Open Room", "Sitting Room", "Loft"],
-      "answer": "Parlor"
+      "text": "What is the chemical symbol for gold?",
+      "options": [
+        "Gd",
+        "Ag",
+        "Au",
+        "Fe"
+      ],
+      "answer": "Au"
     },
     {
-      "text": "Lequel de ces jeux de rythme a été créé par Harmonix ?",
-      "options": ["Rock Band", "Meat Beat Mania", "Guitar Hero Live", "Dance Dance Revolution"],
-      "answer": "Rock Band"
+      "text": "Who wrote the novel 'Les Misérables'?",
+      "options": [
+        "Émile Zola",
+        "Gustave Flaubert",
+        "Victor Hugo",
+        "Alexandre Dumas"
+      ],
+      "answer": "Victor Hugo"
     },
     {
-      "text": "Quels fruits à coque sont utilisés dans la production du massepain ?",
-      "options": ["Amandes", "Cacahuètes", "Noix", "Pistaches"],
-      "answer": "Amandes"
+      "text": "What is the capital of Canada?",
+      "options": [
+        "Toronto",
+        "Montreal",
+        "Vancouver",
+        "Ottawa"
+      ],
+      "answer": "Ottawa"
     },
     {
-      "text": "Le soleil se lève au nord.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "In which year did man first walk on the Moon?",
+      "options": [
+        "1961",
+        "1969",
+        "1972",
+        "1975"
+      ],
+      "answer": "1969"
     },
     {
-      "text": "Quel est le plus grand mammifère terrestre ?",
-      "options": ["Éléphant d'Afrique", "Girafe", "Rhinocéros", "Hippopotame"],
-      "answer": "Éléphant d'Afrique"
+      "text": "How many strings does a standard classical guitar have?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "12"
+      ],
+      "answer": "6"
     }
   ]
 }

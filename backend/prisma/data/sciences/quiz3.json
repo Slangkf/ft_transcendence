@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Quel langage de programmation majeur est utilisé par l'Unreal Engine 4 ?",
-      "options": ["C++", "Assembleur", "C#", "ECMAScript"],
-      "answer": "C++"
+      "text": "Which planet in our solar system is closest to the Sun?",
+      "options": [
+        "Venus",
+        "Mercury",
+        "Earth",
+        "Mars"
+      ],
+      "answer": "Mercury"
     },
     {
-      "text": "Sur quel port tourne le protocole HTTP ?",
-      "options": ["80", "53", "443", "23"],
-      "answer": "80"
+      "text": "What is the study of mushrooms and fungi called?",
+      "options": [
+        "Botany",
+        "Mycology",
+        "Zoology",
+        "Ecology"
+      ],
+      "answer": "Mycology"
     },
     {
-      "text": "La force centripète est une force apparente qui agit vers l'extérieur sur un corps se déplaçant autour d'un centre, provenant de l'inertie du corps.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "What is the name of the layer of gas that protects the Earth from harmful ultraviolet radiation?",
+      "options": [
+        "The Ozone Layer",
+        "The Biosphere",
+        "The Hydrosphere",
+        "The Mantle"
+      ],
+      "answer": "The Ozone Layer"
     },
     {
-      "text": "Que signifie 'CPU' ?",
-      "options": ["Unité Centrale de Traitement", "Unité de Processus Central", "Unité Personnelle d'Ordinateur", "Unité de Processeur Central"],
-      "answer": "Unité Centrale de Traitement"
+      "text": "Which part of the human skeleton protects the brain?",
+      "options": [
+        "Ribcage",
+        "Spine",
+        "Skull",
+        "Pelvis"
+      ],
+      "answer": "Skull"
     },
     {
-      "text": "Quelle est la vitesse de la lumière dans le vide ?",
-      "options": ["299 792 458 m/s", "150 000 000 m/s", "300 000 km/s", "1 000 000 mph"],
-      "answer": "299 792 458 m/s"
+      "text": "What type of energy does a moving object possess?",
+      "options": [
+        "Potential Energy",
+        "Kinetic Energy",
+        "Chemical Energy",
+        "Thermal Energy"
+      ],
+      "answer": "Kinetic Energy"
     },
     {
-      "text": "Quel est le résultat de 7 multiplié par 8 ?",
-      "options": ["56", "54", "62", "48"],
-      "answer": "56"
+      "text": "Which metal is liquid at room temperature?",
+      "options": [
+        "Iron",
+        "Mercury",
+        "Copper",
+        "Aluminum"
+      ],
+      "answer": "Mercury"
     },
     {
-      "text": "Lequel de ces nombres est un nombre premier ?",
-      "options": ["7", "4", "9", "10"],
-      "answer": "7"
+      "text": "What is the name of the process where insects change their form as they grow into adults?",
+      "options": [
+        "Photosynthesis",
+        "Metamorphosis",
+        "Evaporation",
+        "Respiration"
+      ],
+      "answer": "Metamorphosis"
     },
     {
-      "text": "Quel est le gaz le plus abondant dans l'atmosphère terrestre ?",
-      "options": ["Azote", "Oxygène", "Dioxyde de carbone", "Argon"],
-      "answer": "Azote"
+      "text": "Which gas is produced during a fire and is dangerous to breathe in high amounts?",
+      "options": [
+        "Carbon Monoxide",
+        "Oxygen",
+        "Nitrogen",
+        "Helium"
+      ],
+      "answer": "Carbon Monoxide"
     },
     {
-      "text": "Le nombre binaire '1010' est égal au nombre décimal 10.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the natural environment where an animal or plant lives called?",
+      "options": [
+        "Ecosystem",
+        "Habitat",
+        "Community",
+        "Population"
+      ],
+      "answer": "Habitat"
     },
     {
-      "text": "Quel est le point d'ébullition de l'eau en degrés Celsius ?",
-      "options": ["100", "0", "50", "212"],
-      "answer": "100"
+      "text": "Which unit is used to measure electrical resistance?",
+      "options": [
+        "Volt",
+        "Ampere",
+        "Ohm",
+        "Watt"
+      ],
+      "answer": "Ohm"
     }
   ]
 }

@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "La trypophobie est la peur de :",
-      "options": ["groupes de trous", "nager en eau profonde", "parler en public", "trop manger"],
-      "answer": "groupes de trous"
+      "text": "Which painter cut off part of his own ear?",
+      "options": [
+        "Pablo Picasso", 
+        "Claude Monet", 
+        "Vincent van Gogh", 
+        "Salvador Dali"
+      ],
+      "answer": "Vincent van Gogh"
     },
     {
-      "text": "Quand le chewing-gum Hubba Bubba a-t-il été introduit ?",
-      "options": ["1979", "1984", "1972", "1980"],
-      "answer": "1979"
+      "text": "What is the longest river in the world?",
+      "options": [
+        "Amazon River", 
+        "Nile River", 
+        "Yangtze River", 
+        "Mississippi River"
+      ],
+      "answer": "Nile River"
     },
     {
-      "text": "Le Crystal Pepsi a été vendu pour la première fois aux États-Unis en 1993.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which country gifted the Statue of Liberty to the United States?",
+      "options": [
+        "England", 
+        "Spain", 
+        "France", 
+        "Germany"
+      ],
+      "answer": "France"
     },
     {
-      "text": "Que signifient les lettres dans le fuseau horaire GMT ?",
-      "options": ["Greenwich Mean Time", "Global Meridian Time", "General Median Time", "Glasgow Man Time"],
-      "answer": "Greenwich Mean Time"
+      "text": "Who wrote 'The Odyssey'?",
+      "options": [
+        "Socrates", 
+        "Aristotle", 
+        "Homer", 
+        "Plato"
+      ],
+      "answer": "Homer"
     },
     {
-      "text": "Quel bonbon n'est PAS fabriqué par Mars ?",
-      "options": ["Almond Joy", "M&M's", "Twix", "Snickers"],
-      "answer": "Almond Joy"
+      "text": "What is the smallest country in the world by area?",
+      "options": [
+        "Monaco", 
+        "San Marino", 
+        "Malta", 
+        "Vatican City"
+      ],
+      "answer": "Vatican City"
     },
     {
-      "text": "Le mot 'Ananas' est utilisé pour désigner ce fruit dans la plupart des autres langues que l'anglais.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Which famous scientist developed the theory of general relativity?",
+      "options": [
+        "Isaac Newton", 
+        "Galileo Galilei", 
+        "Nikola Tesla", 
+        "Albert Einstein"
+      ],
+      "answer": "Albert Einstein"
     },
     {
-      "text": "Le thé Earl Grey est un thé noir aromatisé avec quoi ?",
-      "options": ["Huile de bergamote", "Lavande", "Vanille", "Miel"],
-      "answer": "Huile de bergamote"
+      "text": "What Starbucks size, larger than a grande, is also the Italian word for 'twenty'?",
+      "options": [
+        "Tall",
+        "Venti",
+        "Trenta",
+        "Grande"
+      ],
+      "answer": "Venti"
     },
     {
-      "text": "Combien d'étoiles figurent sur le drapeau de l'Union européenne ?",
-      "options": ["12", "10", "14", "16"],
-      "answer": "12"
+      "text": "Which band was Freddie Mercury the lead singer of?",
+      "options": [
+        "The Rolling Stones", 
+        "Led Zeppelin", 
+        "Queen", 
+        "The Beatles"
+      ],
+      "answer": "Queen"
     },
     {
-      "text": "Que signifie le nom de la chaîne britannique ITV ?",
-      "options": ["Independent Television", "International Television", "Island Television", "Interactive Television"],
-      "answer": "Independent Television"
+      "text": "What is the main ingredient in guacamole?",
+      "options": [
+        "Tomato", 
+        "Avocado", 
+        "Onion", 
+        "Lime"
+      ],
+      "answer": "Avocado"
     },
     {
-      "text": "Lequel de ces éléments est un gaz noble ?",
-      "options": ["Néon", "Azote", "Oxygène", "Hydrogène"],
-      "answer": "Néon"
+      "text": "Which year did World War II end?",
+      "options": [
+        "1943", 
+        "1944", 
+        "1945", 
+        "1946"
+      ],
+      "answer": "1945"
     }
   ]
 }

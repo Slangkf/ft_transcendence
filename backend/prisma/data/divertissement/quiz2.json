@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Tupac Shakur est décédé des suites de complications après avoir été poignardé en 1996.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Faux"
+      "text": "Which actor plays Neo in the Matrix saga?",
+      "options": [
+        "Keanu Reeves",
+        "Laurence Fishburne",
+        "Brad Pitt",
+        "Will Smith"
+      ],
+      "answer": "Keanu Reeves"
     },
     {
-      "text": "Le livre 1984 a été publié en 1949.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "In which year was the first Star Wars movie released in theaters?",
+      "options": [
+        "1975",
+        "1977",
+        "1980",
+        "1983"
+      ],
+      "answer": "1977"
     },
     {
-      "text": "Laquelle de ces personnes ne fait PAS partie du groupe de comédie Internet Mega64 ?",
-      "options": ["Jon Jafari", "Rocco Botte", "Derrick Acosta", "Shawn Chatfield"],
-      "answer": "Jon Jafari"
+      "text": "What is the name of the fictional continent where most of the action in Game of Thrones takes place?",
+      "options": [
+        "Westeros",
+        "Essos",
+        "Middle-earth",
+        "Narnia"
+      ],
+      "answer": "Westeros"
     },
     {
-      "text": "Lequel de ces livres Charlie ne lit-il PAS dans 'Le Monde de Charlie' ?",
-      "options": ["Les Raisins de la colère", "Hamlet", "Gatsby le Magnifique", "Peter Pan"],
-      "answer": "Les Raisins de la colère"
+      "text": "What is the name of Tiana's restaurant at the end of the Disney movie 'The Princess and the Frog'?",
+      "options": [
+        "Tiana's Point",
+        "Tiana's Place",
+        "Tiana's Palace",
+        "Tiana's Kitchen"
+      ],
+      "answer": "Tiana's Palace"
     },
     {
-      "text": "Qu'utilise Solid Snake pour se cacher ?",
-      "options": ["Boîte en carton", "Dispositif de camouflage", "Caisse métallique", "Silhouette en carton"],
-      "answer": "Boîte en carton"
+      "text": "Who directed the movie 'Jurassic Park' released in 1993?",
+      "options": [
+        "Steven Spielberg",
+        "James Cameron",
+        "George Lucas",
+        "Ridley Scott"
+      ],
+      "answer": "Steven Spielberg"
     },
     {
-      "text": "Quel est le nom de l'arme de Ruby Rose dans RWBY ?",
-      "options": ["Crescent Rose", "Thorned Rosebud", "Magnhild", "Crooked Scythe"],
-      "answer": "Crescent Rose"
+      "text": "Which Disney animated movie features the song 'Under the Sea'?",
+      "options": [
+        "The Little Mermaid",
+        "Aladdin",
+        "The Lion King",
+        "Beauty and the Beast"
+      ],
+      "answer": "The Little Mermaid"
     },
     {
-      "text": "Quels animaux mutants font office de monstres dans le film 'Night of the Lepus' ?",
-      "options": ["Lapins", "Chiens", "Rats", "Chauves-souris"],
-      "answer": "Lapins"
+      "text": "In the series 'Friends', what is the profession of Ross Geller?",
+      "options": [
+        "Paleontologist",
+        "Actor",
+        "Chef",
+        "Accountant"
+      ],
+      "answer": "Paleontologist"
     },
     {
-      "text": "Lequel des films suivants n'a PAS été réalisé par Hayao Miyazaki ?",
-      "options": ["Les Enfants Loups, Ame et Yuki", "Princesse Mononoké", "Le Voyage de Chihiro", "Kiki la petite sorcière"],
-      "answer": "Les Enfants Loups, Ame et Yuki"
+      "text": "Which movie won the Oscar for Best Picture in 2020, becoming the first non-English language film to win this award?",
+      "options": [
+        "Parasite",
+        "1917",
+        "Roma",
+        "La La Land"
+      ],
+      "answer": "Parasite"
     },
     {
-      "text": "Dans Game of Thrones, quel continent se trouve de l'autre côté de la mer Étroite par rapport à Westeros ?",
-      "options": ["Essos", "Easteros", "Westereast", "Esuntos"],
-      "answer": "Essos"
+      "text": "What is the name of the fictional island where the movie 'King Kong' (1933) takes place?",
+      "options": [
+        "Skull Island",
+        "Amity Island",
+        "Isla Nublar",
+        "Fantasy Island"
+      ],
+      "answer": "Skull Island"
     },
     {
-      "text": "Le court de tennis des Jeux Olympiques est un écran vert géant.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "Who is the creator of the animated series 'The Simpsons'?",
+      "options": [
+        "Matt Groening",
+        "Seth MacFarlane",
+        "Trey Parker",
+        "Stephen Hillenburg"
+      ],
+      "answer": "Matt Groening"
     }
   ]
 }

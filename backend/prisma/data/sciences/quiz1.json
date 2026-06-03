@@ -4,54 +4,104 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Si vous deviez coder un logiciel dans ce langage, vous ne pourriez taper que des 0 et des 1.",
-      "options": ["Binaire", "JavaScript", "C++", "Python"],
-      "answer": "Binaire"
+      "text": "What planet is known as the Red Planet?",
+      "options": [
+        "Venus",
+        "Mars",
+        "Jupiter",
+        "Saturn"
+      ],
+      "answer": "Mars"
     },
     {
-      "text": "Quel est le raccourci clavier couramment utilisé pour la fonction 'Copier' sur Windows ?",
-      "options": ["Ctrl + C", "Ctrl + X", "Alt + C", "Alt + X"],
-      "answer": "Ctrl + C"
+      "text": "What is the boiling point of water in degrees Celsius?",
+      "options": [
+        "50°C",
+        "100°C",
+        "150°C",
+        "200°C"
+      ],
+      "answer": "100°C"
     },
     {
-      "text": "Quelle est l'unité monétaire du Royaume du Bhoutan ?",
-      "options": ["Ngultrum", "Roupie", "Baht", "Kyat"],
-      "answer": "Ngultrum"
+      "text": "Which gas do plants absorb from the atmosphere for photosynthesis?",
+      "options": [
+        "Oxygen",
+        "Nitrogen",
+        "Carbon Dioxide",
+        "Hydrogen"
+      ],
+      "answer": "Carbon Dioxide"
     },
     {
-      "text": "Quel est le nom du premier satellite artificiel à avoir orbité autour de la Terre ?",
-      "options": ["Spoutnik 1", "Explorer 1", "Vanguard 1", "Telstar"],
-      "answer": "Spoutnik 1"
+      "text": "What is the center of an atom called?",
+      "options": [
+        "Electron",
+        "Proton",
+        "Nucleus",
+        "Neutron"
+      ],
+      "answer": "Nucleus"
     },
     {
-      "text": "Dans le système hexadécimal, quel chiffre vient après le 9 ?",
-      "options": ["La lettre A", "10", "La lettre B", "11"],
-      "answer": "La lettre A"
+      "text": "Which organ in the human body is responsible for pumping blood?",
+      "options": [
+        "Lungs",
+        "Brain",
+        "Liver",
+        "Heart"
+      ],
+      "answer": "Heart"
     },
     {
-      "text": "Lequel de ces termes désigne l'étude du squelette humain ?",
-      "options": ["Ostéologie", "Anthropologie", "Archéologie", "Ethnologie"],
-      "answer": "Ostéologie"
+      "text": "What force pulls objects toward the center of the Earth?",
+      "options": [
+        "Magnetism",
+        "Friction",
+        "Gravity",
+        "Inertia"
+      ],
+      "answer": "Gravity"
     },
     {
-      "text": "Combien de degrés y a-t-il dans un angle droit ?",
-      "options": ["90", "180", "45", "360"],
-      "answer": "90"
+      "text": "What is the main source of energy for the Earth?",
+      "options": [
+        "The Moon",
+        "The Sun",
+        "Wind",
+        "Electricity"
+      ],
+      "answer": "The Sun"
     },
     {
-      "text": "Quelle est la racine carrée de 144 ?",
-      "options": ["12", "14", "10", "11"],
-      "answer": "12"
+      "text": "Which state of matter has a fixed shape and a fixed volume?",
+      "options": [
+        "Solid",
+        "Liquid",
+        "Gas",
+        "Plasma"
+      ],
+      "answer": "Solid"
     },
     {
-      "text": "Les pandas mâles font le poirier lorsqu'ils urinent sur les arbres.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "What is the process of a liquid changing into a gas called?",
+      "options": [
+        "Freezing",
+        "Melting",
+        "Condensation",
+        "Evaporation"
+      ],
+      "answer": "Evaporation"
     },
     {
-      "text": "Les crevettes peuvent nager à reculons.",
-      "options": ["Vrai", "Faux"],
-      "answer": "Vrai"
+      "text": "How many teeth does a standard adult human usually have?",
+      "options": [
+        "24",
+        "28",
+        "32",
+        "36"
+      ],
+      "answer": "32"
     }
   ]
 }
