@@ -117,6 +117,7 @@ export class Container{
         this.chatRepo = new ChatRepository(this.prisma);
         this.tournamentRepo = new TournamentRepository();
         this.db = new PrismaGameRepository(this.prisma);
+        this.aiService = new AIService();
 
         //initialise services without dependance
         this.questionService = new QuestionService(this.questionRepo);
@@ -125,10 +126,10 @@ export class Container{
         this.matchService = new MatchService(this.matchRepo);
         this.roomService = new RoomService(this.roomRepo);
         this.soloService = new SoloService(this.questionService, this.gameRepo);
-        this.localMultiPlayer = new LocalMultiPlayer(this.questionService, this.gameRepo);
+        this.localMultiPlayer = new LocalMultiPlayer(this.questionService, this.gameRepo, this.aiService);
         this.sessionService = new SessionService();
-        this.gamemapper = new GameMapper(this.questionService);
-        this.aiService = new AIService(this.localMultiPlayer, this.gameRepo);
+        this.gamemapper = new GameMapper();
+        
 
         //init the emitter
         this.gameEmitter = new GameEmitter(io, redis);

@@ -1,8 +1,5 @@
-// src/game/ai.ts
-import { GameState } from "./game.types";
-import { LocalMultiPlayer } from "./game.local";
-import { RedisGameRepository } from "./game.redis.repository"; // 🌟 引入你的 Redis 仓储
-import { clear } from "console";
+// src/game/ai.service.ts
+import { BaseGameState } from "./game.types";
 
 const AI_SKILLS: Record<string, number> = {
     "sciences": 0.70,
@@ -13,94 +10,55 @@ const AI_SKILLS: Record<string, number> = {
 };
 
 export class AIService {
-    // 🌟 构造函数中同时注入 LocalMultiPlayer 和 RedisGameRepository
-    constructor(
-        private readonly multiservice: LocalMultiPlayer,
-        private readonly gameRepository: RedisGameRepository,
-        private aiTimers = new Map<string, NodeJS.Timeout>()
-    ) {}
+    constructor() {}
 
-    public async generateAIAnswer(gameState: GameState, aiId: string): Promise<void> {
-        if (gameState.isFinished) return;
-
-        // 1. 获取触发这一刻的题号（用于日志或初始参考）
-        const triggerQuestionIndex = gameState.currentQuestionIndex;
-        const targetGameId = gameState.gameId;
-
-        // 2. 随机生成 AI 的思考时间（2-6秒）
-        const thinkingTime = Math.floor(Math.random() * (6000 - 2000 + 1)) + 2000;
-
-        const oldtimer = this.aiTimers.get(targetGameId);
-        if (oldtimer){
-            this.clearAITimer(targetGameId)
+    /**
+     * Pure Function: 根据当前的题目和AI胜率，计算出AI的答案以及它应当“表现出”的思考时间。
+     */
+    public predictAnswer(gameState: BaseGameState, aiId: string) {
+        const currentQuestionIndex = gameState.currentQuestionIndex;
+        
+        // 🌟 正确的做法：通过数组【索引/下标】定位当前题干
+        const currentQuestion = gameState.questions[currentQuestionIndex];
+        
+        if (!currentQuestion) {
+            throw new Error("[IA] Invalid question index boundary");
         }
-        const timer = setTimeout(async () => {
-            try {
-                // 🌟 【核心防御】：定时器到期了，现在去 Redis 拿最真实、最新的全场状态
-                const freshState = await this.gameRepository.findById(targetGameId);
-                
-                // 如果游戏在 Redis 里已经被人类打通关删除了，或者不存在，优雅退出
-                if (!freshState || freshState.isFinished) {
-                    console.log(`[IA] 游戏 ${targetGameId} 已结束或已被清理，AI 取消答题。`);
-                    return;
-                }
 
-                // 🌟 【核心防御 2】：获取 Redis 里当前的真实题号
-                const currentQuestionIndex = freshState.currentQuestionIndex;
-                const currentQuestion = freshState.questions[currentQuestionIndex];
-                
-                if (!currentQuestion) return;
+        const category = (gameState.category || "default").toLowerCase();
+        const successThreshold = AI_SKILLS[category] ?? AI_SKILLS["default"];
 
-                // 🌟 【核心防御 3】：看看在这个延迟期间，AI 是不是其实已经答过这一题了？
-                const aiPlayer = freshState.players[aiId];
-                console.log("aiid: ", aiId);
-                console.log("players: ", Object.keys(freshState.players))
-                if (aiPlayer) {
-    // 🌟 防御：如果 AI 答过的总题数已经超过或等于了当前最新的 Redis 题号
-    // 说明这一题 AI 已经完成过本地提交了（比如 AI 先答的情况），安全拦截，防止二次提交
-    if (aiPlayer.answers.length > currentQuestionIndex) {
-        console.log(`[IA] AI 在第 ${currentQuestionIndex} 题已经有答案了，放弃重复执行。`);
-        return;
+        // 1. 模拟人类的思考延迟
+        const thinkingDelayMs = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000; 
+        const visibleAt = Date.now() + thinkingDelayMs;
+
+        // 2. 核心胜率计算
+        const correctAnswerIndex = currentQuestion.correctAnswerIndex;
+        const totalOptions = currentQuestion.options.length;
+        let selectedAnswerIndex: number;
+
+        if (Math.random() < successThreshold) {
+            selectedAnswerIndex = correctAnswerIndex;
+        } else {
+            do {
+                selectedAnswerIndex = Math.floor(Math.random() * totalOptions);
+            } while (selectedAnswerIndex === correctAnswerIndex && totalOptions > 1);
+        }
+
+        const result = {
+            aiId,
+            questionId: currentQuestion.id, // 这里的 id 是唯一的题目 ID，不能当数组下标用！
+            selectedAnswerIndex,
+            visibleAt
+        };
+        
+        console.log("result IA: ", result);
+
+        // 🌟 【黄金修复点】：直接使用已经定位好的、安全的全局变量，不要再通过 questionId 去查数组
+        const iscorrect = correctAnswerIndex === result.selectedAnswerIndex ? "true" : "false";
+        console.log("iscorrect: ", iscorrect);
+        console.log("answer: ", correctAnswerIndex);
+        
+        return result;
     }
-}
-
-                // 3. 此时数据绝对新鲜，基于当前真实的题目计算答案
-                const correctAnswerIndex = currentQuestion.correctAnswerIndex;
-                const totalOptions = currentQuestion.options.length;
-                const category = (freshState.category || "default").toLowerCase();
-                const successThreshold = AI_SKILLS[category] ?? AI_SKILLS["default"];
-
-                const randomNumber = Math.random();
-                let selectedAnswerIndex: number;
-
-                if (randomNumber < successThreshold) {
-                    selectedAnswerIndex = correctAnswerIndex;
-                } else {
-                    do {
-                        selectedAnswerIndex = Math.floor(Math.random() * totalOptions);
-                    } while (selectedAnswerIndex === correctAnswerIndex && totalOptions > 1);
-                }
-
-                console.log(`[IA] 定时器到期。正在对第 ${currentQuestionIndex} 题原子化提交答案。`);
-                
-                // 4. 提交进 Lua 脚本。此时题号、用户 ID、游戏 ID 与 Redis 完全同步，绝不会被 Lua 拒绝
-                await this.multiservice.submitAnswer(targetGameId, selectedAnswerIndex, aiId);
-
-            } catch (error: any) {
-                console.error("[IA] 异步提交发生错误:", error);
-
-                if (error.code === 'GAME_NOT_FOUND') return;
-            }
-        }, thinkingTime);
-
-        this.aiTimers.set(targetGameId, timer);
-    }
-
-    public clearAITimer(gameId: string) {
-    const timer = this.aiTimers.get(gameId);
-    if (timer) {
-        clearTimeout(timer);
-        this.aiTimers.delete(gameId);
-    }
-}
 }

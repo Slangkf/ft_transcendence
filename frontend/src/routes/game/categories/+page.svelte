@@ -1,6 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+
+  const mode = $derived(
+  	page.url.searchParams.get('mode') ?? 'solo'
+  );
 
   type CategoriesApiResponse = {
     success: boolean;
@@ -43,11 +48,11 @@
   });
 
   async function pickCategory(category: string) {
-    await goto(`/game?mode=solo&category=${encodeURIComponent(category)}`);
+    await goto(`/game?mode=${mode}&category=${encodeURIComponent(category)}`);
   }
 
   async function pickRandom() {
-    await goto('/game?mode=solo');
+    await goto(`/game?mode=${mode}`);
   }
 </script>
 

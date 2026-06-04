@@ -3,6 +3,7 @@
 
   const mode = $derived(page.url.searchParams.get('mode') ?? 'solo');
   const category = $derived(page.url.searchParams.get('category') ?? '');
+  const isAIMode = $derived(mode === 'ai' || mode === 'AI');
 
   type PublicQuestion = {
     id: number;
@@ -19,6 +20,7 @@
       currentQuestionIndex: number;
       totalQuestions: number;
       player: Record<string, PlayerSnapshot>;
+      questionStartedAt?: number;
     };
     lastAnswerUpdate?: {
       playerId: string;
@@ -27,7 +29,11 @@
       correctText: string;
     };
     nextQuestion?: PublicQuestion | null;
-    finalScore?: { winnerId: string; scores: Record<string, number> } | null;
+    finalScore?: {
+      winnerId: string;
+      scores: Record<string, number>;
+      ranking: Array<{ playerId: string; nickname?: string; score: number; rank: number }>;
+    } | null;
   };
 
   type ApiResponse<T> = { success: boolean; message: string; data: T | null };
@@ -37,7 +43,12 @@
   let gameId = $state<string | null>(null);
   let currentQuestion = $state<PublicQuestion | null>(null);
   let pendingNextQuestion = $state<PublicQuestion | null>(null);
-  let score = $state(0);
+  let myScore = $state(0);
+  let aiScore = $state(0);
+  let aiNickname = $state('AI');
+  let aiThinking = $state(false);       // AI 思考动画开关
+  let aiAnswered = $state(false);       // AI 已作答标志
+  let aiThinkTimer = $state<ReturnType<typeof setTimeout> | null>(null);
   let isFinished = $state(false);
   let feedback = $state('');
   let error = $state('');
@@ -47,10 +58,43 @@
   let selectedIndex = $state<number | null>(null);
   let correctIndex = $state<number | null>(null);
   let revealing = $state(false);
+  let finalScore = $state<GameUpdateResponse['finalScore']>(null);
+  let aiSelectedIndex = $state<number | null>(null);
 
-  function extractScore(players: Record<string, { score: number }>): number {
-    const values = Object.values(players);
-    return values.length > 0 ? values[0].score : 0;
+  // 从 player map 里提取人类和 AI 的 snapshot
+  function extractPlayers(players: Record<string, PlayerSnapshot>) {
+    const all = Object.values(players);
+    const me = all.find(p => !p.isAI);
+    const ai = all.find(p => p.isAI);
+    return { me, ai };
+  }
+
+  function updateScores(players: Record<string, PlayerSnapshot>) {
+    const { me, ai } = extractPlayers(players);
+    if (me) myScore = me.score;
+    if (ai) {
+      aiScore = ai.score;
+      aiNickname = ai.nickname ?? 'AI';
+    }
+  }
+
+  // 启动 AI 思考动画，delay 在 2000-4000ms 之间（和后端一致）
+  function startAIThinking() {
+    if (!isAIMode) return;
+    aiAnswered = false;
+    aiThinking = true;
+    if (aiThinkTimer) clearTimeout(aiThinkTimer);
+    // 随机 2-4s 后显示"已作答"
+    const delay = Math.random() * 2000 + 2000;
+    aiThinkTimer = setTimeout(() => {
+      aiThinking = false;
+      aiAnswered = true;
+    }, delay);
+  }
+
+  function stopAIThinking() {
+    if (aiThinkTimer) clearTimeout(aiThinkTimer);
+    aiThinking = false;
   }
 
   function resetReveal() {
@@ -59,18 +103,27 @@
     revealing = false;
   }
 
+  function resetAIState() {
+    aiThinking = false;
+    aiAnswered = false;
+    if (aiThinkTimer) clearTimeout(aiThinkTimer);
+  }
+
   async function startGame() {
     loading = true;
     error = '';
     feedback = '';
     isFinished = false;
-    score = 0;
+    myScore = 0;
+    aiScore = 0;
     currentQuestion = null;
     pendingNextQuestion = null;
     gameId = null;
     questionNumber = 0;
     totalQuestions = 0;
+    finalScore = null;
     resetReveal();
+    resetAIState();
 
     try {
       const response = await fetch(`/api/game/${mode}/start`, {
@@ -91,8 +144,11 @@
       gameId = data.gameId;
       currentQuestion = data.nextQuestion ?? null;
       totalQuestions = data.state?.totalQuestions ?? 0;
-      score = extractScore(data.state?.player ?? {});
       questionNumber = (data.state?.currentQuestionIndex ?? 0) + 1;
+      updateScores(data.state?.player ?? {});
+
+      // Démarrer l'animation de réflexion de l'IA dès le début
+      startAIThinking();
     } catch (err) {
       console.error('startGame error:', err);
       error = 'Erreur réseau ou backend inaccessible.';
@@ -105,31 +161,28 @@
     if (!gameId || !currentQuestion || isFinished || revealing) return;
 
     const selectedOptionText = currentQuestion.options[answerIndex];
-
     loading = true;
     revealing = true;
     error = '';
+    stopAIThinking();
 
     try {
-      const response = await fetch(
-        `/api/game/${mode}/${gameId}/answer`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ selectedAnswerIndex: answerIndex })
-        }
-      );
+      const response = await fetch(`/api/game/${mode}/${gameId}/answer`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedAnswerIndex: answerIndex })
+      });
 
       const result: ApiResponse<GameUpdateResponse> = await response.json();
 
       if (!response.ok || !result.success || !result.data) {
-        error = result?.message ?? 'Erreur lors de l’envoi de la réponse.';
+        error = result?.message ?? "Erreur lors de l'envoi de la réponse.";
         return;
       }
 
       const data = result.data;
-      score = extractScore(data.state?.player ?? {});
+      updateScores(data.state?.player ?? {});
       totalQuestions = data.state?.totalQuestions ?? totalQuestions;
 
       const correct = data.lastAnswerUpdate?.correctText ?? '';
@@ -139,15 +192,16 @@
 
       selectedIndex = answerIndex;
       correctIndex = correctIdx;
-      revealing = true;
       feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
 
       if (data.status === 'finished' || data.finalScore) {
+        finalScore = data.finalScore ?? null;
         setTimeout(() => {
           isFinished = true;
           currentQuestion = null;
           feedback = '';
           resetReveal();
+          resetAIState();
         }, REVEAL_DELAY_MS);
       } else {
         pendingNextQuestion = data.nextQuestion ?? null;
@@ -157,10 +211,12 @@
           if (currentQuestion) questionNumber += 1;
           feedback = '';
           resetReveal();
+          // Nouvelle question : relancer l'animation AI
+          resetAIState();
+          startAIThinking();
         }, REVEAL_DELAY_MS);
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.error('submitAnswer error:', err);
       error = 'Erreur réseau pendant la réponse.';
     } finally {
@@ -171,12 +227,8 @@
   function buttonClasses(index: number): string {
     const base = 'w-full text-left px-4 py-3 rounded border transition disabled:cursor-not-allowed';
     if (revealing) {
-      if (index === correctIndex) {
-        return `${base} bg-green-500/40 border-green-300/60 text-white`;
-      }
-      if (index === selectedIndex) {
-        return `${base} bg-red-500/40 border-red-300/60 text-white`;
-      }
+      if (index === correctIndex) return `${base} bg-green-500/40 border-green-300/60 text-white`;
+      if (index === selectedIndex) return `${base} bg-red-500/40 border-red-300/60 text-white`;
       return `${base} bg-gray-500/15 border-white/10 text-blue-100/60`;
     }
     return `${base} bg-gray-500/25 hover:bg-gray-400/35 border-white/20 text-blue-100 disabled:opacity-50`;
@@ -193,9 +245,12 @@
   </h1>
 
   {#if category}
-    <p class="text-center text-sm text-blue-100 mb-4">Category: <span class="font-semibold text-pink-200">{category}</span></p>
+    <p class="text-center text-sm text-blue-100 mb-4">
+      Category: <span class="font-semibold text-pink-200">{category}</span>
+    </p>
   {/if}
 
+  {#if !isFinished}
   <div class="flex justify-center mb-6">
     <button
       type="button"
@@ -203,21 +258,45 @@
       disabled={loading || revealing}
       class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {#if loading}
-        Loading...
-      {:else if gameId && !isFinished}
-        Restart game
-      {:else}
-        Start game
-      {/if}
+      {#if loading}Loading...
+      {:else if gameId}Restart game
+      {:else}Start game{/if}
     </button>
   </div>
+{/if}
 
-  <div class="text-center mb-4">
-    <p class="text-sm sm:text-base md:text-lg text-blue-100">
-      Score: <span class="font-bold text-pink-200">{score}</span>
-    </p>
-  </div>
+  <!-- Scoreboard AI mode -->
+  {#if isAIMode && gameId}
+    <div class="flex gap-4 mb-6">
+      <!-- Moi -->
+      <div class="flex-1 rounded bg-white/10 border border-white/20 px-4 py-3 text-center">
+        <p class="text-xs text-blue-100/60 mb-1">You</p>
+        <p class="text-2xl font-bold text-pink-200">{myScore}</p>
+      </div>
+      <!-- VS -->
+      <div class="flex items-center text-blue-100/40 font-bold text-sm">VS</div>
+      <!-- AI -->
+      <div class="flex-1 rounded bg-white/10 border border-white/20 px-4 py-3 text-center">
+        <p class="text-xs text-blue-100/60 mb-1">{aiNickname}</p>
+        <p class="text-2xl font-bold text-pink-200">{aiScore}</p>
+        <!-- Statut AI -->
+        <div class="mt-1 h-5 flex items-center justify-center">
+          {#if aiThinking}
+            <span class="text-xs text-blue-100/50 animate-pulse">thinking...</span>
+          {:else if aiAnswered}
+            <span class="text-xs text-green-300/80">✓ answered</span>
+          {/if}
+        </div>
+      </div>
+    </div>
+  {:else if !isAIMode}
+    <!-- Score solo -->
+    <div class="text-center mb-4">
+      <p class="text-sm sm:text-base md:text-lg text-blue-100">
+        Score: <span class="font-bold text-pink-200">{myScore}</span>
+      </p>
+    </div>
+  {/if}
 
   {#if error}
     <div class="mb-4 rounded bg-red-500/20 border border-red-300/30 px-4 py-3 text-red-100">
@@ -241,7 +320,6 @@
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         {currentQuestion.question}
       </h2>
-
       <div class="grid gap-3 p-4">
         {#each currentQuestion.options as option, index}
           <button
@@ -258,13 +336,44 @@
   {/if}
 
   {#if isFinished}
-    <section class="mt-6">
-      <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
-        Game finished
-      </h2>
-      <p class="text-sm sm:text-base md:text-xl p-4 text-center text-blue-100">
-        Final score: <span class="font-bold text-pink-200">{score}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
+  <section class="mt-6 text-center">
+    <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4">
+      Game finished
+    </h2>
+    {#if isAIMode && finalScore}
+      <p class="text-lg font-bold text-pink-200 mb-2">
+        {#if myScore > aiScore}
+          You win! 🎉
+        {:else if aiScore > myScore}
+          {aiNickname} wins!
+        {:else}
+          Draw! 🤝
+        {/if}
       </p>
-    </section>
-  {/if}
+      <div class="flex gap-4 mt-4">
+        <div class="flex-1 rounded bg-white/10 border border-white/20 px-4 py-3 text-center">
+          <p class="text-xs text-blue-100/60 mb-1">You</p>
+          <p class="text-2xl font-bold text-pink-200">{myScore}</p>
+        </div>
+        <div class="flex items-center text-blue-100/40 font-bold text-sm">VS</div>
+        <div class="flex-1 rounded bg-white/10 border border-white/20 px-4 py-3 text-center">
+          <p class="text-xs text-blue-100/60 mb-1">{aiNickname}</p>
+          <p class="text-2xl font-bold text-pink-200">{aiScore}</p>
+        </div>
+      </div>
+    {:else}
+      <p class="text-sm sm:text-base md:text-xl p-4 text-blue-100">
+        Final score: <span class="font-bold text-pink-200">{myScore}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
+      </p>
+    {/if}
+
+    <button
+      type="button"
+      onclick={startGame}
+      class="mt-6 px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
+    >
+      Play again
+    </button>
+  </section>
+{/if}
 </div>

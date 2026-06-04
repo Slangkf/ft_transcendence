@@ -50,6 +50,14 @@ export interface BaseGameState {
     hostId?: string;
     status?: "waiting" | "starting" | "playing" | "finished";
     category?: string;
+
+    aiAnserVisibleAt?: number;
+    aiCachedAnswer?:{
+        userId: string,
+        questionId: number,
+        isCorrect: boolean,
+        selectedAnswerIndex: number;
+    }
 }
 
 export interface SoloGameState extends BaseGameState {

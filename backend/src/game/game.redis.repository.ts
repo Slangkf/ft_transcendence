@@ -1,159 +1,174 @@
+// src/game/game.redis.repository.ts
 import { Redis, RedisKeys } from '../lib/redis';
 import { GameState } from './game.types';
 
-
-export class RedisGameRepository 
-{
-    private key(gameId: string) {
+/**
+ * RedisGameRepository
+ * 负责高频、临时的内存游戏状态数据读写。
+ * 🌟 注意：Redis 驱动没有 .create() 和 .delete() 方法，
+ * 写入/修改必须使用 .set()，删除必须使用 .del()。
+ */
+export class RedisGameRepository {
+    
+    /**
+     * 统一生成 Redis 中的游戏状态 Key 字符串
+     */
+    private key(gameId: string): string {
         return RedisKeys.game.state(gameId);
     }
-   public async create(game: GameState): Promise<void>{
-    await Redis.set(
-        this.key(game.gameId),
-        JSON.stringify(game),
-        {EX: 3600})
-   }
 
-   public async findById(gameId: string): Promise<GameState | null>{
-    const data = await Redis.get(this.key(gameId));
-    return data ? JSON.parse(data) : null
-   }
+    /**
+     * 创建（或覆盖）游戏状态
+     * 🌟 修复：将原本不存在的 Redis.create 改为标准的 Redis.set
+     */
+    public async create(game: GameState): Promise<void> {
+        await Redis.set(
+            this.key(game.gameId),
+            JSON.stringify(game),
+            { EX: 3600 } // 1小时强行过期的内存垃圾回收保护垫
+        );
+    }
 
-   public async update(game: GameState): Promise<void>{
-    await Redis.set(
-        this.key(game.gameId),
-        JSON.stringify(game),
-        {EX: 3600}
-    )
-   }
+    /**
+     * 读取分布式缓存中的完整游戏快照
+     */
+    public async findById(gameId: string): Promise<GameState | null> {
+        // 标准的 Redis GET 命令
+        const data = await Redis.get(this.key(gameId));
+        return data ? JSON.parse(data) : null;
+    }
 
-   public async delete(gameId: string): Promise<void>{
-    await Redis.del(this.key(gameId))
-   }
+    /**
+     * 覆盖更新游戏状态
+     */
+    public async update(game: GameState): Promise<void> {
+        await Redis.set(
+            this.key(game.gameId),
+            JSON.stringify(game),
+            { EX: 3600 }
+        );
+    }
 
-   //lua script for datarace in sumbit answer with multiplayer
-   // game.redis.repository.ts
-public async submitanswerAtomic(
-  gameId: string, 
-  userId: string, 
-  selectedAnswerIndex: number,
-  isAIGame: boolean = false  // ← 新增参数
-) {
-    const script = `
-        local data = redis.call('get', KEYS[1])
-        if not data then return nil end
+    /**
+     * 销毁缓存生命周期
+     * 🌟 修复：将原本不存在的 Redis.delete 改为标准的 Redis.del
+     */
+    public async delete(gameId: string): Promise<void> {
+        await Redis.del(this.key(gameId));
+    }
 
-        local state = cjson.decode(data)
-        local userId = ARGV[1]
-        local selectIndex = tonumber(ARGV[2])
-        local isAIGame = ARGV[4] == 'true'
+    /**
+     * 方案 3 的原子 Lua 答题脚本（保持不变）
+     */
+    public async submitanswerAtomic(
+        gameId: string, 
+        userId: string, 
+        selectedAnswerIndex: number,
+        aiPayload?: { aiId: string; questionId: string; selectedAnswerIndex: number; visibleAt: number } | null
+    ) {
+        const script = `
+            local data = redis.call('get', KEYS[1])
+            if not data then return cjson.encode({ error = "STATE_NOT_FOUND" }) end
 
-        if state.isFinished then return nil end 
+            local state = cjson.decode(data)
+            local userId = ARGV[1]
+            local selectIndex = tonumber(ARGV[2])
+            local now = tonumber(ARGV[3])
+            
+            local hasAiPayload = ARGV[4] ~= 'nil'
+            local aiPayload = hasAiPayload and cjson.decode(ARGV[4]) or nil
 
-        local player = state.players[userId]
-        if not player then return nil end 
+            if state.isFinished then 
+                return cjson.encode({ error = "GAME_FINISHED", state = state }) 
+            end 
 
-        local currentQuestion = state.questions[state.currentQuestionIndex + 1]
-        local answered = false
-        if type(player.answers) == 'table' then
-            for _, answer in pairs(player.answers) do
-                if answer.questionId == currentQuestion.id then
-                    answered = true
-                    break
+            local currentQuestion = state.questions[state.currentQuestionIndex + 1]
+            if not currentQuestion then return cjson.encode({ error = "NO_QUESTION", state = state }) end
+
+            local dedupKey = KEYS[1] .. ":q:" .. currentQuestion.id .. ":u:" .. userId
+            if redis.call("GET", dedupKey) == "1" then 
+                return cjson.encode({ error = "ALREADY_ANSWERED", state = state })
+            end
+            redis.call("SET", dedupKey, "1", "EX", 3600)
+
+            local p = state.players[userId]
+            if p then
+                local isCorrect = (selectIndex == currentQuestion.correctAnswerIndex)
+                table.insert(p.answers, {
+                    questionId = currentQuestion.id,
+                    selectedAnswerIndex = selectIndex,
+                    isCorrect = isCorrect,
+                    answeredAt = now
+                })
+                p.status = 'answered'
+                if isCorrect then p.score = p.score + 1 end
+                state.players[userId] = p
+            end
+
+            if aiPayload then
+                local aiId = aiPayload.aiId
+                local aiPlayer = state.players[aiId]
+                if aiPlayer then
+                    local aiCorrect = (tonumber(aiPayload.selectedAnswerIndex) == currentQuestion.correctAnswerIndex)
+                    
+                    table.insert(aiPlayer.answers, {
+                        questionId = currentQuestion.id,
+                        selectedAnswerIndex = tonumber(aiPayload.selectedAnswerIndex),
+                        isCorrect = aiCorrect,
+                        answeredAt = now
+                    })
+                    aiPlayer.score = aiCorrect and (aiPlayer.score + 1) or aiPlayer.score
+                    aiPlayer.status = 'answered'
+                    state.players[aiId] = aiPlayer
+                    
+                    state.aiAnswerVisibleAt = tonumber(aiPayload.visibleAt)
+                    state.aiCachedAnswer = {
+                        userId = aiId,
+                        questionId = currentQuestion.id,
+                        isCorrect = aiCorrect,
+                        selectedAnswerIndex = tonumber(aiPayload.selectedAnswerIndex)
+                    }
                 end
             end
-        end
-        if answered then 
-            return cjson.encode({
-                error = "ALREADY_ANSWERED",
-                userId = userId,
-                questionId = currentQuestion.id
-            })
-        end
 
-        local isCorrect = (selectIndex == currentQuestion.correctAnswerIndex)
-        local now = tonumber(ARGV[3])
-        local qStart = tonumber(state.questionStartedAt) or now
-        local elapsed = now - qStart
-        if elapsed < 0 then elapsed = 0 end
-
-        local newAnswer = {
-            questionId = currentQuestion.id,
-            selectedAnswerIndex = selectIndex,
-            isCorrect = isCorrect,
-            answeredAt = now
-        }
-        table.insert(player.answers, newAnswer)
-        player.status = 'answered'
-        player.Totaltime = (tonumber(player.Totaltime) or 0) + elapsed
-        if isCorrect then
-            player.score = player.score + 1
-        end
-        state.players[userId] = player
-
-        -- 判断是否推进题目
-        local allAnswered = true
-        if isAIGame then
-            -- AI模式：只要人类答完就推进
-            for pid, p in pairs(state.players) do
-                if not p.isAI and p.status ~= 'disconnected' and p.status ~= 'answered' then
+            local allAnswered = true
+            for pid, player in pairs(state.players) do
+                if player.status ~= 'disconnected' and player.status ~= 'answered' then
                     allAnswered = false
                     break
                 end
             end
-        else
-            -- 多人模式：所有人都答完才推进
-            for pid, p in pairs(state.players) do
-                if p.status ~= 'disconnected' and p.status ~= 'answered' then
-                    allAnswered = false
-                    break
+
+            if allAnswered then
+                if state.currentQuestionIndex + 1 >= #state.questions then
+                    state.isFinished = true
+                    state.status = 'finished'
+                else
+                    state.currentQuestionIndex = state.currentQuestionIndex + 1
+                    state.questionStartedAt = now
+                    for pid, player in pairs(state.players) do
+                        if player.status ~= 'disconnected' then
+                            player.status = 'playing'
+                        end 
+                        state.players[pid] = player
+                    end
                 end
             end
-        end
 
-        if allAnswered then
-            if state.currentQuestionIndex + 1 >= #state.questions then
-                state.isFinished = true
-                state.status = 'finished'
-            else
-                state.currentQuestionIndex = state.currentQuestionIndex + 1
-                state.questionStartedAt = now
-                for pid, p in pairs(state.players) do
-                    if p.status ~= 'disconnected' then
-                        p.status = 'playing'
-                    end 
-                    state.players[pid] = p
-                end
-            end
-        end
+            redis.call('SET', KEYS[1], cjson.encode(state), 'EX', 3600)
+            return cjson.encode({ state = state, success = true })
+        `;
 
-        local ttl = redis.call('TTL', KEYS[1])
-        if ttl <= 0 then ttl = 3600 end
-        redis.call('SET', KEYS[1], cjson.encode(state), 'EX', ttl)
-        
-        return cjson.encode(state)
-    `;    
-
-    const key = RedisKeys.game.state(gameId);
-    const result = await Redis.eval(script, {
-        keys: [key],
-        arguments: [
-            String(userId), 
-            String(selectedAnswerIndex), 
-            String(Date.now()),
-            isAIGame ? 'true' : 'false'  // ← ARGV[4]
-        ],
-    });
-    return result ? JSON.parse(result as string) : null;
+        const key = this.key(gameId);
+        const result = await Redis.eval(script, {
+            keys: [key],
+            arguments: [
+                String(userId), 
+                String(selectedAnswerIndex), 
+                String(Date.now()),
+                aiPayload ? JSON.stringify(aiPayload) : 'nil'
+            ],
+        });
+        return result ? JSON.parse(result as string) : null;
+    }
 }
-
-}
-
-// redis version: 
-/***
- * 1. save the gamestate in json version in redis 
- * 2. when lost connection can come back with redis 
- * 3. redis can save the information for only 1h 
- * 4. when all information saved in database, delete in redis 
- * 
- */

@@ -1,3 +1,4 @@
+// src/game/game.local.ts
 import { fa } from "zod/v4/locales";
 import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
@@ -5,116 +6,133 @@ import { Room } from "../room/room.types";
 import { GameBaseService } from "./game.base";
 import { RedisGameRepository } from "./game.redis.repository";
 import { BaseGameState, MultiGameState, Player } from "./game.types";
-import {GameMode} from "@prisma/client"
+import { GameMode } from "@prisma/client";
+import { AIService } from "./ai.service"; // 确保引入了重构后的无状态纯计算 AIService
 
+/**
+ * LocalMultiPlayer
+ * 负责本地房间向游戏状态机的初始化转换，以及驱动 Redis Lua 沙盒完成双人/多人原子答题结算。
+ * 遵循 方案 3：人类交卷时现场秒杀 AI 逻辑，不产生任何异步 Timer 竞争。
+ */
 export class LocalMultiPlayer extends GameBaseService {
-    protected gamerepository: RedisGameRepository;
-
+    
     constructor(
+        // 1. 基类需要的依赖，正常作为普通形参传递给 super
         questionservice: QuestionService,
-        gamerepo: RedisGameRepository,
+        // 2. 加上显式修饰符，由 NestJS / DI 框架自动完美挂载到当前实例，彻底防范 create is not a function 报错
+        protected readonly gamerepository: RedisGameRepository,
+        private readonly aiservice: AIService,
     ){
         super(questionservice);
-        this.gamerepository = gamerepo;
     }
 
-    async startGame(room: Room, category?: string): Promise<BaseGameState>{
+    /**
+     * 将匹配成功的 Lobby Room 转换为分布式内存中的运行时 Live GameState 快照。
+     */
+    async startGame(room: Room, category?: string): Promise<BaseGameState> {
         const playerlist = Object.values(room.players);
-        if (playerlist.length < 2) throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
+        
+        // 核心防御：联机对战必须满足至少 2 个活跃连接
+        if (playerlist.length < 2) {
+            throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
+        }
 
         const players: Record<string, Player> = {};
         let hasAIInRoom = false;
-        for(const p of playerlist){
+
+        // 解包房间玩家，构建包含虚拟 AI 标签的游戏玩家档案
+        for (const p of playerlist) {
             const userIdstring = String(p.userId);
             const isAIPlayer = userIdstring.startsWith("ai_");
-            if (isAIPlayer){
+            if (isAIPlayer) {
                 hasAIInRoom = true;
             }
+            
             players[p.userId] = {
                 ...this.initPlayers(p.userId, p.nickname),
                 isAI: isAIPlayer
-            }
-        }
-        let state: MultiGameState
-        if (room.AIplayerIds){
-             state = await this.prepareGame(players, "AI" as GameMode, {roomId: room.roomId, hostId: room.hostId, category}) as MultiGameState;
-        } else{
-            state = await this.prepareGame(players, "MULTIPLAYER", {roomId: room.roomId, hostId: room.hostId, category}) as MultiGameState;
+            };
         }
 
-        console.log("state in startgame local: ", state);
+        let state: MultiGameState;
+        
+        // 分流解析：根据房间属性决定当前生成的是 AI 对战房间还是纯人类联机房间
+        if (room.AIplayerIds) {
+             state = await this.prepareGame(players, "AI" as GameMode, { roomId: room.roomId, hostId: room.hostId, category }) as MultiGameState;
+        } else {
+            state = await this.prepareGame(players, "MULTIPLAYER", { roomId: room.roomId, hostId: room.hostId, category }) as MultiGameState;
+        }
+
+        console.log("[Game Init Local] Successfully initialized state for room:", state.roomId);
+        
+        // 锦标赛房间上下文穿透
         if (room.tournamentId) {
             state.tournamentId = room.tournamentId;
         }
 
+        // 完美序列化存入 Redis 内存区
         await this.gamerepository.create(state);
         return state;
     }
 
-    // src/game/game.local.ts 中的 submitAnswer 方法
-
-async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string) {
-    console.log(`[Lua准备执行] 游戏ID: ${gameId}, 提交者ID: ${userId}, 选择索引: ${selectedAnswerIndex}`);
-
-    // 1. 执行原子化提交
-    const gameState = await this.gamerepository.findById(gameId);
-    const isAIGame = gameState?.mode === 'AI';
-
-    const rawResult = await this.gamerepository.submitanswerAtomic(
-        gameId,
-        userId,
-        selectedAnswerIndex,
-        isAIGame
-    );
-
-    // 🌟 核心防御 1：完全打满空值拦截
-    if (!rawResult) {
-        console.error(`[🚨 Lua执行失败] submitanswerAtomic 返回了空!`);
-        throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
-    }
-
-    // 🌟 核心防御 2：精准识别 Lua 脚本返回的业务冲突安全锁 (如 ALREADY_ANSWERED)
-    if (rawResult.error || (typeof rawResult === 'object' && 'error' in rawResult)) {
-        console.warn(`[⚠️ Lua拦截冲突] 玩家 ${userId} 企图重复提交答案或状态对不上。原因: ${rawResult.error}`);
+    /**
+     * 答题管道唯一入口。
+     * 方案 3 核心演进：在击打 Lua 脚本之前，预先判定并完成 AI 决策的同步装载。
+     */
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string) {
+        console.log(`[submit] game=${gameId}, user=${userId}, answer=${selectedAnswerIndex}`);
         
-        // 既然发生冲突，说明上一次的答题才是有效的。我们直接去 Redis 捞出最新干净的状态返回
-        const freshState = await this.gamerepository.findById(gameId);
-        if (!freshState) throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
+        // 1. 提取当前第一线快照，用以计算 AI 是否需要“悄悄做预判”
+        const currentGameState = await this.gamerepository.findById(gameId);
+        if (!currentGameState) {
+            throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
+        }
 
-        // 构建一个安全的、不崩的设计，告诉上层“维持原判”
-        return { 
-            state: freshState, 
-            lastAnswer: {
-                playerId: userId,
-                isCorrect: freshState.players[userId]?.answers.at(-1)?.isCorrect ?? false,
-                correctAnswerIndex: -1,
-                correctText: 'ALREADY_PROCESSED'
-            } 
+        let aiPayload = null;
+        const isAIGame = currentGameState.mode === 'AI';
+
+        // 🌟 方案 3 核心注入点：如果当前是 AI 模式且游戏未完结
+        if (isAIGame && !currentGameState.isFinished) {
+            const aiId = Object.keys(currentGameState.players).find(id => currentGameState.players[id].isAI);
+            const aiPlayer = aiId ? currentGameState.players[aiId] : null;
+            
+            // 只有当 AI 在当前这一题依然处于未答（playing）状态时，军师（AIService）才会现身出谋划策
+            if (aiId && aiPlayer && aiPlayer.status === 'playing') {
+                // 调用纯净的同步预测函数，算出 AI 答案和隐藏解封时间戳
+                aiPayload = this.aiservice.predictAnswer(currentGameState, aiId);
+            }
+        }
+
+        // 2. 【关键修正】：将人类的真实点击连同刚刚打包好的 AI 预判载荷（aiPayload）一起原子的拍入 Lua 脚本！
+        const result = await this.gamerepository.submitanswerAtomic(
+            gameId,
+            userId,
+            selectedAnswerIndex,
+            aiPayload // 👈 必须传进 Redis，让 Redis 在单线程安全沙盒内顺便把 AI 结算了
+        );
+
+        // 3. 基础空值及状态未找到边界防御
+        if (!result || result.error === "STATE_NOT_FOUND") {
+            throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
+        }
+
+        // 4. 精准识别 Lua 返回的冲突状态，返回给上层 GameService 充当后端内部交通信号灯
+        if (result.error === "ALREADY_ANSWERED") {
+            // 幂等性拦截：说明用户狂点了。duplicated 信号可以让上层直接短路，不重复做外部触发
+            return { state: result.state, duplicated: true };
+        }
+        if (result.error === "GAME_FINISHED" || result.error === "NO_QUESTION") {
+            // 过期忽略拦截：说明答题卡秒踩中了切题临界点，忽略多余逻辑
+            return { state: result.state, ignored: true };
+        }
+
+        // 5. 组装返回给上层单入口协调者（GameService）的元数据
+        const state = result.state as BaseGameState;
+        const lastAnswer = {
+            playerId: userId,
+            isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
         };
+
+        return { state, lastAnswer, success: true };
     }
-
-    // 2. 只有通过了上面的防御，说明这里的 rawResult 才是完好无损的 BaseGameState 对象
-    const state = rawResult as BaseGameState;
-
-    // 🌟 核心防御 3：防止结算索引越界导致 NaN
-    const targetIdx = state.isFinished ? state.questions.length - 1 : state.currentQuestionIndex - 1;
-    
-    // 严谨的安全保护垫：防止开局第 0 题结算时 targetIdx 算出来是 -1 导致 questions[-1] 崩溃
-    const safeIdx = targetIdx < 0 ? 0 : targetIdx;
-    const currentQuestion = state.questions[safeIdx];
-
-    const submitter = state.players[userId];
-    const allAnswered = state.isFinished || submitter?.status === 'playing';
-
-    const lastAnswer = {
-        playerId: userId,
-        isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
-        correctAnswerIndex: currentQuestion?.correctAnswerIndex ?? 0,
-        correctText: (allAnswered && currentQuestion) ? currentQuestion.options[currentQuestion.correctAnswerIndex] : 'PENDING',
-    };
-
-    return { state, lastAnswer };
 }
-
-}
-    
