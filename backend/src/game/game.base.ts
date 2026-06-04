@@ -17,7 +17,7 @@ export class GameBaseService
         protected readonly questionService: QuestionService,
     ){}
 
-    protected initPlayers(userId: string, nickname: string): Player {
+    public initPlayers(userId: string, nickname: string): Player {
         const player: Player = {
             id: userId,
             score: 0,
@@ -34,9 +34,11 @@ export class GameBaseService
         const questions = await this.questionService.getQuestions(10, extra?.category);
         const gameId = crypto.randomUUID();
         const now = Date.now();
+        const hasAI = Object.values(players).some(p => p.isAI === true);
+        const finalmode = hasAI ? ("AI" as GameMode) : mode
         const base = {
             gameId,
-            mode: mode,
+            mode: finalmode,
             questions,
             players,
             currentQuestionIndex: 0,
@@ -44,7 +46,7 @@ export class GameBaseService
             startedAt: now,
             questionStartedAt: now
         }
-        if (mode === "MULTIPLAYER" || mode === "TOURNAMENT"){
+        if (mode === "MULTIPLAYER" || mode === "TOURNAMENT" || mode === "AI"){
             if (!extra){
                 throw new AppError(
                     'roomId and hostId required for multiplayer',
@@ -54,7 +56,7 @@ export class GameBaseService
             }
             return {
                 ...base,
-                mode,
+                mode: finalmode,
                 roomId: extra.roomId,
                 hostId: extra.hostId,
                 status: 'playing',

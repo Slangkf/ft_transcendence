@@ -53,11 +53,11 @@ export interface BaseGameState {
 }
 
 export interface SoloGameState extends BaseGameState {
-    mode: "SOLO" | "AI"
+    mode: "SOLO"
 }
 
 export interface MultiGameState extends BaseGameState {
-    mode: "MULTIPLAYER" | "TOURNAMENT";
+    mode: "MULTIPLAYER" | "TOURNAMENT" | "AI";
     roomId: string;
     hostId: string;
     status: "waiting" | "starting" | "playing" | "finished";

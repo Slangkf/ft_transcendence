@@ -32,13 +32,13 @@ export class RedisGameRepository
    }
 
    //lua script for datarace in sumbit answer with multiplayer
-   public async submitanswerAtomic(gameId: string, userId: string, selectedAnswerIndex: number)
-   {
-    //script to finish all submit answer at one time 
-    //1. check if the game finishe 
-    //2. check if the question is already answer, check if is correct for the score, not yeat update the player with the new answer 
-    //3. check every player answered the question, advance the game
-    //4. add in redis the ttl 
+   // game.redis.repository.ts
+public async submitanswerAtomic(
+  gameId: string, 
+  userId: string, 
+  selectedAnswerIndex: number,
+  isAIGame: boolean = false  // ← 新增参数
+) {
     const script = `
         local data = redis.call('get', KEYS[1])
         if not data then return nil end
@@ -46,6 +46,7 @@ export class RedisGameRepository
         local state = cjson.decode(data)
         local userId = ARGV[1]
         local selectIndex = tonumber(ARGV[2])
+        local isAIGame = ARGV[4] == 'true'
 
         if state.isFinished then return nil end 
 
@@ -62,7 +63,13 @@ export class RedisGameRepository
                 end
             end
         end
-        if answered then return nil end
+        if answered then 
+            return cjson.encode({
+                error = "ALREADY_ANSWERED",
+                userId = userId,
+                questionId = currentQuestion.id
+            })
+        end
 
         local isCorrect = (selectIndex == currentQuestion.correctAnswerIndex)
         local now = tonumber(ARGV[3])
@@ -84,17 +91,26 @@ export class RedisGameRepository
         end
         state.players[userId] = player
 
-        --check if all players answered
-
+        -- 判断是否推进题目
         local allAnswered = true
-        for pid, p in pairs(state.players) do
-            if p.status ~= 'disconnected' and p.status ~= 'answered' then
-                allAnswered = false
-                break
+        if isAIGame then
+            -- AI模式：只要人类答完就推进
+            for pid, p in pairs(state.players) do
+                if not p.isAI and p.status ~= 'disconnected' and p.status ~= 'answered' then
+                    allAnswered = false
+                    break
+                end
+            end
+        else
+            -- 多人模式：所有人都答完才推进
+            for pid, p in pairs(state.players) do
+                if p.status ~= 'disconnected' and p.status ~= 'answered' then
+                    allAnswered = false
+                    break
+                end
             end
         end
-    
-        --advance the game
+
         if allAnswered then
             if state.currentQuestionIndex + 1 >= #state.questions then
                 state.isFinished = true
@@ -116,20 +132,20 @@ export class RedisGameRepository
         redis.call('SET', KEYS[1], cjson.encode(state), 'EX', ttl)
         
         return cjson.encode(state)
-        `;    
+    `;    
+
     const key = RedisKeys.game.state(gameId);
     const result = await Redis.eval(script, {
-    keys: [key],
-    arguments: [
-        String(userId), 
-        String(selectedAnswerIndex), 
-        String(Date.now())
+        keys: [key],
+        arguments: [
+            String(userId), 
+            String(selectedAnswerIndex), 
+            String(Date.now()),
+            isAIGame ? 'true' : 'false'  // ← ARGV[4]
         ],
-    })
-    return result ? JSON.parse(result as string) : null
-    }
-
-
+    });
+    return result ? JSON.parse(result as string) : null;
+}
 
 }
 

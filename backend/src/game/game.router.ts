@@ -20,7 +20,7 @@ export function createGameRouter(gameService: GameService): Router{
     router.get('/categories', gamecontroller.categories);
     router.post('/:mode/start', valideRequest(StartGameReq), gamecontroller.start);
     router.post('/:mode/ready/:roomId', valideRequest(SetReadyParams), gamecontroller.setready);
+    router.get('/ai/:gameId/status', gamecontroller.getStatus);
     router.post('/:mode/:gameId/answer', valideRequest(SubmitAnswerReqSchema), gamecontroller.answer);
-    
     return router;
 }

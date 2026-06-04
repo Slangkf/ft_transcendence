@@ -127,13 +127,13 @@ export class Container{
         this.soloService = new SoloService(this.questionService, this.gameRepo);
         this.localMultiPlayer = new LocalMultiPlayer(this.questionService, this.gameRepo);
         this.sessionService = new SessionService();
+        this.gamemapper = new GameMapper(this.questionService);
+        this.aiService = new AIService(this.localMultiPlayer, this.gameRepo);
 
         //init the emitter
         this.gameEmitter = new GameEmitter(io, redis);
         this.friendEmitter = new FriendEmitter(io, redis);
         this.chatEmitter = new ChatEmitter(io, redis);
-
-        this.gamemapper = new GameMapper(this.questionService);
 
         //multigamefacade 
         this.multiplayerFacade = new MultiPlayerFacade(
@@ -154,6 +154,7 @@ export class Container{
             this.questionService,
             this.db,
             this.gamemapper,
+            this.aiService,
         )
 
         //tournament
@@ -170,8 +171,8 @@ export class Container{
         this.multiplayerFacade.setTournamentService(this.tournamentService);
         
         //aiservice
-        this.aiService = new AIService(this.gameService);
-        this.soloService.setAIService(this.aiService);
+        //this.aiService = new AIService(this.localMultiPlayer);
+        //this.soloService.setAIService(this.aiService);
         
         //friendshipservice
         this.friendService = new FriendshipService(

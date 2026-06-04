@@ -2,7 +2,7 @@ import { LocalMultiPlayer } from "./game.local";
 import { MatchService } from "./match/match.service";
 import { Session } from "inspector";
 import { SessionService } from "./session.service";
-import { BaseGameState,  GameState, GameUpdateResponse, MatchPlayer, SetReadyResult } from "./game.types";
+import { BaseGameState,  GameState, GameUpdateResponse, MatchPlayer, MultiGameState, Player, SetReadyResult } from "./game.types";
 import { Namespace } from "socket.io";
 import { GameService } from "./game.service";
 import { RoomService } from "../room/room.service";
@@ -233,6 +233,25 @@ export class MultiPlayerFacade {
                 })
             })
         )
+    }
+
+    async createAIGame(userId: string, nickname: string, category?: string): Promise<MultiGameState>{
+        //1. create a room for this session
+        //2. init player with the ia 
+        const aiId = `ai_${crypto.randomUUID()}`;
+
+        const room = await this.roomService.createRoom({
+            hostId: userId,
+            hostNickname: nickname,
+            maxPlayers: 2,
+            players:[
+                {userId, nickname},
+                {userId: aiId, nickname: 'AI'}
+            ],
+            AIplayerIds: [aiId]
+        })
+        const state = await this.multiService.startGame(room, category);
+        return state as MultiGameState
     }
 }
 

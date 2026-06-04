@@ -17,6 +17,7 @@ export type Room = {
     maxPlayers: number;
     sessionId?: string; // gameid or userid for friends chat
     tournamentId?: string; // link this room to a tournament bracket match
+    AIplayerIds?: string[];
 }
 
 export type CreateRoomParams = {
@@ -26,6 +27,7 @@ export type CreateRoomParams = {
     maxPlayers?: number;
     type?: 'game'| 'chat';
     tournamentId?: string;
+    AIplayerIds?: string[];
 }
 
 export type JoinRoomParams = {
