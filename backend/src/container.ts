@@ -246,6 +246,10 @@ export class Container{
             this.userRepo
         );
 
+        // After a restart, in-memory readiness timers are gone — re-arm pending
+        // tournament deadlines so a match waiting on "Ready" can't hang forever.
+        void this.tournamentService.rearmPendingDeadlines();
+
 		this.chatSocketHandler = new ChatSocketHandler(
 			chatNs,
 			this.chatService,
