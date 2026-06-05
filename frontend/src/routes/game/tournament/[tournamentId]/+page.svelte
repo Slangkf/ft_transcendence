@@ -189,6 +189,17 @@
       const json = await resp.json();
       if (resp.ok && json?.success) {
         bracket = json.data as PublicBracketView;
+        // Tournament is over: drop the "current tournament" context NOW, not only on
+        // the tournament_finished socket event (which the winner often arrives too
+        // late to catch). Otherwise the stale id leaks into the next plain game whose
+        // end screen then wrongly redirects back to this finished bracket.
+        if (bracket?.status === 'finished') {
+          try {
+            sessionStorage.removeItem('current_tournament_id');
+            sessionStorage.removeItem('tournament_pending_room');
+            sessionStorage.removeItem('mp_room_players');
+          } catch {}
+        }
       } else {
         error = json?.message ?? 'Tournament not found';
       }

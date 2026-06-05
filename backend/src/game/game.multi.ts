@@ -61,13 +61,13 @@ export class MultiPlayerFacade {
 
             //session update game status ingame, and gameid
             await Promise.all(
-                Object.values(room.players).map( p=> {
+                Object.values(room.players).map(p =>
                     this.sessionService.update(p.userId, {
                         status: 'in_game',
                         gameId: response.gameId,
                         tournamentId: room.tournamentId,
                     })
-                })
+                )
             )
 
             // if this room is part of a tournament, link the new gameId to its bracket match
@@ -140,6 +140,20 @@ export class MultiPlayerFacade {
     }
 
     async trymatch(mode: GameMode, size?: number): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
+        // Serialize matchmaking: two players hitting /start at the same instant must
+        // not both read the same queue and spawn two rooms for the same pair. (The
+        // tournament path already guards this via lock:tournament-start.) If the lock
+        // is held, another matcher is running and we're already enqueued — it will
+        // match us and emit 'matched' over the socket, so we just report waiting.
+        const lockKey = `lock:mp-match:${mode}`;
+        let acquired: string | null = null;
+        for (let i = 0; i < 5 && !acquired; i++) {
+            acquired = await this.redis.set(lockKey, '1', { NX: true, EX: 5 });
+            if (!acquired) await new Promise(r => setTimeout(r, 80));
+        }
+        if (!acquired) return {status: "waiting"};
+
+        try {
         const match = await this.matchService.matchPlayers(mode, size);
 
         if (!match) return {status: "waiting"};
@@ -189,6 +203,9 @@ export class MultiPlayerFacade {
             status: 'matched',
             players: match.players,
             roomId: room.roomId,
+        }
+        } finally {
+            await this.redis.del(lockKey);
         }
     }
 

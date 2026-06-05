@@ -51,8 +51,11 @@ export class QuestionTimerService {
         const existing = this.timers.get(gameId);
         if (existing && existing.qIndex === qIndex) return;
         if (existing) clearTimeout(existing.timer);
-        // small slack so the client-side countdown reaches 0 before the server fires
-        const timer = setTimeout(() => this.fire(gameId, qIndex), this.timeoutMs + 500);
+        // Slack so the SERVER never closes a question before the client's visual
+        // countdown reaches 0. The client only starts the next question's countdown
+        // AFTER its ~1.5s answer-reveal animation (REVEAL_DELAY_MS), so it lags the
+        // server's schedule by that much — cover the reveal delay + network margin.
+        const timer = setTimeout(() => this.fire(gameId, qIndex), this.timeoutMs + 2000);
         this.timers.set(gameId, { timer, qIndex });
     }
 
