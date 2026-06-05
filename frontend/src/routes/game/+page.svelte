@@ -35,9 +35,6 @@
   };
   type ApiResponse<T> = { success: boolean; message: string; data: T | null };
 
-  const QUESTION_TIME_MS = 30_000;
-  const REVEAL_DELAY_MS = 1500;
-
   let gameId = $state<string | null>(null);
   let currentQuestion = $state<PublicQuestion | null>(null);
   let pendingNextQuestion = $state<PublicQuestion | null>(null);
@@ -61,9 +58,6 @@
   let timeLeft = $state(0);
   let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
 
-  const timerPercent = $derived(QUESTION_TIME_MS > 0 ? (timeLeft / QUESTION_TIME_MS) * 100 : 0);
-  const timerDanger = $derived(timeLeft <= 5_000 && timeLeft > 0);
-
   // 从 player map 里提取人类和 AI 的 snapshot
   function extractPlayers(players: Record<string, PlayerSnapshot>) {
     const all = Object.values(players);
@@ -82,25 +76,6 @@
     const { me, ai } = extractPlayers(players);
     if (me) myScore = me.score;
     if (ai) { aiScore = ai.score; aiNickname = ai.nickname ?? 'AI'; }
-  }
-
-  // ── 倒计时控制 ────────────────────────────────────────
-  function startTimer() {
-    stopTimer();
-    timeLeft = QUESTION_TIME_MS;
-    timerInterval = setInterval(() => {
-      timeLeft -= 100;
-      if (timeLeft <= 0) {
-        timeLeft = 0;
-        stopTimer();
-        // 时间到，自动超时提交
-        submitAnswer(-1, true);
-      }
-    }, 100);
-  }
-
-  function stopTimer() {
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
   }
 
   // ── AI 视觉动画 ───────────────────────────────────────
@@ -251,9 +226,9 @@
       selectedIndex = answerIndex;
       correctIndex = correctIdx;
       if (isTimeout) {
-        feedback = `Time is up. Correct answer: ${correct}`;
+        feedback = `Time is up. Correct answer: ${correctText}`;
       } else {
-        feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
+        feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`;
       }
 
       if (data.status === 'finished' || data.finalScore) {
@@ -440,7 +415,6 @@
             <p class="text-2xl font-bold text-pink-200">{aiScore}</p>
           </div>
         </div>
-      </div>
     {:else}
       <p class="text-sm sm:text-base md:text-xl p-4 text-blue-100">
         Final score: <span class="font-bold text-pink-200">{myScore}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
