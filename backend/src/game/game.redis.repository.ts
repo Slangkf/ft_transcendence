@@ -61,114 +61,135 @@ export class RedisGameRepository {
      * 方案 3 的原子 Lua 答题脚本（保持不变）
      */
     public async submitanswerAtomic(
-        gameId: string, 
-        userId: string, 
-        selectedAnswerIndex: number,
-        aiPayload?: { aiId: string; questionId: string; selectedAnswerIndex: number; visibleAt: number } | null
+         gameId: string,
+    tasks: Array<{ id: string; ans: number }>,
+    now: number
     ) {
         const script = `
             local data = redis.call('get', KEYS[1])
-            if not data then return cjson.encode({ error = "STATE_NOT_FOUND" }) end
+if not data then
+    return cjson.encode({ error = "STATE_NOT_FOUND" })
+end
 
-            local state = cjson.decode(data)
-            local userId = ARGV[1]
-            local selectIndex = tonumber(ARGV[2])
-            local now = tonumber(ARGV[3])
-            
-            local hasAiPayload = ARGV[4] ~= 'nil'
-            local aiPayload = hasAiPayload and cjson.decode(ARGV[4]) or nil
+local state = cjson.decode(data)
+local tasks = cjson.decode(ARGV[1])
+local now = tonumber(ARGV[2])
 
-            if state.isFinished then 
-                return cjson.encode({ error = "GAME_FINISHED", state = state }) 
-            end 
+-- 游戏结束保护
+if state.isFinished then
+    return cjson.encode({ error = "GAME_FINISHED", state = state })
+end
 
-            local currentQuestion = state.questions[state.currentQuestionIndex + 1]
-            if not currentQuestion then return cjson.encode({ error = "NO_QUESTION", state = state }) end
+-- 当前题目
+local currentQuestion = state.questions[state.currentQuestionIndex + 1]
+if not currentQuestion then
+    return cjson.encode({ error = "NO_QUESTION", state = state })
+end
 
-            local dedupKey = KEYS[1] .. ":q:" .. currentQuestion.id .. ":u:" .. userId
-            if redis.call("GET", dedupKey) == "1" then 
-                return cjson.encode({ error = "ALREADY_ANSWERED", state = state })
+local correct = tonumber(currentQuestion.correctAnswer)
+
+----------------------------------------------------
+-- 1. 防重复提交（只对 human 做 dedup）
+----------------------------------------------------
+for _, task in ipairs(tasks) do
+    if string.sub(task.id, 1, 3) ~= "ai_" then
+        local dedupKey = KEYS[1] .. ":q:" .. currentQuestion.id .. ":u:" .. task.id
+
+        if redis.call("GET", dedupKey) == "1" then
+            return cjson.encode({
+                error = "ALREADY_ANSWERED",
+                state = state
+            })
+        end
+
+        redis.call("SET", dedupKey, "1", "EX", 3600)
+    end
+end
+
+----------------------------------------------------
+-- 2. 执行 tasks（human + AI 统一处理）
+----------------------------------------------------
+for _, task in ipairs(tasks) do
+    local p = state.players[task.id]
+
+    if p then
+
+        -- ⚠️ 防 answers 被污染（关键修复）
+        if type(p.answers) ~= "table" then
+            p.answers = {}
+        end
+
+        local ans = tonumber(task.ans)
+        local isCorrect = (ans == correct)
+
+        table.insert(p.answers, {
+            questionId = currentQuestion.id,
+            selectedAnswerIndex = ans,
+            isCorrect = isCorrect,
+            answeredAt = now
+        })
+
+        p.status = "answered"
+
+        if isCorrect then
+            p.score = (p.score or 0) + 1
+        end
+
+        state.players[task.id] = p
+    end
+end
+
+----------------------------------------------------
+-- 3. 检查是否全部回答
+----------------------------------------------------
+local allAnswered = true
+
+for _, player in pairs(state.players) do
+    if player.status ~= "answered" and player.status ~= "disconnected" then
+        allAnswered = false
+        break
+    end
+end
+
+----------------------------------------------------
+-- 4. 切题 or 结束
+----------------------------------------------------
+if allAnswered then
+    if state.currentQuestionIndex + 1 >= #state.questions then
+        state.isFinished = true
+        state.status = "finished"
+    else
+        state.currentQuestionIndex = state.currentQuestionIndex + 1
+        state.questionStartedAt = now
+
+        for _, player in pairs(state.players) do
+            if player.status ~= "disconnected" then
+                player.status = "playing"
             end
-            redis.call("SET", dedupKey, "1", "EX", 3600)
+        end
+    end
+end
 
-            local p = state.players[userId]
-            if p then
-                local isCorrect = (selectIndex == currentQuestion.correctAnswerIndex)
-                table.insert(p.answers, {
-                    questionId = currentQuestion.id,
-                    selectedAnswerIndex = selectIndex,
-                    isCorrect = isCorrect,
-                    answeredAt = now
-                })
-                p.status = 'answered'
-                if isCorrect then p.score = p.score + 1 end
-                state.players[userId] = p
-            end
+----------------------------------------------------
+-- 5. 写回 Redis
+----------------------------------------------------
+redis.call('SET', KEYS[1], cjson.encode(state), 'EX', 3600)
 
-            if aiPayload then
-                local aiId = aiPayload.aiId
-                local aiPlayer = state.players[aiId]
-                if aiPlayer then
-                    local aiCorrect = (tonumber(aiPayload.selectedAnswerIndex) == currentQuestion.correctAnswerIndex)
-                    
-                    table.insert(aiPlayer.answers, {
-                        questionId = currentQuestion.id,
-                        selectedAnswerIndex = tonumber(aiPayload.selectedAnswerIndex),
-                        isCorrect = aiCorrect,
-                        answeredAt = now
-                    })
-                    aiPlayer.score = aiCorrect and (aiPlayer.score + 1) or aiPlayer.score
-                    aiPlayer.status = 'answered'
-                    state.players[aiId] = aiPlayer
-                    
-                    state.aiAnswerVisibleAt = tonumber(aiPayload.visibleAt)
-                    state.aiCachedAnswer = {
-                        userId = aiId,
-                        questionId = currentQuestion.id,
-                        isCorrect = aiCorrect,
-                        selectedAnswerIndex = tonumber(aiPayload.selectedAnswerIndex)
-                    }
-                end
-            end
-
-            local allAnswered = true
-            for pid, player in pairs(state.players) do
-                if player.status ~= 'disconnected' and player.status ~= 'answered' then
-                    allAnswered = false
-                    break
-                end
-            end
-
-            if allAnswered then
-                if state.currentQuestionIndex + 1 >= #state.questions then
-                    state.isFinished = true
-                    state.status = 'finished'
-                else
-                    state.currentQuestionIndex = state.currentQuestionIndex + 1
-                    state.questionStartedAt = now
-                    for pid, player in pairs(state.players) do
-                        if player.status ~= 'disconnected' then
-                            player.status = 'playing'
-                        end 
-                        state.players[pid] = player
-                    end
-                end
-            end
-
-            redis.call('SET', KEYS[1], cjson.encode(state), 'EX', 3600)
-            return cjson.encode({ state = state, success = true })
+return cjson.encode({
+    success = true,
+    state = state
+})
         `;
 
         const key = this.key(gameId);
         const result = await Redis.eval(script, {
-            keys: [key],
-            arguments: [
-                String(userId), 
-                String(selectedAnswerIndex), 
-                String(Date.now()),
-                aiPayload ? JSON.stringify(aiPayload) : 'nil'
-            ],
-        });
-        return result ? JSON.parse(result as string) : null;
-    }
+        keys: [key],
+        arguments: [
+            JSON.stringify(tasks),
+            String(now),
+        ],
+    });
+
+    return result ? JSON.parse(result as string) : null;
+}
 }

@@ -14,69 +14,45 @@ export class GameMapper {
     /**
      * 将 Redis 中原子超前的运行时 GameState，转换为符合前端人类视觉延迟的 GameUpdateResponse (DTO)
      * @param rawState 从 Redis 中捞出来的绝对真实的最新快照
-     * @param lastAnswerOverride 外部可选传入的上一次答题动作更新
+     * @param lastAnswerOverride 外部传入的当前用户的答题动作结果
      */
     public toUpdateResponse(rawState: GameState, lastAnswerOverride?: any): GameUpdateResponse {
-        const now = Date.now();
-        
-        // 🌟 1. 【防污染深拷贝】：必须深拷贝一份镜像发给前端，绝对不能修改 Redis 原生内存对象
+        // 深拷贝防止污染分布式缓存中的实体
         const state = JSON.parse(JSON.stringify(rawState)) as GameState;
 
-        let isAiThinkingLock = false;
-        let aiId: string | undefined;
-
-        // 🌟 2. 【核心魔术判定】：这是 AI 模式，且 Lua 已经塞入时间戳，但视觉显现时间还没到！
-        if (state.mode === "AI" && state.aiAnswerVisibleAt && now < state.aiAnswerVisibleAt) {
-            aiId = Object.keys(state.players).find(id => state.players[id].isAI);
-            
-            if (aiId && state.players[aiId]) {
-                isAiThinkingLock = true;
-
-                // A. 强行剥夺 AI 在大盘上的 "answered" 状态，降维成自定义的 "playing" 
-                //    (前端可以通过 clientState.players[aiId].status 是否属于当前题目的未答状态来播 "..." 动画)
-                //    或者你可以扩展 PlayerStatus 增加 "thinking"，这里我们保持兼容，让前端知道 AI 还没“交卷”
-                
-                // B. 隐藏 AI 刚刚在 Lua 里偷偷记下的最后一题答题记录，防止前端通过 Network 抓包看答案
-                if (state.players[aiId].answers.length > 0) {
-                    state.players[aiId].answers.pop();
-                }
-
-                // C. 核心倒推：因为后端 Lua 已经切题了，如果视觉时间没到，强行把大盘索引退回上一题！
-                if (state.currentQuestionIndex > 0) {
-                    state.currentQuestionIndex = state.currentQuestionIndex - 1;
-                }
-
-                // D. 强行在视觉上遮蔽大盘的完结状态，让游戏看起来还在继续
-                state.isFinished = false;
-                state.status = "playing";
-            }
+        // 🌟【核心修复：视觉脱敏魔法】
+        // 如果外层有真实的答题动作反馈，且因为全员答完导致 Lua 已经在底层悄悄推进了题号，
+        // 并且游戏还没彻底结束，我们需要在下发的 DTO 中将题号“伪装”回退 1 位。
+        // 这样前端渲染“揭晓上一题对错”时，UI 题号才不会突兀地跳格。
+        let visualQuestionIndex = state.currentQuestionIndex;
+        
+        // 只有当有答题更新、不是已经发生连击拦截、且索引大于 0 时才需要回退
+        if (
+            lastAnswerOverride && 
+            lastAnswerOverride.correctText !== 'ALREADY_PROCESSED' && 
+            visualQuestionIndex > 0 &&
+            !state.isFinished
+        ) {
+            visualQuestionIndex = visualQuestionIndex - 1;
         }
 
-        // 3. 构造前端需要的玩家快照列表 (PlayerSnapShot)
         const playerSnapshots: Record<string, PlayerSnapShot> = {};
         for (const [id, p] of Object.entries(state.players)) {
-            
-            // 如果处于 AI 思考锁定时，对 AI 玩家的 status 视觉欺骗
-            let visualStatus = p.status;
-            if (isAiThinkingLock && id === aiId) {
-                // 欺骗前端说 AI 还在玩/思考
-                visualStatus = "playing"; 
-            }
-
             playerSnapshots[id] = {
                 id: p.id,
                 nickname: p.nickname,
                 score: p.score,
-                status: visualStatus,
+                status: p.status,
                 isAI: p.isAI ?? false,
-                totalTime: p.Totaltime
+                totalTime: p.Totaltime // 确保与类型定义的字段大小写对齐
             };
         }
 
-        // 4. 判定下一题的 PublicQuestion (剔除 correctAnswerIndex 的安全题干)
         let nextQuestion: PublicQuestion | null = null;
         if (!state.isFinished) {
-            const currentQ = state.questions[state.currentQuestionIndex];
+            // 使用我们计算出来的 visualQuestionIndex 来精确索要题目
+            // 如果刚刚全员答完切换了题号，这里拿到的依然是刚刚作答的这一题，配合前端做答案揭晓
+            const currentQ = state.questions[visualQuestionIndex];
             if (currentQ) {
                 nextQuestion = {
                     id: currentQ.id,
@@ -86,7 +62,6 @@ export class GameMapper {
             }
         }
 
-        // 5. 构筑最终结算面板 (FinalScore)
         let finalScore: FinalScore | null = null;
         if (state.isFinished) {
             finalScore = this.toFinalScore(state);
@@ -97,14 +72,13 @@ export class GameMapper {
             mode: state.mode as GameMode,
             status: state.isFinished ? "finished" : "playing",
             state: {
-                currentQuestionIndex: state.currentQuestionIndex,
+                currentQuestionIndex: visualQuestionIndex, // 👈 喂给前端的视觉冻结题号
                 totalQuestions: state.questions.length,
                 player: playerSnapshots,
                 startedAt: state.startedAt,
                 questionStartedAt: state.questionStartedAt
             },
-            // 如果 AI 正在被伪装隐藏，则不把上一次的答案返回（或者抹去敏感信息）
-            lastAnswerUpdate: isAiThinkingLock ? null : lastAnswerOverride,
+            lastAnswerUpdate: lastAnswerOverride ?? null,
             nextQuestion,
             finalScore
         };

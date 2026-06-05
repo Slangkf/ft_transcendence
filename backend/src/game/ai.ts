@@ -37,14 +37,32 @@ export class AIService {
         const totalOptions = currentQuestion.options.length;
         let selectedAnswerIndex: number;
 
-        if (Math.random() < successThreshold) {
-            selectedAnswerIndex = correctAnswerIndex;
-        } else {
+        // --- 🌟 动态控分逻辑开始 🌟 ---
+        const totalQuestions = gameState.questions.length; // 本局总题数
+        const aiPlayer = gameState.players[aiId];
+        const currentAiScore = aiPlayer ? aiPlayer.score : 0; // AI 当前已经对了几题
+
+        // 计算 AI 允许答对的最大题目数量（向下取整，比如 10 * 0.7 = 7 题）
+        const maxAllowedCorrect = Math.floor(totalQuestions * successThreshold);
+
+        if (currentAiScore >= maxAllowedCorrect) {
+            // 🔥 铁律：如果 AI 的得分已经达到了上限，百分之百强制它做错！
+            console.log(`[IA] 触发控分上限！当前得分 ${currentAiScore} 已达到最高允许值 ${maxAllowedCorrect}。强制做错。`);
             do {
                 selectedAnswerIndex = Math.floor(Math.random() * totalOptions);
             } while (selectedAnswerIndex === correctAnswerIndex && totalOptions > 1);
+        
+        } else {
+            // 如果还没到上限，继续走原来的概率流程
+            if (Math.random() < successThreshold) {
+                selectedAnswerIndex = correctAnswerIndex;
+            } else {
+                do {
+                    selectedAnswerIndex = Math.floor(Math.random() * totalOptions);
+                } while (selectedAnswerIndex === correctAnswerIndex && totalOptions > 1);
+            }
         }
-
+        // --- 🌟 动态控分逻辑结束 🌟 ---
         const result = {
             aiId,
             questionId: currentQuestion.id, // 这里的 id 是唯一的题目 ID，不能当数组下标用！
