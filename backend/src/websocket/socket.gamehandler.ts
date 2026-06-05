@@ -193,6 +193,14 @@ export class GameSocketHandler{
     }
 
     private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
+        // Only the user's *current* socket may run disconnect cleanup. On a remote
+        // network blip, socket.io reconnects with a fresh socket.id before the server
+        // detects the old socket dropped (ping timeout). The stale socket's disconnect
+        // must NOT delete the new socket's gameUser mapping nor schedule a forfeit
+        // while the player is still connected (and possibly mid-game).
+        const currentSocketId = await this.redis.get(this.gameuserkey(userId));
+        if (currentSocketId && currentSocketId !== socket.id) return;
+
         await this.redis.del(this.gameuserkey(userId));
 
         // 给 60 秒重连窗口，超时才真正处理离开逻辑

@@ -95,6 +95,13 @@ export class TournamentService {
                 nickname: p.nickname,
             }));
 
+            // The matchmaking record only existed to dequeue these 4 players.
+            // Delete it like plain multiplayer does (game.multi.ts): otherwise a
+            // lingering record makes getMyMatch() return a roomId-less match, which
+            // breaks tournament reconnection in the 'matched' state (the bracket
+            // room in session.roomId is ignored). See socket.gamehandler 'matched'.
+            await this.matchService.deleteMatch(match.matchId);
+
             // build empty bracket
             const matches: BracketMatch[] = [
                 { round: 1, slot: 0, p1: players[0].userId, p2: players[1].userId,
@@ -582,6 +589,39 @@ export class TournamentService {
 
     async getByUser(userId: string): Promise<TournamentState | null> {
         return this.repo.getByUser(userId);
+    }
+
+    /**
+     * Re-arm in-memory readiness deadlines after a backend restart.
+     *
+     * ReadyTimerService keeps its timers in memory, so a restart drops every
+     * pending "Ready" deadline — a match waiting on ready-up would then hang
+     * forever (no forfeit ever fires) until the 2h Redis TTL. On boot we scan the
+     * running tournaments still in Redis and re-arm the deadline for each match
+     * still in 'ready'. Best-effort: never throws.
+     */
+    async rearmPendingDeadlines(): Promise<void> {
+        try {
+            const keys = await this.redis.keys(RedisKeys.tournament.state('*'));
+            let rearmed = 0;
+            for (const key of keys) {
+                const data = await this.redis.get(key);
+                if (!data) continue;
+                const state = JSON.parse(data) as TournamentState;
+                if (state.status !== 'running') continue;
+                for (const bm of state.matches) {
+                    if (bm.status === 'ready' && bm.roomId) {
+                        this.readyTimer.arm(bm.roomId);
+                        rearmed++;
+                    }
+                }
+            }
+            if (rearmed > 0) {
+                console.log(`[tournament] re-armed ${rearmed} readiness deadline(s) after restart`);
+            }
+        } catch (e) {
+            console.error('[tournament] rearmPendingDeadlines failed', e);
+        }
     }
 
     private toPublic(state: TournamentState): PublicBracketView {
