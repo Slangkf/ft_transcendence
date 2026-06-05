@@ -1,5 +1,3 @@
-// src/game/game.local.ts
-import { fa } from "zod/v4/locales";
 import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
 import { Room } from "../room/room.types";
@@ -7,7 +5,21 @@ import { GameBaseService } from "./game.base";
 import { RedisGameRepository } from "./game.redis.repository";
 import { BaseGameState, MultiGameState, Player } from "./game.types";
 import { GameMode } from "@prisma/client";
-import { AIService } from "./ai.service"; // 确保引入了重构后的无状态纯计算 AIService
+import { AIService } from "./ai";
+
+type LastAnswerUpdate = {
+    playerId: string;
+    isCorrect: boolean;
+    correctAnswerIndex: number;
+    correctText: string;
+};
+
+type AtomicAnswerTask = {
+    id: string;
+    ans: number;
+    questionId: number;
+    visibleAt?: number;
+};
 
 /**
  * LocalMultiPlayer
@@ -48,8 +60,8 @@ export class LocalMultiPlayer extends GameBaseService {
                 hasAIInRoom = true;
             }
             
-            players[p.userId] = {
-                ...this.initPlayers(p.userId, p.nickname),
+            players[userIdstring] = {
+                ...this.initPlayers(userIdstring, p.nickname),
                 isAI: isAIPlayer
             };
         }
@@ -79,7 +91,10 @@ export class LocalMultiPlayer extends GameBaseService {
      * 答题管道唯一入口。
      * 方案 3 核心演进：在击打 Lua 脚本之前，预先判定并完成 AI 决策的同步装载。
      */
-    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string) {
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<{
+        state: BaseGameState;
+        lastAnswer: LastAnswerUpdate;
+    }> {
         console.log(`[submit] game=${gameId}, user=${userId}, answer=${selectedAnswerIndex}`);
         
         // 1. 提取当前第一线快照，用以计算 AI 是否需要“悄悄做预判”
@@ -87,8 +102,17 @@ export class LocalMultiPlayer extends GameBaseService {
         if (!currentGameState) {
             throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
         }
+        const playerId = String(userId);
+        const currentQuestion = currentGameState.questions[currentGameState.currentQuestionIndex];
+        if (!currentQuestion) {
+            throw new AppError('Question not found', ErrorCode.QUESTION_NOT_FOUND, 404);
+        }
 
-        let aiPayload = null;
+        const tasks: AtomicAnswerTask[] = [{
+            id: playerId,
+            ans: selectedAnswerIndex,
+            questionId: currentQuestion.id,
+        }];
         const isAIGame = currentGameState.mode === 'AI';
 
         // 🌟 方案 3 核心注入点：如果当前是 AI 模式且游戏未完结
@@ -99,16 +123,23 @@ export class LocalMultiPlayer extends GameBaseService {
             // 只有当 AI 在当前这一题依然处于未答（playing）状态时，军师（AIService）才会现身出谋划策
             if (aiId && aiPlayer && aiPlayer.status === 'playing') {
                 // 调用纯净的同步预测函数，算出 AI 答案和隐藏解封时间戳
-                aiPayload = this.aiservice.predictAnswer(currentGameState, aiId);
+                const aiPayload = this.aiservice.predictAnswer(currentGameState, aiId);
+                if (aiPayload.questionId === currentQuestion.id) {
+                    tasks.push({
+                        id: aiPayload.aiId,
+                        ans: aiPayload.selectedAnswerIndex,
+                        questionId: aiPayload.questionId,
+                        visibleAt: aiPayload.visibleAt,
+                    });
+                }
             }
         }
 
-        // 2. 【关键修正】：将人类的真实点击连同刚刚打包好的 AI 预判载荷（aiPayload）一起原子的拍入 Lua 脚本！
+        // 2. 【关键修正】：将人类答案和 AI 预判答案作为统一 tasks 原子拍入 Lua 脚本
         const result = await this.gamerepository.submitanswerAtomic(
             gameId,
-            userId,
-            selectedAnswerIndex,
-            aiPayload // 👈 必须传进 Redis，让 Redis 在单线程安全沙盒内顺便把 AI 结算了
+            tasks,
+            Date.now()
         );
 
         // 3. 基础空值及状态未找到边界防御
@@ -119,20 +150,44 @@ export class LocalMultiPlayer extends GameBaseService {
         // 4. 精准识别 Lua 返回的冲突状态，返回给上层 GameService 充当后端内部交通信号灯
         if (result.error === "ALREADY_ANSWERED") {
             // 幂等性拦截：说明用户狂点了。duplicated 信号可以让上层直接短路，不重复做外部触发
-            return { state: result.state, duplicated: true };
+            return {
+                state: result.state,
+                lastAnswer: {
+                    playerId,
+                    isCorrect: false,
+                    correctAnswerIndex: currentQuestion.correctAnswerIndex,
+                    correctText: 'ALREADY_PROCESSED'
+                }
+            };
         }
         if (result.error === "GAME_FINISHED" || result.error === "NO_QUESTION") {
             // 过期忽略拦截：说明答题卡秒踩中了切题临界点，忽略多余逻辑
-            return { state: result.state, ignored: true };
+            return {
+                state: result.state,
+                lastAnswer: {
+                    playerId,
+                    isCorrect: false,
+                    correctAnswerIndex: currentQuestion.correctAnswerIndex,
+                    correctText: 'ALREADY_PROCESSED'
+                }
+            };
         }
 
         // 5. 组装返回给上层单入口协调者（GameService）的元数据
         const state = result.state as BaseGameState;
+        const roundResolved = state.isFinished
+            || state.currentQuestionIndex !== currentGameState.currentQuestionIndex
+            || Object.values(state.players)
+                .filter(player => player.status !== 'disconnected')
+                .every(player => player.status === 'answered');
+        const correctText = currentQuestion.options[currentQuestion.correctAnswerIndex] ?? "";
         const lastAnswer = {
-            playerId: userId,
-            isCorrect: state.players[userId]?.answers.at(-1)?.isCorrect ?? false,
+            playerId,
+            isCorrect: selectedAnswerIndex === currentQuestion.correctAnswerIndex,
+            correctAnswerIndex: roundResolved ? currentQuestion.correctAnswerIndex : -1,
+            correctText: roundResolved ? correctText : "",
         };
 
-        return { state, lastAnswer, success: true };
+        return { state, lastAnswer };
     }
 }

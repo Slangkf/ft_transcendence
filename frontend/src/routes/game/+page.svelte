@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { onDestroy } from 'svelte';
 
   const mode = $derived(page.url.searchParams.get('mode') ?? 'solo');
   const category = $derived(page.url.searchParams.get('category') ?? '');
@@ -38,6 +39,7 @@
 
   type ApiResponse<T> = { success: boolean; message: string; data: T | null };
 
+  const QUESTION_TIME_MS = 30_000;
   const REVEAL_DELAY_MS = 1500;
 
   let gameId = $state<string | null>(null);
@@ -60,6 +62,11 @@
   let revealing = $state(false);
   let finalScore = $state<GameUpdateResponse['finalScore']>(null);
   let aiSelectedIndex = $state<number | null>(null);
+  let timeLeft = $state(0);
+  let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
+
+  const timerPercent = $derived(QUESTION_TIME_MS > 0 ? (timeLeft / QUESTION_TIME_MS) * 100 : 0);
+  const timerDanger = $derived(timeLeft <= 5_000 && timeLeft > 0);
 
   // 从 player map 里提取人类和 AI 的 snapshot
   function extractPlayers(players: Record<string, PlayerSnapshot>) {
@@ -97,6 +104,25 @@
     aiThinking = false;
   }
 
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    timeLeft = QUESTION_TIME_MS;
+    timerInterval = setInterval(() => {
+      timeLeft = Math.max(0, timeLeft - 100);
+      if (timeLeft <= 0) {
+        stopTimer();
+        submitAnswer(-1, true);
+      }
+    }, 100);
+  }
+
   function resetReveal() {
     selectedIndex = null;
     correctIndex = null;
@@ -110,6 +136,7 @@
   }
 
   async function startGame() {
+    stopTimer();
     loading = true;
     error = '';
     feedback = '';
@@ -149,6 +176,7 @@
 
       // Démarrer l'animation de réflexion de l'IA dès le début
       startAIThinking();
+      startTimer();
     } catch (err) {
       console.error('startGame error:', err);
       error = 'Erreur réseau ou backend inaccessible.';
@@ -157,13 +185,14 @@
     }
   }
 
-  async function submitAnswer(answerIndex: number) {
+  async function submitAnswer(answerIndex: number, isTimeout = false) {
     if (!gameId || !currentQuestion || isFinished || revealing) return;
 
-    const selectedOptionText = currentQuestion.options[answerIndex];
+    const selectedOptionText = answerIndex >= 0 ? currentQuestion.options[answerIndex] : '';
     loading = true;
     revealing = true;
     error = '';
+    stopTimer();
     stopAIThinking();
 
     try {
@@ -192,7 +221,11 @@
 
       selectedIndex = answerIndex;
       correctIndex = correctIdx;
-      feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
+      if (isTimeout) {
+        feedback = `Time is up. Correct answer: ${correct}`;
+      } else {
+        feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
+      }
 
       if (data.status === 'finished' || data.finalScore) {
         finalScore = data.finalScore ?? null;
@@ -202,6 +235,7 @@
           feedback = '';
           resetReveal();
           resetAIState();
+          stopTimer();
         }, REVEAL_DELAY_MS);
       } else {
         pendingNextQuestion = data.nextQuestion ?? null;
@@ -214,15 +248,22 @@
           // Nouvelle question : relancer l'animation AI
           resetAIState();
           startAIThinking();
+          startTimer();
         }, REVEAL_DELAY_MS);
       }
     } catch (err) {
       console.error('submitAnswer error:', err);
       error = 'Erreur réseau pendant la réponse.';
+      revealing = false;
     } finally {
       loading = false;
     }
   }
+
+  onDestroy(() => {
+    stopTimer();
+    stopAIThinking();
+  });
 
   function buttonClasses(index: number): string {
     const base = 'w-full text-left px-4 py-3 rounded border transition disabled:cursor-not-allowed';
@@ -317,6 +358,20 @@
           Question {questionNumber}{#if totalQuestions > 0} / {totalQuestions}{/if}
         </p>
       {/if}
+      <div class="mx-4 mb-3">
+        <div class="flex justify-between text-xs text-blue-100/70 mb-1">
+          <span>Time</span>
+          <span class={timerDanger ? 'text-red-300 font-semibold' : 'text-blue-100/70'}>
+            {Math.ceil(timeLeft / 1000)}s
+          </span>
+        </div>
+        <div class="h-2 rounded bg-white/10 overflow-hidden">
+          <div
+            class={timerDanger ? 'h-full bg-red-400 transition-all' : 'h-full bg-pink-300 transition-all'}
+            style={`width: ${timerPercent}%`}
+          ></div>
+        </div>
+      </div>
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         {currentQuestion.question}
       </h2>

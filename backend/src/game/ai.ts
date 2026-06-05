@@ -12,6 +12,10 @@ const AI_SKILLS: Record<string, number> = {
 export class AIService {
     constructor() {}
 
+    public async generateAIAnswer(_gameState: BaseGameState, _aiId: string): Promise<void> {
+        // Legacy SoloService hook kept for compatibility; AI mode answers atomically in LocalMultiPlayer.
+    }
+
     /**
      * Pure Function: 根据当前的题目和AI胜率，计算出AI的答案以及它应当“表现出”的思考时间。
      */

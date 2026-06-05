@@ -1,6 +1,6 @@
 import { AppError, ErrorCode } from "../error/apperror";
 import { QuestionService } from "../question/question.service";
-import { AIService } from "./ai.service"; // 确认你的引入路径正确
+import { AIService } from "./ai";
 import { GameMapper } from "./game.mapper";
 import { MultiPlayerFacade } from "./game.multi";
 import { RedisGameRepository } from "./game.redis.repository";

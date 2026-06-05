@@ -56,6 +56,7 @@
 
   type ApiResponse<T> = { success: boolean; message: string; data: T | null };
 
+  const QUESTION_TIME_MS = 30_000;
   // 延长一点揭晓时间，给用户足够的时间看清 AI 的选择（建议 2.5s - 3s）
   const REVEAL_DELAY_MS = 2500; 
 
@@ -74,8 +75,31 @@
   let revealing = $state(false);
   let hasSubmittedCurrent = $state(false);
   let currentCorrectIndex = $state<number | null>(null);
+  let timeLeft = $state(0);
+  let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
 
   const playersList = $derived(Object.values(players));
+  const timerPercent = $derived(QUESTION_TIME_MS > 0 ? (timeLeft / QUESTION_TIME_MS) * 100 : 0);
+  const timerDanger = $derived(timeLeft <= 5_000 && timeLeft > 0);
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    timeLeft = QUESTION_TIME_MS;
+    timerInterval = setInterval(() => {
+      timeLeft = Math.max(0, timeLeft - 100);
+      if (timeLeft <= 0) {
+        stopTimer();
+        submitAnswer(-1, true);
+      }
+    }, 100);
+  }
 
   function resetReveal() {
     revealing = false;
@@ -84,6 +108,7 @@
 
   // --- 开始游戏 ---
   async function startAIGame() {
+    stopTimer();
     loading = true;
     error = '';
     isFinished = false;
@@ -117,6 +142,7 @@
       totalQuestions = data.state?.totalQuestions ?? 0;
       questionNumber = (data.state?.currentQuestionIndex ?? 0) + 1;
       players = data.state?.player ?? {};
+      startTimer();
     } catch (err) {
       console.error('startAIGame error:', err);
       error = 'Erreur réseau ou backend inaccessible.';
@@ -126,12 +152,13 @@
   }
 
   // --- 提交答案 ---
-  async function submitAnswer(answerIndex: number) {
+  async function submitAnswer(answerIndex: number, isTimeout = false) {
     if (!gameId || !currentQuestion || isFinished || revealing || hasSubmittedCurrent) return;
 
     loading = true;
     revealing = true;
     hasSubmittedCurrent = true;
+    stopTimer();
 
     try {
       const response = await fetch(`/api/game/ai/${gameId}/answer`, {
@@ -179,7 +206,7 @@
         } else {
           // 人类玩家的选择
           p.lastSelectedIndex = answerIndex;
-          p.lastIsCorrect = answerIndex === correctIdx;
+          p.lastIsCorrect = !isTimeout && answerIndex === correctIdx;
         }
       });
 
@@ -199,6 +226,7 @@
           currentQuestion = null;
           resetReveal();
           hasSubmittedCurrent = false;
+          stopTimer();
         }, REVEAL_DELAY_MS);
       } else {
         const nextQ = data.nextQuestion;
@@ -208,6 +236,7 @@
           players = data.state?.player ?? players; // 切题后重置状态
           resetReveal();
           hasSubmittedCurrent = false;
+          startTimer();
         }, REVEAL_DELAY_MS);
       }
     } catch (err) {
@@ -219,6 +248,10 @@
       loading = false;
     }
   }
+
+  onDestroy(() => {
+    stopTimer();
+  });
 
   // --- 动态按钮样式 ---
   function buttonClasses(index: number): string {
@@ -300,7 +333,7 @@
               </div>
             {/if}
           </div>
-        {"/each"}
+        {/each}
       </div>
     </div>
   {/if}
@@ -318,6 +351,20 @@
           Question {questionNumber}{#if totalQuestions > 0} / {totalQuestions}{/if}
         </p>
       {/if}
+      <div class="mx-4 mb-3 font-sans">
+        <div class="flex justify-between text-xs text-blue-100/70 mb-1">
+          <span>Time</span>
+          <span class={timerDanger ? 'text-red-300 font-semibold' : 'text-blue-100/70'}>
+            {Math.ceil(timeLeft / 1000)}s
+          </span>
+        </div>
+        <div class="h-2 rounded bg-white/10 overflow-hidden">
+          <div
+            class={timerDanger ? 'h-full bg-red-400 transition-all' : 'h-full bg-pink-300 transition-all'}
+            style={`width: ${timerPercent}%`}
+          ></div>
+        </div>
+      </div>
       <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
         {currentQuestion.question}
       </h2>

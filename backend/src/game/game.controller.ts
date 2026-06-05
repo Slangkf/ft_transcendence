@@ -18,7 +18,7 @@ export class GameController
                : 'SOLO';
             const result = await this.gameService.startGame({
                 mode,
-                userId: req.user!.id,
+                userId: String(req.user!.id),
                 nickname: req.user!.username,
                 category: category,
                 size: size,
@@ -69,7 +69,7 @@ export class GameController
 
     setready = async(req: Request, res: Response) => {
         const {roomId, isReady} = req.validatedBody;
-        const userId = req.user!.id;
+        const userId = String(req.user!.id);
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);
 
@@ -99,7 +99,7 @@ export class GameController
     }
 
     answer = async (req: Request, res: Response)=> {
-        const userId = req.user!.id;
+        const userId = String(req.user!.id);
 
         const gameId = req.params.gameId as string;
 
@@ -112,9 +112,9 @@ export class GameController
         const rawAnswer = req.body.selectedAnswerIndex;
         const selectedAnswerIndex = Number(rawAnswer);
 
-        if (!Number.isInteger(selectedAnswerIndex)) {
+        if (!Number.isInteger(selectedAnswerIndex) || selectedAnswerIndex < -1) {
             return res.status(400).json(
-                Apiresponse.error("INVALIDE_ANSWER_INDEX", "selectedAnswerIndex must be an integer.")
+                Apiresponse.error("INVALIDE_ANSWER_INDEX", "selectedAnswerIndex must be an integer greater than or equal to -1.")
                 );
         }
 
@@ -150,7 +150,7 @@ export class GameController
 
     // GameController 里
     getStatus = async (req: Request, res: Response) => {
-  const gameId = req.params.gameId;
+  const gameId = String(req.params.gameId);
   try {
     const state = await this.gameService.getGameState(gameId);
     if (!state) {
