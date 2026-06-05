@@ -300,7 +300,7 @@
               </div>
             {/if}
           </div>
-        {"/each"}
+        {/each}
       </div>
     </div>
   {/if}

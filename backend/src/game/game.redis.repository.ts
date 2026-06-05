@@ -61,9 +61,9 @@ export class RedisGameRepository {
      * 方案 3 的原子 Lua 答题脚本（保持不变）
      */
     public async submitanswerAtomic(
-         gameId: string,
-    tasks: Array<{ id: string; ans: number }>,
-    now: number
+        gameId: string,
+        tasks: Array<{ id: string; ans: number }>,
+        now: number
     ) {
         const script = `
             local data = redis.call('get', KEYS[1])
@@ -86,7 +86,10 @@ if not currentQuestion then
     return cjson.encode({ error = "NO_QUESTION", state = state })
 end
 
-local correct = tonumber(currentQuestion.correctAnswer)
+local correct = tonumber(currentQuestion.correctAnswerIndex)
+local qStart = tonumber(state.questionStartedAt) or now
+local elapsed = now - qStart
+if elapsed < 0 then elapsed = 0 end
 
 ----------------------------------------------------
 -- 1. 防重复提交（只对 human 做 dedup）
@@ -130,6 +133,7 @@ for _, task in ipairs(tasks) do
         })
 
         p.status = "answered"
+        p.Totaltime = (tonumber(p.Totaltime) or 0) + elapsed
 
         if isCorrect then
             p.score = (p.score or 0) + 1
