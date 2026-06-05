@@ -1,11 +1,11 @@
 // src/game/game.mapper.ts
-import {
+import { 
     BaseGameState,
-    GameUpdateResponse,
-    PlayerSnapShot,
-    FinalScore,
-    MatchResult,
-    PublicQuestion
+    GameUpdateResponse, 
+    PlayerSnapShot, 
+    FinalScore, 
+    MatchResult, 
+    PublicQuestion 
 } from "./game.types";
 import { GameMode } from "@prisma/client";
 
@@ -18,7 +18,7 @@ export class GameMapper {
      * @param lastAnswerOverride 外部传入的当前用户的答题动作结果
      */
     public toUpdateResponse(rawState: BaseGameState, lastAnswerOverride?: any): GameUpdateResponse {
-        // 深拷贝防止污染分布式缓存中的实体
+        // 🌟 1. 【防污染深拷贝】：必须深拷贝一份镜像发给前端，绝对不能修改 Redis 原生内存对象
         const state = JSON.parse(JSON.stringify(rawState)) as BaseGameState;
 
         const playerSnapshots: Record<string, PlayerSnapShot> = {};

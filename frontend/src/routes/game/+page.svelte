@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { onDestroy } from 'svelte';
 
   const QUESTION_TIME_MS = 30_000;   // 答题总时长
   const REVEAL_DELAY_MS  = 1_500;    // 显示答案后切题延迟
@@ -34,33 +35,36 @@
   };
   type ApiResponse<T> = { success: boolean; message: string; data: T | null };
 
-  // ── 游戏状态 ──────────────────────────────────────────
-  let gameId          = $state<string | null>(null);
+  const QUESTION_TIME_MS = 30_000;
+  const REVEAL_DELAY_MS = 1500;
+
+  let gameId = $state<string | null>(null);
   let currentQuestion = $state<PublicQuestion | null>(null);
-  let myScore         = $state(0);
-  let aiScore         = $state(0);
-  let aiNickname      = $state('AI');
-  let isFinished      = $state(false);
-  let feedback        = $state('');
-  let error           = $state('');
-  let loading         = $state(false);
-  let questionNumber  = $state(0);
-  let totalQuestions  = $state(0);
-  let selectedIndex   = $state<number | null>(null);
-  let correctIndex    = $state<number | null>(null);
-  let revealing       = $state(false);
-  let finalScore      = $state<GameUpdateResponse['finalScore']>(null);
+  let pendingNextQuestion = $state<PublicQuestion | null>(null);
+  let myScore = $state(0);
+  let aiScore = $state(0);
+  let aiNickname = $state('AI');
+  let aiThinking = $state(false);       // AI 思考动画开关
+  let aiAnswered = $state(false);       // AI 已作答标志
+  let aiThinkTimer = $state<ReturnType<typeof setTimeout> | null>(null);
+  let isFinished = $state(false);
+  let feedback = $state('');
+  let error = $state('');
+  let loading = $state(false);
+  let questionNumber = $state(0);
+  let totalQuestions = $state(0);
+  let selectedIndex = $state<number | null>(null);
+  let correctIndex = $state<number | null>(null);
+  let revealing = $state(false);
+  let finalScore = $state<GameUpdateResponse['finalScore']>(null);
+  let aiSelectedIndex = $state<number | null>(null);
+  let timeLeft = $state(0);
+  let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
 
-  // ── 倒计时 ────────────────────────────────────────────
-  let timeLeft        = $state(0);           // 剩余毫秒数
-  let timerInterval   = $state<ReturnType<typeof setInterval> | null>(null);
+  const timerPercent = $derived(QUESTION_TIME_MS > 0 ? (timeLeft / QUESTION_TIME_MS) * 100 : 0);
+  const timerDanger = $derived(timeLeft <= 5_000 && timeLeft > 0);
 
-  // ── AI 视觉 ───────────────────────────────────────────
-  let aiThinking      = $state(false);
-  let aiAnswered      = $state(false);
-  let aiThinkTimer    = $state<ReturnType<typeof setTimeout> | null>(null);
-
-  // ── 工具函数 ──────────────────────────────────────────
+  // 从 player map 里提取人类和 AI 的 snapshot
   function extractPlayers(players: Record<string, PlayerSnapshot>) {
     const all = Object.values(players);
     return { me: all.find(p => !p.isAI), ai: all.find(p => p.isAI) };
@@ -118,6 +122,31 @@
     aiThinking = false;
   }
 
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    timeLeft = QUESTION_TIME_MS;
+    timerInterval = setInterval(() => {
+      timeLeft = Math.max(0, timeLeft - 100);
+      if (timeLeft <= 0) {
+        stopTimer();
+        submitAnswer(-1, true);
+      }
+    }, 100);
+  }
+
+  function resetReveal() {
+    selectedIndex = null;
+    correctIndex = null;
+    revealing = false;
+  }
+
   function resetAIState() {
     stopAIThinking();
     aiAnswered = false;
@@ -135,12 +164,12 @@
   // ── 开始游戏 ──────────────────────────────────────────
   async function startGame() {
     stopTimer();
-    loading     = true;
-    error       = '';
-    isFinished  = false;
-    myScore     = 0;
-    aiScore     = 0;
-    gameId      = null;
+    loading = true;
+    error = '';
+    feedback = '';
+    isFinished = false;
+    myScore = 0;
+    aiScore = 0;
     currentQuestion = null;
     questionNumber  = 0;
     totalQuestions  = 0;
@@ -170,6 +199,7 @@
 
       startTimer();
       startAIThinking();
+      startTimer();
     } catch (err) {
       error = 'Erreur réseau ou backend inaccessible.';
     } finally {
@@ -177,11 +207,13 @@
     }
   }
 
-  // ── 提交答案 ──────────────────────────────────────────
   async function submitAnswer(answerIndex: number, isTimeout = false) {
     if (!gameId || !currentQuestion || isFinished || revealing) return;
 
+    const selectedOptionText = answerIndex >= 0 ? currentQuestion.options[answerIndex] : '';
+    loading = true;
     revealing = true;
+    error = '';
     stopTimer();
     stopAIThinking();
 
@@ -217,43 +249,51 @@
       const isCorrect   = data.lastAnswerUpdate?.isCorrect ?? false;
 
       selectedIndex = answerIndex;
-      correctIndex  = correctIdx;
-
+      correctIndex = correctIdx;
       if (isTimeout) {
-        feedback = `⏰ Temps écoulé ! La bonne危险 : ${correctText}`;
+        feedback = `Time is up. Correct answer: ${correct}`;
       } else {
-        feedback = isCorrect ? 'Bonne réponse !' : `Mauvaise réponse. La bonne réponse : ${correctText}`;
+        feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
       }
 
-      // 锁住下一题（闭包捕获，防止异步污染）
-      const nextQ = data.nextQuestion ? { ...data.nextQuestion } : null;
-
-      // 1.5s 后切题
-      setTimeout(() => {
-        if (data.status === 'finished' || data.finalScore) {
-          finalScore = data.finalScore ?? null;
+      if (data.status === 'finished' || data.finalScore) {
+        finalScore = data.finalScore ?? null;
+        setTimeout(() => {
           isFinished = true;
           currentQuestion = null;
-          resetRound();
-          return;
-        }
-
-        currentQuestion = nextQ;
-        if (currentQuestion) questionNumber++;
-        resetRound();
-        startTimer();
-        startAIThinking();
-      }, REVEAL_DELAY_MS);
-
-    } catch {
-      error     = 'Erreur réseau pendant la réponse.';
+          feedback = '';
+          resetReveal();
+          resetAIState();
+          stopTimer();
+        }, REVEAL_DELAY_MS);
+      } else {
+        pendingNextQuestion = data.nextQuestion ?? null;
+        setTimeout(() => {
+          currentQuestion = pendingNextQuestion;
+          pendingNextQuestion = null;
+          if (currentQuestion) questionNumber += 1;
+          feedback = '';
+          resetReveal();
+          // Nouvelle question : relancer l'animation AI
+          resetAIState();
+          startAIThinking();
+          startTimer();
+        }, REVEAL_DELAY_MS);
+      }
+    } catch (err) {
+      console.error('submitAnswer error:', err);
+      error = 'Erreur réseau pendant la réponse.';
       revealing = false;
     } finally {
       loading = false;
     }
   }
 
-  // ── 按钮样式 ──────────────────────────────────────────
+  onDestroy(() => {
+    stopTimer();
+    stopAIThinking();
+  });
+
   function buttonClasses(index: number): string {
     const base = 'w-full text-left px-4 py-3 rounded border transition disabled:cursor-not-allowed';
     if (revealing) {
@@ -336,45 +376,42 @@
   {/if}
 
   {#if currentQuestion}
-    {#key currentQuestion.id}
-      <section class="mt-6">
-        {#if questionNumber > 0}
-          <p class="text-center text-sm text-blue-100/80 mb-2">
-            Question {questionNumber}{#if totalQuestions > 0} / {totalQuestions}{/if}
-          </p>
-        {/if}
-
-        <div class="mb-4 px-4">
-          <div class="flex justify-between text-xs text-blue-100/60 mb-1">
-            <span>Temps restant</span>
-            <span class:text-red-400={timerDanger}>{Math.ceil(timeLeft / 1000)}s</span>
-          </div>
-          <div class="w-full h-2 rounded bg-white/10 overflow-hidden">
-            <div
-              class="h-full rounded transition-all duration-100"
-              class:bg-pink-400={!timerDanger}
-              class:bg-red-500={timerDanger}
-              style="width: {timerPercent}%"
-            ></div>
-          </div>
+    <section class="mt-6">
+      {#if questionNumber > 0}
+        <p class="text-center text-sm text-blue-100/80 mb-2">
+          Question {questionNumber}{#if totalQuestions > 0} / {totalQuestions}{/if}
+        </p>
+      {/if}
+      <div class="mx-4 mb-3">
+        <div class="flex justify-between text-xs text-blue-100/70 mb-1">
+          <span>Time</span>
+          <span class={timerDanger ? 'text-red-300 font-semibold' : 'text-blue-100/70'}>
+            {Math.ceil(timeLeft / 1000)}s
+          </span>
         </div>
-        <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
-          {currentQuestion.question}
-        </h2>
-        <div class="grid gap-3 p-4">
-          {#each currentQuestion.options as option, index}
-            <button
-              type="button"
-              onclick={() => submitAnswer(index)}
-              disabled={loading || revealing}
-              class={buttonClasses(index)}
-            >
-              {option}
-            </button>
-          {/each}
+        <div class="h-2 rounded bg-white/10 overflow-hidden">
+          <div
+            class={timerDanger ? 'h-full bg-red-400 transition-all' : 'h-full bg-pink-300 transition-all'}
+            style={`width: ${timerPercent}%`}
+          ></div>
         </div>
-      </section>
-    {/key}
+      </div>
+      <h2 class="text-base sm:text-xl md:text-2xl font-semibold text-pink-200 p-4 text-center">
+        {currentQuestion.question}
+      </h2>
+      <div class="grid gap-3 p-4">
+        {#each currentQuestion.options as option, index}
+          <button
+            type="button"
+            onclick={() => submitAnswer(index)}
+            disabled={loading || revealing}
+            class={buttonClasses(index)}
+          >
+            {option}
+          </button>
+        {/each}
+      </div>
+    </section>
   {/if}
 
   {#if isFinished}
@@ -403,19 +440,20 @@
             <p class="text-2xl font-bold text-pink-200">{aiScore}</p>
           </div>
         </div>
-      {:else}
-        <p class="text-sm sm:text-base md:text-xl p-4 text-blue-100">
-          Final score: <span class="font-bold text-pink-200">{myScore}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
-        </p>
-      {/if}
+      </div>
+    {:else}
+      <p class="text-sm sm:text-base md:text-xl p-4 text-blue-100">
+        Final score: <span class="font-bold text-pink-200">{myScore}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
+      </p>
+    {/if}
 
-      <button
-        type="button"
-        onclick={startGame}
-        class="mt-6 px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
-      >
-        Play again
-      </button>
-    </section>
-  {/if}
+    <button
+      type="button"
+      onclick={startGame}
+      class="mt-6 px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
+    >
+      Play again
+    </button>
+  </section>
+{/if}
 </div>

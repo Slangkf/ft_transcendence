@@ -44,7 +44,8 @@ export class GameBaseService
             currentQuestionIndex: 0,
             isFinished: false,
             startedAt: now,
-            questionStartedAt: now
+            questionStartedAt: now,
+            category: extra?.category
         }
         if (mode === "MULTIPLAYER" || mode === "TOURNAMENT" || mode === "AI"){
             if (!extra){

@@ -13,7 +13,7 @@ export class AIService {
     constructor() {}
 
     public async generateAIAnswer(_gameState: BaseGameState, _aiId: string): Promise<void> {
-        // Legacy SoloService hook kept for compatibility; AI mode now answers atomically in LocalMultiPlayer.
+        // Legacy SoloService hook kept for compatibility; AI mode answers atomically in LocalMultiPlayer.
     }
 
     /**

@@ -7,12 +7,18 @@ import { BaseGameState, MultiGameState, Player } from "./game.types";
 import { GameMode } from "@prisma/client";
 import { AIService } from "./ai";
 
-type AtomicAnswerTask = { id: string; ans: number };
 type LastAnswerUpdate = {
     playerId: string;
     isCorrect: boolean;
     correctAnswerIndex: number;
     correctText: string;
+};
+
+type AtomicAnswerTask = {
+    id: string;
+    ans: number;
+    questionId: number;
+    visibleAt?: number;
 };
 
 /**
@@ -46,7 +52,10 @@ export class LocalMultiPlayer extends GameBaseService {
         for (const p of playerlist) {
             const userIdstring = String(p.userId);
             const isAIPlayer = userIdstring.startsWith("ai_");
-
+            if (isAIPlayer) {
+                hasAIInRoom = true;
+            }
+            
             players[userIdstring] = {
                 ...this.initPlayers(userIdstring, p.nickname),
                 isAI: isAIPlayer
@@ -89,13 +98,17 @@ export class LocalMultiPlayer extends GameBaseService {
         if (!currentGameState) {
             throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
         }
+        const playerId = String(userId);
         const currentQuestion = currentGameState.questions[currentGameState.currentQuestionIndex];
         if (!currentQuestion) {
             throw new AppError('Question not found', ErrorCode.QUESTION_NOT_FOUND, 404);
         }
 
-        const playerId = String(userId);
-        const tasks: AtomicAnswerTask[] = [{ id: playerId, ans: selectedAnswerIndex }];
+        const tasks: AtomicAnswerTask[] = [{
+            id: playerId,
+            ans: selectedAnswerIndex,
+            questionId: currentQuestion.id,
+        }];
         const isAIGame = currentGameState.mode === 'AI';
 
         // 🌟 方案 3 核心注入点：如果当前是 AI 模式且游戏未完结
@@ -108,12 +121,17 @@ export class LocalMultiPlayer extends GameBaseService {
                 // 调用纯净的同步预测函数，算出 AI 答案和隐藏解封时间戳
                 const aiPayload = this.aiservice.predictAnswer(currentGameState, aiId);
                 if (aiPayload.questionId === currentQuestion.id) {
-                    tasks.push({ id: aiPayload.aiId, ans: aiPayload.selectedAnswerIndex });
+                    tasks.push({
+                        id: aiPayload.aiId,
+                        ans: aiPayload.selectedAnswerIndex,
+                        questionId: aiPayload.questionId,
+                        visibleAt: aiPayload.visibleAt,
+                    });
                 }
             }
         }
 
-        // 2. 【关键修正】：将人类的真实点击连同刚刚打包好的 AI 预判载荷（aiPayload）一起原子的拍入 Lua 脚本！
+        // 2. 【关键修正】：将人类答案和 AI 预判答案作为统一 tasks 原子拍入 Lua 脚本
         const result = await this.gamerepository.submitanswerAtomic(
             gameId,
             tasks,

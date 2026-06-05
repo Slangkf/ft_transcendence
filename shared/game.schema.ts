@@ -170,4 +170,3 @@ export const SetReadyParams = z.object({
     roomId: z.string().min(1),
     isReady: z.boolean(),
 })
-
