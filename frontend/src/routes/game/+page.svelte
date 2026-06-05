@@ -54,7 +54,6 @@
   let correctIndex = $state<number | null>(null);
   let revealing = $state(false);
   let finalScore = $state<GameUpdateResponse['finalScore']>(null);
-  let aiSelectedIndex = $state<number | null>(null);
   let timeLeft = $state(0);
   let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
   let transitionTimer = $state<ReturnType<typeof setTimeout> | null>(null);
@@ -86,7 +85,6 @@
     aiAnswered = false;
     aiThinking = true;
     if (aiThinkTimer) clearTimeout(aiThinkTimer);
-    // 2~5秒内随机"完成思考"，和后端 predictAnswer 的 thinkingDelayMs 范围一致
     const delay = Math.random() * 3000 + 2000;
     aiThinkTimer = setTimeout(() => {
       aiThinking = false;
@@ -106,6 +104,7 @@
     }
   }
 
+  // ── 答题逻辑处理 ───────────────────────────────────────
   function clearTransitionTimer() {
     if (transitionTimer) {
       clearTimeout(transitionTimer);
@@ -144,7 +143,6 @@
     aiAnswered = false;
   }
 
-  // ── 重置每题状态 ──────────────────────────────────────
   function resetRound() {
     selectedIndex = null;
     correctIndex  = null;
@@ -154,7 +152,6 @@
     resetAIState();
   }
 
-  // ── 开始游戏 ──────────────────────────────────────────
   async function startGame() {
     clearTransitionTimer();
     stopTimer();
@@ -185,7 +182,7 @@
       }
 
       const data = result.data;
-      gameId         = data.gameId;
+      gameId          = data.gameId;
       currentQuestion = data.nextQuestion ?? null;
       totalQuestions  = data.state?.totalQuestions ?? 0;
       questionNumber  = (data.state?.currentQuestionIndex ?? 0) + 1;
@@ -209,10 +206,12 @@
     revealing = true;
     error = '';
     feedback = '';
+
+    selectedIndex = isTimeout ? -1 : answerIndex;
+
     stopTimer();
     stopAIThinking();
 
-    // 超时时 AI 视觉上立刻显示已作答
     if (isTimeout) aiAnswered = true;
 
     try {
@@ -236,6 +235,10 @@
       const data = result.data;
       const nextPlayers = data.state?.player ?? {};
       const nextTotalQuestions = data.state?.totalQuestions ?? totalQuestions;
+
+      if (data.lastAnswerUpdate) {
+        correctIndex = data.lastAnswerUpdate.correctAnswerIndex;
+      }
 
       if (data.lastAnswerUpdate?.correctText === 'ALREADY_PROCESSED') {
         if (transitionTimer) return;
@@ -303,7 +306,6 @@
           feedback = nextFeedback;
           resetReveal();
           hasSubmittedCurrent = false;
-          // Nouvelle question : relancer l'animation AI
           resetAIState();
           startAIThinking();
           startTimer();
@@ -327,12 +329,17 @@
 
   function buttonClasses(index: number): string {
     const base = 'w-full text-left px-4 py-3 rounded border transition disabled:cursor-not-allowed';
+    
     if (revealing) {
-      if (index === correctIndex)  return `${base} bg-green-500/40 border-green-300/60 text-white`;
-      if (index === selectedIndex && selectedIndex !== -1)
-                                   return `${base} bg-red-500/40 border-red-300/60 text-white`;
+      if (index === correctIndex) {
+        return `${base} bg-green-500/40 border-green-300/60 text-white`;
+      }
+      if (index === selectedIndex && selectedIndex !== correctIndex) {
+        return `${base} bg-red-500/40 border-red-300/60 text-white`;
+      }
       return `${base} bg-gray-500/15 border-white/10 text-blue-100/60`;
     }
+    
     return `${base} bg-gray-500/25 hover:bg-gray-400/35 border-white/20 text-blue-100 disabled:opacity-50`;
   }
 </script>
@@ -471,19 +478,19 @@
             <p class="text-2xl font-bold text-pink-200">{aiScore}</p>
           </div>
         </div>
-    {:else}
-      <p class="text-sm sm:text-base md:text-xl p-4 text-blue-100">
-        Final score: <span class="font-bold text-pink-200">{myScore}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
-      </p>
-    {/if}
+      {:else}
+        <p class="text-sm sm:text-base md:text-xl p-4 text-blue-100">
+          Final score: <span class="font-bold text-pink-200">{myScore}{#if totalQuestions > 0} / {totalQuestions}{/if}</span>
+        </p>
+      {/if}
 
-    <button
-      type="button"
-      onclick={startGame}
-      class="mt-6 px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
-    >
-      Play again
-    </button>
-  </section>
-{/if}
+      <button
+        type="button"
+        onclick={startGame}
+        class="mt-6 px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
+      >
+        Play again
+      </button>
+    </section>
+  {/if}
 </div>
