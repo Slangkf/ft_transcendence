@@ -83,7 +83,7 @@
       const result: ApiResponse<GameUpdateResponse> = await response.json();
 
       if (!response.ok || !result.success || !result.data || !result.data.nextQuestion) {
-        error = result?.message ?? 'Impossible de démarrer la partie.';
+        error = result?.message ?? 'Unable to start the game.';
         return;
       }
 
@@ -95,7 +95,7 @@
       questionNumber = (data.state?.currentQuestionIndex ?? 0) + 1;
     } catch (err) {
       console.error('startGame error:', err);
-      error = 'Erreur réseau ou backend inaccessible.';
+      error = 'Network error or inaccessible backend.';
     } finally {
       loading = false;
     }
@@ -124,7 +124,7 @@
       const result: ApiResponse<GameUpdateResponse> = await response.json();
 
       if (!response.ok || !result.success || !result.data) {
-        error = result?.message ?? 'Erreur lors de l’envoi de la réponse.';
+        error = result?.message ?? 'Error sending response.';
         return;
       }
 
@@ -162,7 +162,7 @@
     }
     catch (err) {
       console.error('submitAnswer error:', err);
-      error = 'Erreur réseau pendant la réponse.';
+      error = 'Network error during response.';
     } finally {
       loading = false;
     }
