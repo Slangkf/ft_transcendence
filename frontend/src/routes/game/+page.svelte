@@ -172,7 +172,6 @@
       questionNumber  = (data.state?.currentQuestionIndex ?? 0) + 1;
       updateScores(data.state?.player ?? {});
 
-      startTimer();
       startAIThinking();
       startTimer();
     } catch (err) {
@@ -185,18 +184,15 @@
   async function submitAnswer(answerIndex: number, isTimeout = false) {
     if (!gameId || !currentQuestion || isFinished || revealing) return;
 
-    const selectedOptionText = answerIndex >= 0 ? currentQuestion.options[answerIndex] : '';
     loading = true;
     revealing = true;
     error = '';
+    feedback = '';
     stopTimer();
     stopAIThinking();
 
     // 超时时 AI 视觉上立刻显示已作答
     if (isTimeout) aiAnswered = true;
-
-    loading = true;
-    error   = '';
 
     try {
       const res = await fetch(`/api/game/${mode}/${gameId}/answer`, {
@@ -214,29 +210,23 @@
       }
 
       const data = result.data;
-      updateScores(data.state?.player ?? {});
-      totalQuestions = data.state?.totalQuestions ?? totalQuestions;
+      const nextPlayers = data.state?.player ?? {};
+      const nextTotalQuestions = data.state?.totalQuestions ?? totalQuestions;
 
-      // 显示答案反馈
       const correctText = data.lastAnswerUpdate?.correctText ?? '';
-      const correctIdx  = data.lastAnswerUpdate?.correctAnswerIndex
-        ?? currentQuestion.options.findIndex(o => o === correctText);
       const isCorrect   = data.lastAnswerUpdate?.isCorrect ?? false;
-
-      selectedIndex = answerIndex;
-      correctIndex = correctIdx;
-      if (isTimeout) {
-        feedback = `Time is up. Correct answer: ${correctText}`;
-      } else {
-        feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`;
-      }
+      const nextFeedback = isTimeout
+        ? `Time is up. Correct answer: ${correctText}`
+        : isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`;
 
       if (data.status === 'finished' || data.finalScore) {
-        finalScore = data.finalScore ?? null;
         setTimeout(() => {
+          updateScores(nextPlayers);
+          totalQuestions = nextTotalQuestions;
+          finalScore = data.finalScore ?? null;
           isFinished = true;
           currentQuestion = null;
-          feedback = '';
+          feedback = nextFeedback;
           resetReveal();
           resetAIState();
           stopTimer();
@@ -246,8 +236,10 @@
         setTimeout(() => {
           currentQuestion = pendingNextQuestion;
           pendingNextQuestion = null;
-          if (currentQuestion) questionNumber += 1;
-          feedback = '';
+          questionNumber = (data.state?.currentQuestionIndex ?? questionNumber) + 1;
+          updateScores(nextPlayers);
+          totalQuestions = nextTotalQuestions;
+          feedback = nextFeedback;
           resetReveal();
           // Nouvelle question : relancer l'animation AI
           resetAIState();
@@ -311,7 +303,7 @@
     </div>
   {/if}
 
-  {#if isAIMode && gameId}
+  {#if isAIMode && gameId && !isFinished}
     <div class="flex gap-4 mb-6">
       <div class="flex-1 rounded bg-white/10 border border-white/20 px-4 py-3 text-center">
         <p class="text-xs text-blue-100/60 mb-1">You</p>
@@ -330,7 +322,7 @@
         </div>
       </div>
     </div>
-  {:else if !isAIMode}
+  {:else if !isAIMode && !isFinished}
     <div class="text-center mb-4">
       <p class="text-sm sm:text-base md:text-lg text-blue-100">
         Score: <span class="font-bold text-pink-200">{myScore}</span>
