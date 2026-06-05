@@ -18,7 +18,7 @@ export class GameController
                : 'SOLO';
             const result = await this.gameService.startGame({
                 mode,
-                userId: req.user!.id,
+                userId: String(req.user!.id),
                 nickname: req.user!.username,
                 category: category,
                 size: size,
@@ -69,7 +69,7 @@ export class GameController
 
     setready = async(req: Request, res: Response) => {
         const {roomId, isReady} = req.validatedBody;
-        const userId = req.user!.id;
+        const userId = String(req.user!.id);
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);
 
@@ -99,7 +99,7 @@ export class GameController
     }
 
     answer = async (req: Request, res: Response)=> {
-        const userId = req.user!.id;
+        const userId = String(req.user!.id);
 
         const gameId = req.params.gameId as string;
 

@@ -238,14 +238,15 @@ export class MultiPlayerFacade {
     async createAIGame(userId: string, nickname: string, category?: string): Promise<MultiGameState>{
         //1. create a room for this session
         //2. init player with the ia 
+        const humanId = String(userId);
         const aiId = `ai_${crypto.randomUUID()}`;
 
         const room = await this.roomService.createRoom({
-            hostId: userId,
+            hostId: humanId,
             hostNickname: nickname,
             maxPlayers: 2,
             players:[
-                {userId, nickname},
+                {userId: humanId, nickname},
                 {userId: aiId, nickname: 'AI'}
             ],
             AIplayerIds: [aiId]
