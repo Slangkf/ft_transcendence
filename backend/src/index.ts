@@ -9,7 +9,6 @@ import {createServer} from 'http';
 import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
 import { container } from './container';
-import { ChatSocketHandler } from './websocket/socket.chatHandler';
 
 
 const app = express();
