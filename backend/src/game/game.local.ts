@@ -27,11 +27,8 @@ type AtomicAnswerTask = {
  * 遵循 方案 3：人类交卷时现场秒杀 AI 逻辑，不产生任何异步 Timer 竞争。
  */
 export class LocalMultiPlayer extends GameBaseService {
-    
     constructor(
-        // 1. 基类需要的依赖，正常作为普通形参传递给 super
         questionservice: QuestionService,
-        // 2. 加上显式修饰符，由 NestJS / DI 框架自动完美挂载到当前实例，彻底防范 create is not a function 报错
         protected readonly gamerepository: RedisGameRepository,
         private readonly aiservice: AIService,
     ){
@@ -43,14 +40,13 @@ export class LocalMultiPlayer extends GameBaseService {
      */
     async startGame(room: Room, category?: string): Promise<BaseGameState> {
         const playerlist = Object.values(room.players);
-        
+
         // 核心防御：联机对战必须满足至少 2 个活跃连接
         if (playerlist.length < 2) {
             throw new AppError('Not enough players', ErrorCode.ROOM_PLAYER_NBR, 400);
         }
 
         const players: Record<string, Player> = {};
-        let hasAIInRoom = false;
 
         // 解包房间玩家，构建包含虚拟 AI 标签的游戏玩家档案
         for (const p of playerlist) {
@@ -67,16 +63,16 @@ export class LocalMultiPlayer extends GameBaseService {
         }
 
         let state: MultiGameState;
-        
+
         // 分流解析：根据房间属性决定当前生成的是 AI 对战房间还是纯人类联机房间
         if (room.AIplayerIds) {
-             state = await this.prepareGame(players, "AI" as GameMode, { roomId: room.roomId, hostId: room.hostId, category }) as MultiGameState;
+            state = await this.prepareGame(players, "AI" as GameMode, { roomId: room.roomId, hostId: room.hostId, category }) as MultiGameState;
         } else {
             state = await this.prepareGame(players, "MULTIPLAYER", { roomId: room.roomId, hostId: room.hostId, category }) as MultiGameState;
         }
 
         console.log("[Game Init Local] Successfully initialized state for room:", state.roomId);
-        
+
         // 锦标赛房间上下文穿透
         if (room.tournamentId) {
             state.tournamentId = room.tournamentId;
@@ -96,7 +92,7 @@ export class LocalMultiPlayer extends GameBaseService {
         lastAnswer: LastAnswerUpdate;
     }> {
         console.log(`[submit] game=${gameId}, user=${userId}, answer=${selectedAnswerIndex}`);
-        
+
         // 1. 提取当前第一线快照，用以计算 AI 是否需要“悄悄做预判”
         const currentGameState = await this.gamerepository.findById(gameId);
         if (!currentGameState) {
@@ -119,7 +115,7 @@ export class LocalMultiPlayer extends GameBaseService {
         if (isAIGame && !currentGameState.isFinished) {
             const aiId = Object.keys(currentGameState.players).find(id => currentGameState.players[id].isAI);
             const aiPlayer = aiId ? currentGameState.players[aiId] : null;
-            
+
             // 只有当 AI 在当前这一题依然处于未答（playing）状态时，军师（AIService）才会现身出谋划策
             if (aiId && aiPlayer && aiPlayer.status === 'playing') {
                 // 调用纯净的同步预测函数，算出 AI 答案和隐藏解封时间戳

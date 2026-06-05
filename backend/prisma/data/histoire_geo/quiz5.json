@@ -92,6 +92,16 @@
         "Lusitania"
       ],
       "answer": "Titanic"
+    },
+    {
+      "text": "Which colonial power ruled India prior to it's independence in 1947?",
+      "options": [
+        "France",
+        "Spain",
+        "Portugal",
+        "Britain"
+      ],
+      "answer":"Britain"
     }
   ]
 }

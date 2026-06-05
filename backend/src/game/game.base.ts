@@ -80,14 +80,14 @@ export class GameBaseService
                 404
             )
         };
-        if (selectedIndex >= currentQuestion.options.length || selectedIndex < 0){
+        if (selectedIndex >= currentQuestion.options.length){
             throw new AppError(
                 'Selected Answer Index problem',
                 ErrorCode.BAD_REQUEST,
                 400
             )
         };
-        const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
+        const isCorrect = selectedIndex === -1 ? false : (selectedIndex === currentQuestion.correctAnswerIndex);
         
         const player = state.players[userId];
         if (!player){

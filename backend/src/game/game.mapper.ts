@@ -10,17 +10,17 @@ import {
 import { GameMode } from "@prisma/client";
 
 export class GameMapper {
-    
+
     /**
-     * 将 Redis 中原子超前的运行时 GameState，转换为符合前端人类视觉延迟的 GameUpdateResponse (DTO)
+     * 将 Redis 中的运行时 GameState 转换成前端 DTO。
+     * lastAnswerUpdate 独立携带刚刚答完那题的正确答案，nextQuestion 始终指向服务端真实当前题。
      * @param rawState 从 Redis 中捞出来的绝对真实的最新快照
-     * @param lastAnswerOverride 外部可选传入的上一次答题动作更新
+     * @param lastAnswerOverride 外部传入的当前用户的答题动作结果
      */
     public toUpdateResponse(rawState: BaseGameState, lastAnswerOverride?: any): GameUpdateResponse {
         // 🌟 1. 【防污染深拷贝】：必须深拷贝一份镜像发给前端，绝对不能修改 Redis 原生内存对象
         const state = JSON.parse(JSON.stringify(rawState)) as BaseGameState;
 
-        // 3. 构造前端需要的玩家快照列表 (PlayerSnapShot)
         const playerSnapshots: Record<string, PlayerSnapShot> = {};
         for (const [id, p] of Object.entries(state.players)) {
             playerSnapshots[id] = {
@@ -29,11 +29,10 @@ export class GameMapper {
                 score: p.score,
                 status: p.status,
                 isAI: p.isAI ?? false,
-                totalTime: p.Totaltime
+                totalTime: p.Totaltime // 确保与类型定义的字段大小写对齐
             };
         }
 
-        // 4. 判定下一题的 PublicQuestion (剔除 correctAnswerIndex 的安全题干)
         let nextQuestion: PublicQuestion | null = null;
         if (!state.isFinished) {
             const currentQ = state.questions[state.currentQuestionIndex];
@@ -46,7 +45,6 @@ export class GameMapper {
             }
         }
 
-        // 5. 构筑最终结算面板 (FinalScore)
         let finalScore: FinalScore | null = null;
         if (state.isFinished) {
             finalScore = this.toFinalScore(state);
@@ -109,7 +107,7 @@ export class GameMapper {
      */
     public toMatchResult(state: BaseGameState): MatchResult {
         const playerEntries = Object.values(state.players);
-        
+
         // 生成最终的名次分布
         const sortedPlayers = [...playerEntries].sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
