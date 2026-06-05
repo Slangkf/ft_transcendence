@@ -264,8 +264,7 @@
 		</div>
 		<div class="flex justify-between mb-3">
 			<span class="text-sm text-slate-400">Average score</span>
-			<span>{ data.user.played ? ((data.user.score ?? 0 ) / (data.user.played * 10) * 100)
-									: 0}%</span>
+			<span>{ data.user.played ? ((data.user.score ?? 0 ) / (data.user.played * 10) * 100): 0}%</span>
 		</div>
 	</div>
 	
