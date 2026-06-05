@@ -95,8 +95,9 @@ if elapsed < 0 then elapsed = 0 end
 -- 1. 防重复提交（只对 human 做 dedup）
 ----------------------------------------------------
 for _, task in ipairs(tasks) do
-    if string.sub(task.id, 1, 3) ~= "ai_" then
-        local dedupKey = KEYS[1] .. ":q:" .. currentQuestion.id .. ":u:" .. task.id
+    local taskId = tostring(task.id)
+    if string.sub(taskId, 1, 3) ~= "ai_" then
+        local dedupKey = KEYS[1] .. ":q:" .. currentQuestion.id .. ":u:" .. taskId
 
         if redis.call("GET", dedupKey) == "1" then
             return cjson.encode({
@@ -113,7 +114,8 @@ end
 -- 2. 执行 tasks（human + AI 统一处理）
 ----------------------------------------------------
 for _, task in ipairs(tasks) do
-    local p = state.players[task.id]
+    local taskId = tostring(task.id)
+    local p = state.players[taskId]
 
     if p then
 
@@ -139,7 +141,7 @@ for _, task in ipairs(tasks) do
             p.score = (p.score or 0) + 1
         end
 
-        state.players[task.id] = p
+        state.players[taskId] = p
     end
 end
 

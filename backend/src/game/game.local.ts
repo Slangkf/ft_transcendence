@@ -47,8 +47,8 @@ export class LocalMultiPlayer extends GameBaseService {
             const userIdstring = String(p.userId);
             const isAIPlayer = userIdstring.startsWith("ai_");
 
-            players[p.userId] = {
-                ...this.initPlayers(p.userId, p.nickname),
+            players[userIdstring] = {
+                ...this.initPlayers(userIdstring, p.nickname),
                 isAI: isAIPlayer
             };
         }
@@ -94,7 +94,8 @@ export class LocalMultiPlayer extends GameBaseService {
             throw new AppError('Question not found', ErrorCode.QUESTION_NOT_FOUND, 404);
         }
 
-        const tasks: AtomicAnswerTask[] = [{ id: userId, ans: selectedAnswerIndex }];
+        const playerId = String(userId);
+        const tasks: AtomicAnswerTask[] = [{ id: playerId, ans: selectedAnswerIndex }];
         const isAIGame = currentGameState.mode === 'AI';
 
         // 🌟 方案 3 核心注入点：如果当前是 AI 模式且游戏未完结
@@ -130,7 +131,7 @@ export class LocalMultiPlayer extends GameBaseService {
             return {
                 state: result.state,
                 lastAnswer: {
-                    playerId: userId,
+                    playerId,
                     isCorrect: false,
                     correctAnswerIndex: currentQuestion.correctAnswerIndex,
                     correctText: 'ALREADY_PROCESSED'
@@ -142,7 +143,7 @@ export class LocalMultiPlayer extends GameBaseService {
             return {
                 state: result.state,
                 lastAnswer: {
-                    playerId: userId,
+                    playerId,
                     isCorrect: false,
                     correctAnswerIndex: currentQuestion.correctAnswerIndex,
                     correctText: 'ALREADY_PROCESSED'
@@ -159,7 +160,7 @@ export class LocalMultiPlayer extends GameBaseService {
                 .every(player => player.status === 'answered');
         const correctText = currentQuestion.options[currentQuestion.correctAnswerIndex] ?? "";
         const lastAnswer = {
-            playerId: userId,
+            playerId,
             isCorrect: selectedAnswerIndex === currentQuestion.correctAnswerIndex,
             correctAnswerIndex: roundResolved ? currentQuestion.correctAnswerIndex : -1,
             correctText: roundResolved ? correctText : "",
