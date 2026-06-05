@@ -64,7 +64,8 @@ export class LocalMultiPlayer extends GameBaseService {
             state = await this.prepareGame(players, "MULTIPLAYER", { roomId: room.roomId, hostId: room.hostId, category }) as MultiGameState;
         }
 
-        console.log("[Game Init Local] Successfully initialized state for room:", state.roomId);
+        console.log("[Game Init Local] Successfully initialized state for room, mode: ", state.mode);
+        console.log("roomId: ", state.roomId);
 
         // Tournament room context penetration
         if (room.tournamentId) {
@@ -120,7 +121,7 @@ export class LocalMultiPlayer extends GameBaseService {
         }];
         const isAIGame = currentGameState.mode === 'AI';
 
-        // Strategy 3 Core Injection: If the current mode is AI and the game is not yet finished
+        // If the current mode is AI and the game is not yet finished
         if (isAIGame && !currentGameState.isFinished) {
             const aiId = Object.keys(currentGameState.players).find(id => currentGameState.players[id].isAI);
             const aiPlayer = aiId ? currentGameState.players[aiId] : null;

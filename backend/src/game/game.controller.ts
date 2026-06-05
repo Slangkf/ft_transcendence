@@ -54,7 +54,7 @@ export class GameController
         }
     }
 
-    categories = async(_req: Request, res: Response) => {
+    categories = async(req: Request, res: Response) => {
         try {
             const categories = await this.gameService.listCategories();
             return res.status(200).json(Apiresponse.success(categories, "Categories list"));
@@ -151,17 +151,4 @@ export class GameController
         }
     }
 
-    // GameController 里
-    getStatus = async (req: Request, res: Response) => {
-  const gameId = String(req.params.gameId);
-  try {
-    const state = await this.gameService.getGameState(gameId);
-    if (!state) {
-      return res.status(404).json(Apiresponse.error("GAME_NOT_FOUND", "Game not found"));
-    }
-    return res.status(200).json(Apiresponse.success(state, "Game state"));
-  } catch (error) {
-    return res.status(500).json(Apiresponse.error("INTERNAL_ERROR", "Internal error"));
-  }
-}
 }

@@ -171,10 +171,6 @@ export class Container{
         // wire tournament back into the multiplayer facade so room→game linking can notify the bracket
         this.multiplayerFacade.setTournamentService(this.tournamentService);
         
-        //aiservice
-        //this.aiService = new AIService(this.localMultiPlayer);
-        //this.soloService.setAIService(this.aiService);
-        
         //friendshipservice
         this.friendService = new FriendshipService(
             this.friendRepo,

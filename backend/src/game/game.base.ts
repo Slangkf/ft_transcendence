@@ -34,11 +34,10 @@ export class GameBaseService
         const questions = await this.questionService.getQuestions(10, extra?.category);
         const gameId = crypto.randomUUID();
         const now = Date.now();
-        const hasAI = Object.values(players).some(p => p.isAI === true);
-        const finalmode = hasAI ? ("AI" as GameMode) : mode
+       // const hasAI = Object.values(players).some(p => p.isAI === true);
         const base = {
             gameId,
-            mode: finalmode,
+            mode,
             questions,
             players,
             currentQuestionIndex: 0,
@@ -57,7 +56,7 @@ export class GameBaseService
             }
             return {
                 ...base,
-                mode: finalmode,
+                mode,
                 roomId: extra.roomId,
                 hostId: extra.hostId,
                 status: 'playing',

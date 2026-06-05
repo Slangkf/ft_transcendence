@@ -8,10 +8,11 @@ import cookie from 'cookie';
 import { AppError, ErrorCode } from "../error/apperror";
 import { ChatSocketEvents, ClientToServerEvents, FriendSocketEvents, ServerToClientEvents } from "../websocket/socket.types";
 import { UserPayload } from "../types/express";
+import { prisma } from "./prisma";
 dotenv.config();
 
 
-export function authMiddleware(socket: any, next: any) {
+export async function authMiddleware(socket: any, next: any) {
     const rawcookie = socket.handshake.headers.cookie;
     if (!rawcookie){
         return next(new AppError('Unauthorized in socket', ErrorCode.AUTH_UNAUTHORIZED));
@@ -24,8 +25,17 @@ export function authMiddleware(socket: any, next: any) {
             return next(new AppError('Unauthorized token in socket', ErrorCode.AUTH_UNAUTHORIZED));
         }
         const payload = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
+        //get user from database and update the username 
+        const user = await prisma.user.findUnique({
+            where: {id: Number(payload.id)},
+            select: {id: true, username: true}
+        })
+        if (!user){
+            throw  new AppError("User not found in middleware socket", ErrorCode.USER_NOT_FOUND)
+        }
+
         socket.data.userId = String(payload.id);
-        socket.data.nickname = payload.username;
+        socket.data.nickname = user.username;
         next();
     }catch(error){
         next(new AppError('Unauthorized socket', ErrorCode.AUTH_UNAUTHORIZED));
