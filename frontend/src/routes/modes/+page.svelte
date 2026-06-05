@@ -10,18 +10,6 @@
 		page.url.searchParams.get('login') && showToast("Connection successful, welcome back!");
 	});
 
-	// async function handleGameMode(_mode: string) {
-	// 	await goto('/game/categories');
-	// }
-
-	// async function handleMultiplayer() {
-	// 	await goto('/game/multiplayer');
-	// }
-
-	// async function handleTournament() {
-	// 	await goto('/game/tournament');
-	// }
-
 	async function handleGameMode(mode: string) {
 		if (mode === "solo")
 			await goto('/game/categories');
