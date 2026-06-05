@@ -240,6 +240,14 @@
         correctIndex = data.lastAnswerUpdate.correctAnswerIndex;
       }
 
+      const correctText = data.lastAnswerUpdate?.correctText ?? '';
+      const isCorrect   = data.lastAnswerUpdate?.isCorrect ?? false;
+      
+      // 立刻渲染当前题目的正确/错误文字提示
+      feedback = isTimeout
+        ? `Time is up. Correct answer: ${correctText}`
+        : isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`;
+
       if (data.lastAnswerUpdate?.correctText === 'ALREADY_PROCESSED') {
         if (transitionTimer) return;
 
@@ -250,6 +258,7 @@
             finalScore = data.finalScore ?? null;
             isFinished = true;
             currentQuestion = null;
+            feedback = ''; // 【修复】切到游戏结束，清空提示
             resetReveal();
             hasSubmittedCurrent = false;
             resetAIState();
@@ -262,6 +271,7 @@
             questionNumber = (data.state?.currentQuestionIndex ?? questionNumber) + 1;
             updateScores(nextPlayers);
             totalQuestions = nextTotalQuestions;
+            feedback = ''; // 【修复】切到下一题，清空提示
             resetReveal();
             hasSubmittedCurrent = false;
             resetAIState();
@@ -276,12 +286,6 @@
         return;
       }
 
-      const correctText = data.lastAnswerUpdate?.correctText ?? '';
-      const isCorrect   = data.lastAnswerUpdate?.isCorrect ?? false;
-      const nextFeedback = isTimeout
-        ? `Time is up. Correct answer: ${correctText}`
-        : isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`;
-
       if (data.status === 'finished' || data.finalScore) {
         scheduleTransition(() => {
           updateScores(nextPlayers);
@@ -289,7 +293,7 @@
           finalScore = data.finalScore ?? null;
           isFinished = true;
           currentQuestion = null;
-          feedback = nextFeedback;
+          feedback = ''; // 【修复】结算时清空提示
           resetReveal();
           hasSubmittedCurrent = false;
           resetAIState();
@@ -303,7 +307,7 @@
           questionNumber = (data.state?.currentQuestionIndex ?? questionNumber) + 1;
           updateScores(nextPlayers);
           totalQuestions = nextTotalQuestions;
-          feedback = nextFeedback;
+          feedback = ''; // 【修复】核心改动点：在此处 1.5 秒后切题时，将 feedback 文字清空
           resetReveal();
           hasSubmittedCurrent = false;
           resetAIState();
