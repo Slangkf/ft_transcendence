@@ -107,6 +107,7 @@ export interface GameUpdateResponse {
         player: Record<string, PlayerSnapShot>;
         startedAt?: number;
         questionStartedAt?: number;
+        questionElapsedMs?: number; // server-computed elapsed for the current question (clock-skew-free)
     };
     lastAnswerUpdate? :LastAnswerUpdate;
 

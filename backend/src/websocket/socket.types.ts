@@ -46,12 +46,13 @@ export type GameStartedPayload = {
 export type AnswerResultPayload = {
     gameId: string;
     status: 'playing' | 'finished';
-    lastAnswerUpdate: {
+    lastAnswerUpdate?: {
         playerId: string;
         isCorrect: boolean;
         correctAnswerIndex: number;
         correctText: string;
     };
+    timedOut?: boolean;
     nextQuestion?: PublicQuestion | null;
     players: Record<string, PlayerSnapShot>;
     finalScore?:{
@@ -99,10 +100,37 @@ export type ServerToClientEvents = {
     }) => void;
 
     // tournament events
+    'lobby_update': (data: LobbyUpdatePayload) => void;
     'tournament_started': (data: TournamentStartedPayload) => void;
     'bracket_update': (data: BracketUpdatePayload) => void;
     'next_match_ready': (data: NextMatchReadyPayload) => void;
     'tournament_finished': (data: TournamentFinishedPayload) => void;
+    'tournament_onchain': (data: TournamentOnchainPayload) => void;
+    'spectator_update': (data: SpectatorUpdatePayload) => void;
+    // a player (or the whole room) failed to ready up in time
+    'ready_timeout': (data: ReadyTimeoutPayload) => void;
+}
+
+export type ReadyTimeoutPayload = {
+    roomId: string;
+    excluded: boolean; // true if THIS recipient is the one who never readied
+}
+
+// Live snapshot of an ongoing tournament game, broadcast to the tournament room
+// so eliminated players can spectate the final (scoreboard + question progress).
+export type SpectatorUpdatePayload = {
+    tournamentId: string;
+    gameId: string;
+    status: 'playing' | 'finished';
+    currentQuestionIndex: number;
+    totalQuestions: number;
+    question?: PublicQuestion | null;
+    players: Record<string, PlayerSnapShot>;
+}
+
+export type LobbyUpdatePayload = {
+    size: number;
+    players: { userId: string; nickname: string }[];
 }
 
 export type TournamentStartedPayload = {
@@ -129,6 +157,13 @@ export type TournamentFinishedPayload = {
     bracket: PublicBracketView;
     winnerId: string;
     ranking: string[];
+}
+
+// Final scores were written on-chain; carries the tx hash + explorer link.
+export type TournamentOnchainPayload = {
+    tournamentId: string;
+    txHash: string;
+    explorerUrl: string;
 }
 
 export type ClientToServerEvents = {

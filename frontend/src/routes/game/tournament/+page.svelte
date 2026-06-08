@@ -10,6 +10,10 @@
   let info = $state('');
   let joinedTournament: string | null = null;
 
+  type LobbyPlayer = { userId: string; nickname: string };
+  let lobbyPlayers = $state<LobbyPlayer[]>([]);
+  let lobbySize = $state(4);
+
   async function ensureSocketConnected(): Promise<void> {
     const socket = getGameSocket();
     if (socket.connected) return;
@@ -29,11 +33,17 @@
   function setupListeners() {
     const socket = getGameSocket();
 
+    socket.off('lobby_update');
     socket.off('tournament_started');
     socket.off('bracket_update');
     socket.off('next_match_ready');
     socket.off('reconnect');
     socket.off('error');
+
+    socket.on('lobby_update', (payload: { size: number; players: LobbyPlayer[] }) => {
+      lobbySize = payload.size;
+      lobbyPlayers = payload.players ?? [];
+    });
 
     socket.on('tournament_started', (payload: { tournamentId: string }) => {
       joinedTournament = payload.tournamentId;
@@ -119,7 +129,12 @@
         return;
       }
 
-      info = 'Waiting for 4 players...';
+      // show the lobby immediately from the HTTP response (then live updates via socket)
+      if (result?.data?.lobby) {
+        lobbySize = result.data.lobby.size ?? 4;
+        lobbyPlayers = result.data.lobby.players ?? [];
+      }
+      info = `Waiting for ${lobbySize} players...`;
     } catch (err) {
       console.error('joinTournament error:', err);
       error = 'Network error or backend unreachable.';
@@ -127,9 +142,13 @@
     }
   }
 
-  function cancel() {
+  async function cancel() {
+    try {
+      await fetch('/api/tournament/leave', { method: 'POST', credentials: 'include' });
+    } catch {}
     waiting = false;
     info = '';
+    lobbyPlayers = [];
     disconnectGameSocket();
   }
 
@@ -152,19 +171,34 @@
   {/if}
 
   {#if !waiting}
-    <p class="text-center text-blue-100 mb-4">4 joueurs · bracket à élimination directe</p>
+    <p class="text-center text-blue-100 mb-4">4 players - knockout rounds</p>
     <div class="flex justify-center p-4">
       <button
         type="button"
         onclick={joinTournament}
         class="px-8 py-4 rounded bg-gray-500/25 hover:bg-gray-400/35 border border-white/20 text-blue-100 font-semibold transition"
       >
-        Rejoindre le tournoi
+        Join the tournament
       </button>
     </div>
   {:else}
     <div class="text-center py-8">
-      <p class="text-blue-100 mb-4">{info}</p>
+      <p class="text-blue-100 mb-1">Tournament waiting room</p>
+      <p class="text-pink-200 font-bold mb-4">{lobbyPlayers.length} / {lobbySize} players</p>
+
+      <ul class="max-w-sm mx-auto grid gap-2 mb-6">
+        {#each Array(lobbySize) as _, i}
+          {@const p = lobbyPlayers[i]}
+          <li class="flex items-center justify-between px-4 py-3 rounded border
+            {p ? 'bg-pink-500/15 border-pink-300/30 text-blue-100' : 'bg-gray-500/15 border-white/10 text-blue-100/40'}">
+            <span class="text-sm">Player {i + 1}</span>
+            <span class="font-semibold">
+              {#if p}{p.nickname}{:else}<span class="italic">on hold…</span>{/if}
+            </span>
+          </li>
+        {/each}
+      </ul>
+
       <div class="inline-block animate-spin h-8 w-8 border-4 border-pink-200 border-t-transparent rounded-full mb-4"></div>
       <div>
         <button

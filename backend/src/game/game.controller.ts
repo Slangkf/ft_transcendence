@@ -25,7 +25,7 @@ export class GameController
             })
             if (!result) {
                 return res.status(202).json(
-                    Apiresponse.success(null, "waiting for match")
+                    Apiresponse.success(null, "Waiting for match")
                 );
             }
             if ('status' in result){
@@ -49,7 +49,7 @@ export class GameController
                 );
             }
             return res.status(500).json(
-                Apiresponse.error("INTERNAL_ERROR", "Internal start game")
+                Apiresponse.error("INTERNAL_ERROR", "Internal start game error")
             )
         }
     }
@@ -63,7 +63,7 @@ export class GameController
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json(Apiresponse.error(error.code, error.message));
             }
-            return res.status(500).json(Apiresponse.error("INTERNAL_ERROR", "Internal categories list"));
+            return res.status(500).json(Apiresponse.error("INTERNAL_ERROR", "Internal categories list error"));
         }
     }
 
@@ -93,7 +93,7 @@ export class GameController
                 );
             }
             return res.status(500).json(
-                Apiresponse.error("INTERNAL_ERROR", "Internal set ready")
+                Apiresponse.error("INTERNAL_ERROR", "Internal set ready error")
             )
         }
     }

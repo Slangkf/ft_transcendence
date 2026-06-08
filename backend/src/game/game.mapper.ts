@@ -59,7 +59,12 @@ export class GameMapper {
                 totalQuestions: state.questions.length,
                 player: playerSnapshots,
                 startedAt: state.startedAt,
-                questionStartedAt: state.questionStartedAt
+                questionStartedAt: state.questionStartedAt,
+                // Elapsed time of the current question, computed on the SERVER. It's a
+                // duration (not an absolute timestamp the client must compare to its own
+                // clock), so a reconnecting client can resume the countdown accurately
+                // even if the two machines' clocks differ (remote play).
+                questionElapsedMs: Math.max(0, Date.now() - state.questionStartedAt),
             },
             lastAnswerUpdate: lastAnswerOverride ?? null,
             nextQuestion,

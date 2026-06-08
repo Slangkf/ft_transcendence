@@ -35,13 +35,13 @@
         return;
       }
       if (!response.ok || !result?.success || !result.data) {
-        error = result?.message ?? 'Impossible de charger les catégories.';
+        error = result?.message ?? 'Unable to load categories.';
         return;
       }
       categories = result.data;
     } catch (err) {
       console.error('categories error:', err);
-      error = 'Erreur réseau ou backend inaccessible.';
+      error = 'Network error or inaccessible server.';
     } finally {
       loading = false;
     }

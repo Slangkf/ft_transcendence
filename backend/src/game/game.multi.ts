@@ -13,6 +13,8 @@ import { Room } from "../room/room.types";
 import { TournamentService } from "../tournament/tournament.service";
 import { GameMapper } from "./game.mapper";
 import {GameMode} from "@prisma/client"
+import { QuestionTimerService } from "./question-timer.service";
+import { ReadyTimerService } from "./ready-timer.service";
 
 
 export class MultiPlayerFacade {
@@ -26,6 +28,8 @@ export class MultiPlayerFacade {
         private gameNs: Namespace,
         private redis: typeof Redis,
         private mapper: GameMapper,
+        private questionTimer: QuestionTimerService,
+        private readyTimer: ReadyTimerService,
     ){}
 
     setTournamentService(ts: TournamentService) {
@@ -41,6 +45,9 @@ export class MultiPlayerFacade {
         const acquired = await this.redis.set(lockKey, '1', { NX: true, EX: 10 });
         if (!acquired) return {allReady: false};
 
+        // everyone is ready — the readiness deadline no longer applies
+        this.readyTimer.cancel(roomId);
+
         try{
             const state = await this.multiService.startGame(room);
             const response = this.mapper.toUpdateResponse(state);
@@ -54,13 +61,13 @@ export class MultiPlayerFacade {
 
             //session update game status ingame, and gameid
             await Promise.all(
-                Object.values(room.players).map( p=> {
+                Object.values(room.players).map(p =>
                     this.sessionService.update(p.userId, {
                         status: 'in_game',
                         gameId: response.gameId,
                         tournamentId: room.tournamentId,
                     })
-                })
+                )
             )
 
             // if this room is part of a tournament, link the new gameId to its bracket match
@@ -75,6 +82,8 @@ export class MultiPlayerFacade {
                 players: response.state.player,
                 startedAt: response.state.startedAt ?? Date.now(),
             })
+            // arm the per-question deadline for the first question
+            await this.questionTimer.schedule(response.gameId);
             return {
                 allReady: true,
                 gameresponse: response,
@@ -131,6 +140,20 @@ export class MultiPlayerFacade {
     }
 
     async trymatch(mode: GameMode, size?: number): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
+        // Serialize matchmaking: two players hitting /start at the same instant must
+        // not both read the same queue and spawn two rooms for the same pair. (The
+        // tournament path already guards this via lock:tournament-start.) If the lock
+        // is held, another matcher is running and we're already enqueued — it will
+        // match us and emit 'matched' over the socket, so we just report waiting.
+        const lockKey = `lock:mp-match:${mode}`;
+        let acquired: string | null = null;
+        for (let i = 0; i < 5 && !acquired; i++) {
+            acquired = await this.redis.set(lockKey, '1', { NX: true, EX: 5 });
+            if (!acquired) await new Promise(r => setTimeout(r, 80));
+        }
+        if (!acquired) return {status: "waiting"};
+
+        try {
         const match = await this.matchService.matchPlayers(mode, size);
 
         if (!match) return {status: "waiting"};
@@ -172,11 +195,60 @@ export class MultiPlayerFacade {
 
         await this.matchService.deleteMatch(match.matchId);
 
+        // start the readiness countdown: if not everyone clicks "Ready" in time,
+        // the lobby is resolved (see handleReadyTimeout)
+        this.readyTimer.arm(room.roomId);
+
         return {
             status: 'matched',
             players: match.players,
             roomId: room.roomId,
         }
+        } finally {
+            await this.redis.del(lockKey);
+        }
+    }
+
+    /**
+     * Readiness deadline expired for a room: not everyone clicked "Ready".
+     * Tournament rooms forfeit the idle player(s); plain multiplayer rooms
+     * abort and send everyone back to the menu.
+     */
+    async handleReadyTimeout(roomId: string): Promise<void> {
+        const room = await this.roomService.getRoom(roomId);
+        // if the game already started (status !== 'waiting') or the room is gone, nothing to do
+        if (!room || room.status !== 'waiting') return;
+
+        const players = Object.values(room.players);
+        const notReady = players.filter(p => !p.isReady);
+        if (notReady.length === 0) return; // race: everyone readied just in time
+
+        if (room.tournamentId && this.tournamentService) {
+            await this.tournamentService.handleReadyTimeout(
+                room.tournamentId,
+                roomId,
+                notReady.map(p => p.userId),
+            );
+            return;
+        }
+
+        // plain multiplayer: the match can't proceed — disband it. Idle players are
+        // "excluded"; players who were ready are bounced back to re-queue.
+        await Promise.all(players.map(async p => {
+            await this.emitter.toUser(p.userId, 'ready_timeout', {
+                roomId,
+                excluded: !p.isReady,
+            });
+            await this.sessionService.update(p.userId, {
+                status: 'idle',
+                roomId: undefined,
+                gameId: undefined,
+                matchId: undefined,
+            });
+            const socketId = await this.redis.get(RedisKeys.socket.gameUser(p.userId));
+            if (socketId) this.gameNs.sockets.get(socketId)?.leave(roomId);
+        }));
+        await this.roomService.deleteRoom(roomId);
     }
 
     async setPlayerReady(roomId: string, userId: string, isReady: boolean): Promise<SetReadyResult> {
@@ -219,6 +291,15 @@ export class MultiPlayerFacade {
 
         return { type: "queue" };
     } 
+
+    /**
+     * Delete a finished game's room WITHOUT touching player sessions.
+     * Used for tournament matches: the TournamentService is the single source
+     * of truth for tournament session state (next match / spectator / finish).
+     */
+    async disbandRoom(roomId: string): Promise<void>{
+        await this.roomService.deleteRoom(roomId);
+    }
 
     async cleanupRoom(roomId: string, userIds: string[]): Promise<void>{
         await this.roomService.deleteRoom(roomId);
