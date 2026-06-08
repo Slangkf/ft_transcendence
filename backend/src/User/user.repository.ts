@@ -18,7 +18,7 @@ export class UserRepository{
         };
     }
 
-    //1. create a account
+    // create a account
     async create(input: RegisterInput): Promise<UserOutput>{
         const hashed_password = await bcrypt.hash(input.password, 10);
         const newuser = await prisma.user.create({
@@ -33,7 +33,7 @@ export class UserRepository{
         return this.toUserOutput(newuser);
     }
 
-    //find a user by email or username, prepare for authendification 
+    // find a user by email, prepare for authendification 
     async find_by_email(identifiant: string): Promise<UserDB|null>{
         const user = await prisma.user.findUnique({
             where: {email: identifiant}
@@ -42,6 +42,7 @@ export class UserRepository{
         return user
     }
     
+    // find a user by username
     async find_by_username(identifiant: string): Promise<UserDB|null>{
         const user = await prisma.user.findUnique({
             where: {username: identifiant}
@@ -50,14 +51,7 @@ export class UserRepository{
         return user
     }
 
-    async findByUsername(identifiant: string): Promise<UserDB|null>{
-        const user = await prisma.user.findUnique({
-            where: {username: identifiant}
-        })
-        if (!user)  return null 
-        return user
-    }
-
+    // find a user by id
     async find_by_id(userid: number): Promise<UserDB | null>{
         const user = await prisma.user.findUnique({
             where: {id: userid}
@@ -66,6 +60,7 @@ export class UserRepository{
         return user
     }
 
+    // updates the pass of a user
     async update_password(userid: number, new_pd: string){
         return await prisma.user.update({
             where: {id: userid},
@@ -75,6 +70,7 @@ export class UserRepository{
         })
     }
 
+    // updates the username of a user
     async update_username(userid: number, new_username: string){
         return await prisma.user.update({
             where: {id: userid},
@@ -84,6 +80,7 @@ export class UserRepository{
         })
     }
 
+    //  updates the the avatar of a user
     async update_avatar(userid: number, avatarUrl: string) {
         const updatedUser = await prisma.user.update({
             where: { id: userid },
@@ -115,6 +112,7 @@ export class UserRepository{
         });
     }
 
+    // updates the status (ONLINE/OFFLINE) of a user
     async update_status(userId: number, status: 'ONLINE' | 'OFFLINE'): Promise<void> {
         await prisma.user.update({
             where: { id: userId },
