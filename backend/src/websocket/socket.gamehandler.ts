@@ -208,28 +208,18 @@ export class GameSocketHandler{
     }
 
     private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
+
+        // Only the user's *current* socket may run disconnect cleanup. On a remote
+        // network blip, socket.io reconnects with a fresh socket.id before the server
+        // detects the old socket dropped (ping timeout). The stale socket's disconnect
+        // must NOT delete the new socket's gameUser mapping nor schedule a forfeit
+        // while the player is still connected (and possibly mid-game).
         const current = await this.redis.get(this.gameuserkey(userId));
+        if (current && current !== socket.id) return;
 
-        // A NEWER socket has already taken over for this user (page refresh,
-        // network/transport reconnect, or a 2nd window of the same account).
-        // This disconnect is for a SUPERSEDED socket → the user is in fact still
-        // connected. Do NOTHING: not only must we avoid wiping the live socket's
-        // mapping, we must also NOT arm the 60s reconnect/forfeit window below —
-        // otherwise that timer fires later and kicks / forfeits a player who is
-        // actually present (random "sent back to bracket" ~60s after a blip).
-        if (current && current !== socket.id) {
-            console.log(`[WS] disconnect user=${userId} socket=${socket.id} SUPERSEDED by ${current} — ignored (user still connected)`);
-            return;
-        }
-
-        // Genuine disconnect of the live socket (current === socket.id), or no
-        // mapping left at all (current === null): clear the mapping if it is ours
-        // and arm the reconnect window.
-        console.log(`[WS] disconnect user=${userId} socket=${socket.id} (genuine) -> arming reconnect window`);
         if (current === socket.id) {
             await this.redis.del(this.gameuserkey(userId));
         }
-
         // 给 60 秒重连窗口，超时才真正处理离开逻辑
         const RECONNECT_WINDOW_MS = 60_000;
         await this.redis.set(this.disconnectkey(userId), '1', {EX: RECONNECT_WINDOW_MS / 1000});

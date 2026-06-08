@@ -51,8 +51,8 @@
         // plain multiplayer: the match is cancelled — back to the menu with a notice
         try {
           sessionStorage.setItem('mp_notice', payload.excluded
-            ? "Vous avez été exclu : vous ne vous êtes pas déclaré prêt à temps."
-            : "Partie annulée : un joueur ne s'est pas déclaré prêt à temps.");
+            ? "You have been excluded: you did not declare yourself ready in time."
+            : "Game cancelled: a player did not declare themselves ready in time.");
           sessionStorage.removeItem('mp_room_players');
         } catch {}
         goto('/game/multiplayer');
@@ -210,14 +210,14 @@ async function toggleReady() {
 
   {#if !starting}
     <p class="text-center mb-4">
-      <span class="text-blue-100/80 text-sm">Tout le monde doit être prêt — </span>
+      <span class="text-blue-100/80 text-sm">Everyone needs to be ready — </span>
       <span class="inline-block font-mono text-lg font-bold {readyCountdown <= 3 ? 'text-red-300 animate-pulse' : readyCountdown <= 5 ? 'text-yellow-200' : 'text-blue-100/90'}">
         {readyCountdown}s
       </span>
       <span class="block text-xs text-blue-100/50 mt-1">
         {inTournament
-          ? "Sans réponse, vous déclarez forfait."
-          : "Sans réponse, la partie est annulée."}
+          ? "If there is no response, you forfeit the match."
+          : "If there is no response, the game is cancelled."}
       </span>
     </p>
   {/if}

@@ -8,7 +8,7 @@ import { redirect } from '@sveltejs/kit';
 export const load: PageServerLoad = async ({ cookies }) => {
 	const token = cookies.get('auth_token');
 	if (!token) {
-		console.error('cookies.get error in the profile/[username] section')
+		console.error('cookies.get error in the game section')
 		throw redirect(302, '/login');
 	}
 };

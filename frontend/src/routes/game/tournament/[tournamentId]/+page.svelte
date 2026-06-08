@@ -189,6 +189,17 @@
       const json = await resp.json();
       if (resp.ok && json?.success) {
         bracket = json.data as PublicBracketView;
+        // Tournament is over: drop the "current tournament" context NOW, not only on
+        // the tournament_finished socket event (which the winner often arrives too
+        // late to catch). Otherwise the stale id leaks into the next plain game whose
+        // end screen then wrongly redirects back to this finished bracket.
+        if (bracket?.status === 'finished') {
+          try {
+            sessionStorage.removeItem('current_tournament_id');
+            sessionStorage.removeItem('tournament_pending_room');
+            sessionStorage.removeItem('mp_room_players');
+          } catch {}
+        }
       } else {
         error = json?.message ?? 'Tournament not found';
       }
@@ -269,7 +280,7 @@
     <div class="text-center mb-8">
       {#if myRole === 'winner'}
         <h1 class="text-3xl sm:text-4xl font-bold text-yellow-300 mb-2">You won the tournament!</h1>
-        <p class="text-blue-100/80">Congratulations, champion!</p>
+        <p class="text-blue-100/80">Congratulations!</p>
       {:else}
         <h1 class="text-2xl sm:text-3xl font-bold text-pink-200 mb-2">Tournament over</h1>
         <p class="text-blue-100/80">
@@ -293,7 +304,7 @@
             <span class="flex items-center gap-3">
               {#if stats}
                 <span class="text-xs text-blue-100/70">
-                  {stats.correctAnswers} bonnes · {(stats.totalTime / 1000).toFixed(1)}s
+                  {stats.correctAnswers} good answers - In {(stats.totalTime / 1000).toFixed(1)}s
                 </span>
               {/if}
               {#if i === 0}<span class="text-yellow-300 font-bold">Champion</span>{/if}
@@ -308,11 +319,11 @@
       {#if onchainTx}
         <a href={onchainTx.explorerUrl} target="_blank" rel="noopener noreferrer"
           class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-300/40 text-emerald-100 text-sm hover:bg-emerald-500/30 transition">
-          🔗 Scores certifiés sur la blockchain (Avalanche Fuji)
+          Certified scores on the blockchain (Avalanche Fuji)
           <span class="font-mono text-xs text-emerald-200/80">{onchainTx.txHash.slice(0, 10)}…</span>
         </a>
       {:else}
-        <p class="text-xs text-blue-100/40">Enregistrement des scores sur la blockchain…</p>
+        <p class="text-xs text-blue-100/40">Score recording on the blockchain…</p>
       {/if}
     </div>
 
@@ -351,9 +362,9 @@
     {#if redirectRoomId}
       <div class="mb-4 rounded bg-green-500/25 border border-green-300/40 px-4 py-3 text-green-100 text-center">
         {#if redirectOpponent}
-          Finale contre <span class="font-bold">{redirectOpponent}</span> —
+          Final against <span class="font-bold">{redirectOpponent}</span> —
         {/if}
-        redirection dans
+        redirection in
         <span class="font-mono font-bold text-lg">{redirectCountdown}s</span>
       </div>
     {/if}
@@ -364,11 +375,11 @@
         <div class="flex items-center justify-center gap-2 mb-3">
           <span class="inline-flex items-center gap-1 rounded-full bg-purple-400/30 px-3 py-1 text-xs font-bold text-purple-100 uppercase tracking-wide">
             <span class="h-2 w-2 rounded-full bg-purple-200 animate-pulse"></span>
-            Mode spectateur
+            Spectator mode
           </span>
         </div>
         <p class="text-center text-blue-100/80 text-sm mb-3">
-          Vous êtes éliminé — vous assistez à la finale en tant que spectateur.
+          You are eliminated! You attend the final as a spectator.
         </p>
         {#if spectatorPlayers.length}
           <!-- Live scoreboard pushed from the ongoing final -->
@@ -396,7 +407,7 @@
           </div>
         {/if}
         <p class="text-center text-xs text-purple-100/70 mt-2">
-          {finalMatch.status === 'playing' ? 'Finale en cours…' : 'Finale sur le point de commencer…'}
+          {finalMatch.status === 'playing' ? 'Final is underway…' : 'The final is about to begin…'}
         </p>
       </div>
     {/if}
@@ -416,7 +427,7 @@
     </div>
 
     {#if !bracket}
-      <p class="text-center text-blue-100/80">Loading bracket...</p>
+      <p class="text-center text-blue-100/80">Loading round...</p>
     {:else}
       <div class="grid gap-6 md:grid-cols-2">
         <!-- Semi-finals -->

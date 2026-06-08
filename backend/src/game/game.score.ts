@@ -9,7 +9,10 @@ export class PrismaGameRepository {
     async create(result: MatchResult): Promise<void> {
         await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const winnerIdNum = parseInt(result.winnerId ?? "");
-            const humanPlayers = result.players.filter(p => p.userId !== "brain");
+            const humanPlayers = result.players.filter(p => {
+            const id = String(p.userId);
+            return !id.startsWith('ai_') && !isNaN(parseInt(id));
+        });
 
             // SOLO has no opponent, so the single player is always ranked #1 and
             // would otherwise be credited a "win" for every finished game. A win
@@ -22,7 +25,7 @@ export class PrismaGameRepository {
                     winnerId: !isNaN(winnerIdNum) ? winnerIdNum : null,
                     players: {
                         create: humanPlayers.map(p => ({
-                            userId: parseInt(p.userId),
+                            userId: parseInt(String(p.userId)),
                             score: p.score,
                             correctAnswers: p.correctAnswers,
                             rank: p.rank,

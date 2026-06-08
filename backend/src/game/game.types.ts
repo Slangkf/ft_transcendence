@@ -35,7 +35,6 @@ export interface Player{
     nickname?: string;
 }
 
-
 //runtime gamestate to save in redis 
 export interface BaseGameState {
     gameId: string;
@@ -50,14 +49,22 @@ export interface BaseGameState {
     hostId?: string;
     status?: "waiting" | "starting" | "playing" | "finished";
     category?: string;
+
+    aiAnserVisibleAt?: number;
+    aiCachedAnswer?:{
+        userId: string,
+        questionId: number,
+        isCorrect: boolean,
+        selectedAnswerIndex: number;
+    }
 }
 
 export interface SoloGameState extends BaseGameState {
-    mode: "SOLO" | "AI"
+    mode: "SOLO"
 }
 
 export interface MultiGameState extends BaseGameState {
-    mode: "MULTIPLAYER" | "TOURNAMENT";
+    mode: "MULTIPLAYER" | "TOURNAMENT" | "AI";
     roomId: string;
     hostId: string;
     status: "waiting" | "starting" | "playing" | "finished";
@@ -83,6 +90,13 @@ export type FinalScore = {
     ranking: Array<{playerId: string; nickname?: string; score: number; rank: number; totalTime: number}>;
 }
 
+export type LastAnswerUpdate = {
+    playerId: string;
+    isCorrect: boolean;
+    correctAnswerIndex: number;
+    correctText: string;
+}
+
 export interface GameUpdateResponse {
     gameId: string;
     mode: GameMode;
@@ -93,18 +107,13 @@ export interface GameUpdateResponse {
         player: Record<string, PlayerSnapShot>;
         startedAt?: number;
         questionStartedAt?: number;
+        questionElapsedMs?: number; // server-computed elapsed for the current question (clock-skew-free)
     };
-    lastAnswerUpdate? :{
-        playerId: string;
-        isCorrect: boolean;
-        correctAnswerIndex: number;
-        correctText: string;
-    };
+    lastAnswerUpdate? :LastAnswerUpdate;
 
     nextQuestion?: PublicQuestion | null;
     finalScore?: FinalScore | null; 
 }
-
 
 export interface StartGameResult {
     gameId: string;
@@ -152,4 +161,11 @@ export type MatchResult = {
         correctAnswers: number;
         totalQuestions: number;
     }[];
+};
+
+export type AtomicAnswerTask = {
+    id: string;
+    ans: number;
+    questionId: number;
+    visibleAt?: number;
 };

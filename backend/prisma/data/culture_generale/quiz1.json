@@ -4,14 +4,14 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "Which country is famous for the Taj Mahal?",
+      "text": "What vegetable was once considered poisonous in Europe?",
       "options": [
-        "Egypt",
-        "India",
-        "China",
-        "Thailand"
+        "Potato",
+        "Tomato",
+        "Carrot",
+        "Eggplant"
       ],
-      "answer": "India"
+      "answer": "Tomato"
     },
     {
       "text": "What is the hardest natural substance on Earth?",

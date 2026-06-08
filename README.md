@@ -14,7 +14,7 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 
 *This section contains information about compilation, installation, and/or execution.*
 
-*Before starting, please ensure that Docker Engine is installed.*
+*Before starting, please ensure that Docker Engine and the latest version of Google Chrome are installed.*
 
 
 1. ### **At the root of the project, open the `env_template` file and fill in these variables with your own values:**

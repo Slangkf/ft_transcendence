@@ -18,14 +18,14 @@ export class GameController
                : 'SOLO';
             const result = await this.gameService.startGame({
                 mode,
-                userId: req.user!.id,
+                userId: String(req.user!.id),
                 nickname: req.user!.username,
                 category: category,
                 size: size,
             })
             if (!result) {
                 return res.status(202).json(
-                    Apiresponse.success(null, "waiting for match")
+                    Apiresponse.success(null, "Waiting for match")
                 );
             }
             if ('status' in result){
@@ -49,12 +49,12 @@ export class GameController
                 );
             }
             return res.status(500).json(
-                Apiresponse.error("INTERNAL_ERROR", "Internal start game")
+                Apiresponse.error("INTERNAL_ERROR", "Internal start game error")
             )
         }
     }
 
-    categories = async(_req: Request, res: Response) => {
+    categories = async(req: Request, res: Response) => {
         try {
             const categories = await this.gameService.listCategories();
             return res.status(200).json(Apiresponse.success(categories, "Categories list"));
@@ -63,13 +63,13 @@ export class GameController
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json(Apiresponse.error(error.code, error.message));
             }
-            return res.status(500).json(Apiresponse.error("INTERNAL_ERROR", "Internal categories list"));
+            return res.status(500).json(Apiresponse.error("INTERNAL_ERROR", "Internal categories list error"));
         }
     }
 
     setready = async(req: Request, res: Response) => {
         const {roomId, isReady} = req.validatedBody;
-        const userId = req.user!.id;
+        const userId = String(req.user!.id);
         try{
             const result = await this.gameService.setReady(roomId, userId, isReady);
 
@@ -93,13 +93,13 @@ export class GameController
                 );
             }
             return res.status(500).json(
-                Apiresponse.error("INTERNAL_ERROR", "Internal set ready")
+                Apiresponse.error("INTERNAL_ERROR", "Internal set ready error")
             )
         }
     }
 
     answer = async (req: Request, res: Response)=> {
-        const userId = req.user!.id;
+        const userId = String(req.user!.id);
 
         const gameId = req.params.gameId as string;
 
@@ -109,17 +109,20 @@ export class GameController
                 );
         }
 
-        const rawAnswer = req.body.selectedAnswerIndex;
+        const rawAnswer = req.validatedBody?.selectedAnswerIndex ?? req.body.selectedAnswerIndex;
         const selectedAnswerIndex = Number(rawAnswer);
+        const expectedQuestionId = req.validatedBody?.questionId === undefined
+            ? undefined
+            : Number(req.validatedBody.questionId);
 
-        if (!Number.isInteger(selectedAnswerIndex)) {
+        if (!Number.isInteger(selectedAnswerIndex) || selectedAnswerIndex < -1) {
             return res.status(400).json(
-                Apiresponse.error("INVALIDE_ANSWER_INDEX", "selectedAnswerIndex must be an integer.")
+                Apiresponse.error("INVALIDE_ANSWER_INDEX", "selectedAnswerIndex must be an integer greater than or equal to -1.")
                 );
         }
 
         try {
-            const result = await this.gameService.submitAnswer(gameId, selectedAnswerIndex, userId);
+            const result = await this.gameService.submitAnswer(gameId, selectedAnswerIndex, userId, expectedQuestionId);
 
             if (!result) {
                 return res.status(404).json(
@@ -147,4 +150,5 @@ export class GameController
             );
         }
     }
+
 }

@@ -39,10 +39,10 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
             return next(new AppError("User no longer exist", ErrorCode.AUTH_UNAUTHORIZED));
         }
 
-        // Always trust the DB for the username: the JWT payload is frozen at login,
-        // so after a username change it would be stale (e.g. an old name showing up
-        // in the multiplayer lobby / game). Override it with the current value.
-        req.user = { ...decoded, username: user.username }
+        req.user = {
+            ...decoded,
+            username: user.username
+        }
         next()
     }catch(error){
         return next(new AppError(

@@ -171,29 +171,29 @@
   {/if}
 
   {#if !waiting}
-    <p class="text-center text-blue-100 mb-4">4 joueurs · bracket à élimination directe</p>
+    <p class="text-center text-blue-100 mb-4">4 players - knockout rounds</p>
     <div class="flex justify-center p-4">
       <button
         type="button"
         onclick={joinTournament}
         class="px-8 py-4 rounded bg-gray-500/25 hover:bg-gray-400/35 border border-white/20 text-blue-100 font-semibold transition"
       >
-        Rejoindre le tournoi
+        Join the tournament
       </button>
     </div>
   {:else}
     <div class="text-center py-8">
-      <p class="text-blue-100 mb-1">Salle d'attente du tournoi</p>
-      <p class="text-pink-200 font-bold mb-4">{lobbyPlayers.length} / {lobbySize} joueurs</p>
+      <p class="text-blue-100 mb-1">Tournament waiting room</p>
+      <p class="text-pink-200 font-bold mb-4">{lobbyPlayers.length} / {lobbySize} players</p>
 
       <ul class="max-w-sm mx-auto grid gap-2 mb-6">
         {#each Array(lobbySize) as _, i}
           {@const p = lobbyPlayers[i]}
           <li class="flex items-center justify-between px-4 py-3 rounded border
             {p ? 'bg-pink-500/15 border-pink-300/30 text-blue-100' : 'bg-gray-500/15 border-white/10 text-blue-100/40'}">
-            <span class="text-sm">Joueur {i + 1}</span>
+            <span class="text-sm">Player {i + 1}</span>
             <span class="font-semibold">
-              {#if p}{p.nickname}{:else}<span class="italic">en attente…</span>{/if}
+              {#if p}{p.nickname}{:else}<span class="italic">on hold…</span>{/if}
             </span>
           </li>
         {/each}

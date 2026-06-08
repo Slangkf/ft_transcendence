@@ -1,0 +1,8 @@
+backend/node_modules
+frontend/node_modules
+backend/dist
+frontend/.svelte-kit
+.git
+.DS_Store
+**/.DS_Store
+*.swp

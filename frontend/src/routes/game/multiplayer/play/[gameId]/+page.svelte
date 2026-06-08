@@ -143,12 +143,12 @@
         revealing = true;
         if (info.timedOut) {
           feedback = correctText
-            ? `Temps écoulé ! Bonne réponse : ${correctText}`
-            : 'Temps écoulé !';
+            ? `Time's up! The correct answer was: ${correctText}`
+            : `Time's up!`;
         } else {
           feedback = selectedIndex === null
             ? `Correct answer: ${correctText}`
-            : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+            : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. The correct answer was: ${correctText}`);
         }
         setTimeout(transitionToFinished, REVEAL_DELAY_MS);
       } else {
@@ -162,12 +162,12 @@
       revealing = true;
       if (info.timedOut) {
         feedback = correctText
-          ? `Temps écoulé ! Bonne réponse : ${correctText}`
-          : 'Temps écoulé !';
+          ? `Time's up! The correct answer was: ${correctText}`
+          : `Time's up!`;
       } else {
         feedback = selectedIndex === null
           ? `Correct answer: ${correctText}`
-          : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+          : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. The correct answer was: ${correctText}`);
       }
     }
 
@@ -224,8 +224,12 @@
         playersState = Object.values(state.state?.player ?? {});
         questionNumber = (state.state?.currentQuestionIndex ?? 0) + 1;
         isFinished = state.status === 'finished';
-        if (state.state?.startedAt && !startedAt) startedAt = state.state.startedAt;
-        if (state.state?.questionStartedAt) questionStartedAt = state.state.questionStartedAt;
+        // Resume the countdown from the SERVER-computed elapsed (a clock-skew-free
+        // duration) instead of the server's absolute questionStartedAt — otherwise a
+        // clock difference between the two machines throws the timer off on reconnect.
+        if (!startedAt) startedAt = Date.now();
+        const elapsed = state.state?.questionElapsedMs ?? 0;
+        questionStartedAt = Date.now() - elapsed;
         if (isFinished) {
           finalScore = state.finalScore ?? finalScore;
           if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
@@ -244,15 +248,23 @@
     try {
       const raw = sessionStorage.getItem('mp_first_question');
       if (raw) {
+        sessionStorage.removeItem('mp_first_question');
         const payload = JSON.parse(raw);
+        // Ignore a stale hint left over from a different game (defense against
+        // loading a previous game's first question / state into this one).
+        if (payload.gameId && payload.gameId !== gameId) return;
         currentQuestion = payload.question;
         questionNumber = 1;
         if (typeof payload.totalQuestions === 'number' && payload.totalQuestions > 0) {
           totalQuestions = payload.totalQuestions;
         }
-        if (payload.startedAt) startedAt = payload.startedAt;
-        questionStartedAt = payload.startedAt ?? Date.now();
-        sessionStorage.removeItem('mp_first_question');
+        // Anchor the countdown on the CLIENT clock. The question just started, and
+        // using the server's absolute `startedAt` breaks the timer between machines
+        // whose clocks aren't synced (remote play): the countdown would be off by the
+        // clock skew — e.g. still show 15s while the server already hit 0 and auto-
+        // closed the question. Local time keeps the countdown machine-independent.
+        startedAt = Date.now();
+        questionStartedAt = Date.now();
       }
     } catch {}
   }
@@ -385,7 +397,7 @@
       </div>
 
       {#if inTournamentGame}
-        <p class="text-center text-blue-100/70 text-sm mt-6">Retour au tournoi…</p>
+        <p class="text-center text-blue-100/70 text-sm mt-6">Back to the tournament…</p>
       {:else}
         <div class="flex justify-center gap-4 mt-6">
           <a href="/modes" class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition">

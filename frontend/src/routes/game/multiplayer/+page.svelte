@@ -51,6 +51,15 @@
   }
 
   onMount(() => {
+    // PLAIN multiplayer entry point — tournament matches never route through here
+    // (they go bracket → room → play). Clear any leftover tournament context so a
+    // finished tournament's id can't leak into this game and make the end-of-game
+    // screen redirect to the old bracket ("You won the tournament!").
+    try {
+      sessionStorage.removeItem('current_tournament_id');
+      sessionStorage.removeItem('tournament_pending_room');
+    } catch {}
+
     // surface a notice if we were just bounced here (e.g. readiness timeout)
     try {
       const notice = sessionStorage.getItem('mp_notice');

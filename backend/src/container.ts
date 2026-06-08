@@ -123,6 +123,7 @@ export class Container{
         this.chatRepo = new ChatRepository(this.prisma);
         this.tournamentRepo = new TournamentRepository();
         this.db = new PrismaGameRepository(this.prisma);
+        this.aiService = new AIService();
 
         //initialise services without dependance
         this.questionService = new QuestionService(this.questionRepo);
@@ -131,16 +132,17 @@ export class Container{
         this.matchService = new MatchService(this.matchRepo);
         this.roomService = new RoomService(this.roomRepo);
         this.soloService = new SoloService(this.questionService, this.gameRepo);
-        this.localMultiPlayer = new LocalMultiPlayer(this.questionService, this.gameRepo);
+        this.localMultiPlayer = new LocalMultiPlayer(this.questionService, this.gameRepo, this.aiService);
         this.sessionService = new SessionService();
+        this.gamemapper = new GameMapper();
+        
 
         //init the emitter
         this.gameEmitter = new GameEmitter(io, redis);
         this.friendEmitter = new FriendEmitter(io, redis);
         this.chatEmitter = new ChatEmitter(io, redis);
 
-        this.gamemapper = new GameMapper(this.questionService);
-
+        
         //per-question 30s deadline (server-authoritative)
         this.questionTimer = new QuestionTimerService(this.gameRepo);
 
@@ -171,6 +173,7 @@ export class Container{
             this.questionService,
             this.db,
             this.gamemapper,
+            this.aiService,
         )
 
         //tournament
@@ -189,10 +192,6 @@ export class Container{
         this.multiplayerFacade.setTournamentService(this.tournamentService);
         // when a readiness deadline fires, resolve the stuck lobby (kick / forfeit)
         this.readyTimer.setTimeoutCallback((roomId) => this.multiplayerFacade.handleReadyTimeout(roomId));
-        
-        //aiservice
-        this.aiService = new AIService(this.gameService);
-        this.soloService.setAIService(this.aiService);
         
         //friendshipservice
         this.friendService = new FriendshipService(
@@ -245,6 +244,10 @@ export class Container{
             this.friendService,
             this.userRepo
         );
+
+        // After a restart, in-memory readiness timers are gone — re-arm pending
+        // tournament deadlines so a match waiting on "Ready" can't hang forever.
+        void this.tournamentService.rearmPendingDeadlines();
 
 		this.chatSocketHandler = new ChatSocketHandler(
 			chatNs,
