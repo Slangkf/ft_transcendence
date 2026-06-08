@@ -52,7 +52,7 @@
   }
 
   async function pickRandom() {
-    await goto(`/game?mode=${mode}`);
+    await goto(`/game?mode=${mode}&autostart=true`);
   }
 </script>
 

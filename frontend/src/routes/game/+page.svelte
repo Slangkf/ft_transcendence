@@ -1,6 +1,8 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onDestroy } from 'svelte';
+  import {goto} from '$app/navigation';
+  import {onMount} from 'svelte';
 
   const QUESTION_TIME_MS = 30_000;   // 答题总时长
   const REVEAL_DELAY_MS  = 1_500;    // 显示答案后切题延迟
@@ -346,6 +348,21 @@
     
     return `${base} bg-gray-500/25 hover:bg-gray-400/35 border-white/20 text-blue-100 disabled:opacity-50`;
   }
+
+  async function backToCategories() {
+    await goto(`/game/categories?mode=${mode}`);
+
+    gameId = null;
+    isFinished = false;
+    currentQuestion = null;
+    feedback = '';
+    error = ''
+  }
+
+  onMount(() => {
+    const shouldStart = category || page.url.searchParams.get("autostart") === 'true';
+    if (shouldStart)  startGame();
+  })
 </script>
 
 <svelte:head>
@@ -490,7 +507,7 @@
 
       <button
         type="button"
-        onclick={startGame}
+        onclick={backToCategories}
         class="mt-6 px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition"
       >
         Play again
