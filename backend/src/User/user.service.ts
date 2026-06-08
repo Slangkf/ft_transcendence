@@ -28,7 +28,7 @@ export class UserService{
     }
 
     async get_profile_by_username(username: string): Promise<UserOutput>{
-        const user = await this.userrepository.findByUsername(username);
+        const user = await this.userrepository.find_by_username(username);
         if (!user){
 			throw new AppError(
 				'Unknown user', 

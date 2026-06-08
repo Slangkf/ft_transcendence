@@ -188,7 +188,7 @@ export class FriendshipService {
     }
 
 	async get_friends_for_friend(username: string): Promise<FriendshipOutput[]> {
-        const user = await this.userRepository.findByUsername(username); 
+        const user = await this.userRepository.find_by_username(username); 
         if (!user) {
             throw new AppError("User not found", ErrorCode.USER_NOT_FOUND, 404);
         }

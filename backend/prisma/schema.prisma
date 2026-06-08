@@ -1,25 +1,28 @@
+/// Configures the core database connection using PostgreSQL and the connection string from environment variables.
 datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
+/// Generates the Prisma Client (JS or TS) library used by the backend.
 generator client {
     provider = "prisma-client-js"
 }
 
+/// Represents a registered user, their game statistics, relations, and current online status.
 model User {
-    id          Int         @id @default(autoincrement())
-    createdAt   DateTime    @default(now())
-    email       String      @unique @db.VarChar(255)
-    username    String      @unique @db.VarChar(255)
-    password    String      @db.VarChar(255)
-    url         String?     @db.VarChar(512)
-    score       Int?        @default(0)
-    wins        Int?        @default(0)
-    played      Int?        @default(0)
-    friendsNb   Int?        @default(0)
-    status      UserStatus  @default(OFFLINE)
-    role        Role        @default(USER)
+    id          Int          @id @default(autoincrement())
+    createdAt   DateTime     @default(now())
+    email       String       @unique @db.VarChar(255)
+    username    String       @unique @db.VarChar(255)
+    password    String       @db.VarChar(255)
+    url         String?      @db.VarChar(512)
+    score       Int?         @default(0)
+    wins        Int?         @default(0)
+    played      Int?         @default(0)
+    friendsNb   Int?         @default(0)
+    status      UserStatus   @default(OFFLINE)
+    role        Role         @default(USER)
     quizzes     Quiz[]
 
     sentFriendships     Friendship[] @relation("SentFriendships")
@@ -28,10 +31,11 @@ model User {
     playerMatches      PlayerMatch[]
     matchesWon         MatchResult[] @relation("MatchWinner")
 
-    sentMessages        Message[] @relation("SentMessages")
-    receivedMessages    Message[] @relation("ReceivedMessages")
+    sentMessages       Message[] @relation("SentMessages")
+    receivedMessages   Message[] @relation("ReceivedMessages")
 }
 
+/// Represents a quiz questionnaire created by an author, containing a set of questions.
 model Quiz {
   id          Int        @id @default(autoincrement())
   title       String
@@ -41,9 +45,10 @@ model Quiz {
   author      User       @relation(fields: [authorId], references: [id])
   authorId    Int
 
-  matchResults  MatchResult[]
+  matchResults MatchResult[]
 }
 
+/// Represents an individual trivia question belonging to a specific quiz, along with its options and correct answer.
 model Question {
   id          Int      @id @default(autoincrement())
   text        String
@@ -53,6 +58,7 @@ model Question {
   quizId      Int
 }
 
+/// Tracks the friendship connection and invitation status between two unique users.
 model Friendship {
   id        Int              @id @default(autoincrement())
   createdAt DateTime         @default(now())
@@ -69,22 +75,24 @@ model Friendship {
   @@unique([userId, friendId])
 }
 
+/// Stores instant chat messages exchanged privately between a sender and a receiver.
 model Message {
-    id          Int         @id @default(autoincrement())
-    createdAt   DateTime    @default(now())
+    id          Int          @id @default(autoincrement())
+    createdAt   DateTime     @default(now())
 
     senderId    Int         
     receiverId  Int
-    content     String      @db.VarChar(2000)
-    read        Boolean     @default(false)
+    content     String       @db.VarChar(2000)
+    read        Boolean      @default(false)
 
-    sender      User        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-    receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+    sender      User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+    receiver    User         @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
     
     @@index([senderId, receiverId])
     @@index([receiverId, senderId])
 }
 
+/// Stores data of a completed game match, including the mode, quiz used, winner and others
 model MatchResult {
     id        Int          @id @default(autoincrement())
     createdAt DateTime     @default(now())
@@ -102,8 +110,9 @@ model MatchResult {
     @@index([mode])
 }
 
+/// Stores a player's performance within a specific match context.
 model PlayerMatch {
-    id        Int         @id @default(autoincrement())
+    id        Int          @id @default(autoincrement())
     userId    Int
     matchId   Int
     score     Int   @default(0)
@@ -133,7 +142,7 @@ enum UserStatus {
     OFFLINE
 }
 
-enum    GameMode {
+enum GameMode {
     SOLO
     AI
     MULTIPLAYER
