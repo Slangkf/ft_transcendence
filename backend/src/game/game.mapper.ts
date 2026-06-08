@@ -9,18 +9,38 @@ import {
 } from "./game.types";
 import { GameMode } from "@prisma/client";
 
+/**
+ * @class GameMapper
+ * @description transform internal game state into external representations
+ * Conversions:
+ *
+ * Runtime GameState (Redis)
+ *      ↓
+ * GameUpdateResponse (Frontend DTO)
+ *
+ * Runtime GameState (Redis)
+ *      ↓
+ * MatchResult (Database Entity)
+ */
 export class GameMapper {
 
     /**
-     * 将 Redis 中的运行时 GameState 转换成前端 DTO。
-     * lastAnswerUpdate 独立携带刚刚答完那题的正确答案，nextQuestion 始终指向服务端真实当前题。
-     * @param rawState 从 Redis 中捞出来的绝对真实的最新快照
-     * @param lastAnswerOverride 外部传入的当前用户的答题动作结果
+     * @method toUpdateResponse
+     * @description convert a runtime game state into a client-facing DTO
+     * -create a safe snapshot of the current game state
+     * -remove server-only information 
+     * -build player summaries
+     * -expose the current question
+     * -attach answer feedback
+     * -generate final score data when the game ends 
+     * @param rawState Current runtime state from Redis
+     * @param lastAnswerOverride optional answer result associated with the requesting player
      */
     public toUpdateResponse(rawState: BaseGameState, lastAnswerOverride?: any): GameUpdateResponse {
-        // 🌟 1. 【防污染深拷贝】：必须深拷贝一份镜像发给前端，绝对不能修改 Redis 原生内存对象
+        //create a defensive copy before generation the response
         const state = JSON.parse(JSON.stringify(rawState)) as BaseGameState;
 
+        //convert runtime player objects into lightweight client-facing snapshots
         const playerSnapshots: Record<string, PlayerSnapShot> = {};
         for (const [id, p] of Object.entries(state.players)) {
             playerSnapshots[id] = {
@@ -33,6 +53,7 @@ export class GameMapper {
             };
         }
 
+        //expose the current question 
         let nextQuestion: PublicQuestion | null = null;
         if (!state.isFinished) {
             const currentQ = state.questions[state.currentQuestionIndex];
@@ -45,6 +66,7 @@ export class GameMapper {
             }
         }
 
+        //generate final ranking data once the game finished
         let finalScore: FinalScore | null = null;
         if (state.isFinished) {
             finalScore = this.toFinalScore(state);
@@ -73,9 +95,14 @@ export class GameMapper {
     }
 
     /**
-     * 辅助方法：生成最终得分排行榜
+     * @method toGinalScore
+     * @description build the final scoreboard 
+     * ranking rules: 
+     * 1. higer score wins
+     * 2. if scores are equal, lower total response time wins
      */
     private toFinalScore(state: BaseGameState): FinalScore {
+        //create a score table
         const scores: Record<string, number> = {};
         const playerEntries = Object.values(state.players);
 
@@ -83,12 +110,13 @@ export class GameMapper {
             scores[p.id] = p.score;
         }
 
-        // 根据分数降序，分数相同按总用时升序排序
+        // Sort players by:Score descending -> Total response time ascending
         const sortedPlayers = [...playerEntries].sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             return a.Totaltime - b.Totaltime;
         });
 
+        //First player in the ranking is considered the winner.
         const winnerId = sortedPlayers[0]?.id ?? "";
 
         const ranking = sortedPlayers.map((p, index) => ({
@@ -108,12 +136,17 @@ export class GameMapper {
     }
 
     /**
-     * 将内存状态转换成可以交付给 Prisma 存入 SQL 数据库的历史战绩实体 (MatchResult)
+     * @method toMatchResult
+     * @description convert a completed game state into a persiste match result entity 
+     * The resulting object can be stored
+     * in the SQL database through Prisma.
+     * @param state 
+     * @returns 
      */
     public toMatchResult(state: BaseGameState): MatchResult {
         const playerEntries = Object.values(state.players);
 
-        // 生成最终的名次分布
+        //calculate final ranking
         const sortedPlayers = [...playerEntries].sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             return a.Totaltime - b.Totaltime;

@@ -36,6 +36,20 @@ export class MultiPlayerFacade {
         this.tournamentService = ts;
     }
 
+    /**
+     * @method handleAllReay
+     * @description start game when all players are ready 
+     * - verify room state
+     * - acquire startup lock
+     * - cancel readiness timer
+     * - create game state
+     * - update room status, update player sessions
+     * - link tournament match if needed
+     * - notify all players
+     * - start question timer
+     * @param roomId 
+     * @returns 
+     */
     async handleAllReady(roomId: string): Promise<SetReadyResult>{
         const room = await this.roomService.getRoom(roomId);
         if (!room || room.status !== "starting") return {allReady: false};
@@ -102,6 +116,17 @@ export class MultiPlayerFacade {
         }
     }
 
+    /**
+     * @method joinMatchmaking
+     * @description add a player to the matchmaking system 
+     * possible: matched immediately, added to queue, reconnected to an existing match
+     * 
+     * @param mode 
+     * @param userId 
+     * @param nickname 
+     * @param size 
+     * @returns 
+     */
     async joinMatchmaking(mode: GameMode, userId: string, nickname: string, size?: number): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
         if (size !== undefined && (!Number.isInteger(size) || size < 2 || size > 4)) {
             throw new AppError('Invalid player size, must be between 2 and 4', ErrorCode.GAME_UNKOWN_MODE, 400);
@@ -139,6 +164,15 @@ export class MultiPlayerFacade {
         return await this.trymatch(mode, size ?? 2);
     }
 
+    /**
+     * @method trymatch
+     * @description attempt to create a match from queued players
+     * if enough players are available: 
+     *  create room, asign sockets, update sessions, notify participants, start ready countdown 
+     * @param mode 
+     * @param size 
+     * @returns 
+     */
     async trymatch(mode: GameMode, size?: number): Promise<{status: 'matched'|'waiting'; players?:MatchPlayer[]; roomId?: string}>{
         // Serialize matchmaking: two players hitting /start at the same instant must
         // not both read the same queue and spawn two rooms for the same pair. (The
@@ -339,6 +373,14 @@ export class MultiPlayerFacade {
 
 /***
  *  facade combine all for multiplayer game 
+ *  -matchmaking system for players
+ *  -room management
+ *  -ready state coordination
+ *  -game startup
+ *  -reconnection handle
+ *  - tournament integration
+ *  - session synchronization
+ *  - websocket notifications
  * 
  * 
  */

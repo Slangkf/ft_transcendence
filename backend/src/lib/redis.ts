@@ -18,7 +18,6 @@ export async function initRedis() {
 }
 
 export const RedisKeys = {
-  //`${domain}:${version}:${type}:${id}`
 
   matchmaking: {
     queue: (mode: string)=>`matchmaking:v1:queue:${mode}`,
@@ -49,3 +48,13 @@ export const RedisKeys = {
     user: (userId: string)=> `tournament:v1:user:${userId}`,
   }
 }
+/**
+ * Redis configuration and key management
+ * 
+ * - create and manage the redis client
+ * - initialize redis connection
+ * 
+ * key format:
+ *  ${domain}:${version}:${type}:${id}
+ * 
+ */

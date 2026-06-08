@@ -5,6 +5,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import { AppError, ErrorCode } from '../error/apperror';
 
+/**
+ * @class UserService
+ * @description logic for user management profil modifications.
+ * 
+ */
 export class UserService{
     constructor(private userrepository: UserRepository)
     {}

@@ -4,6 +4,16 @@ import { ChatEmitter } from "../websocket/socket.emitter";
 import { ChatRepository } from "./chat.repository";
 import { ChatMessageDTO } from "@shared/chat.schema";
 
+/**
+ * @class ChatService
+ * @description to send private messages service
+ * -validate friendship permissions
+ * -send private messages
+ * -retrieve conversation history
+ * -manager read/unread status
+ * -delivre a real-time chat notifications
+ * 
+ */
 export class ChatService{
     constructor(
         private emitter: ChatEmitter,
@@ -12,6 +22,18 @@ export class ChatService{
     ){}
 
 
+    /**
+     * @method sendPrivateMessage
+     * @description send a private message between two friends
+     * -verify friendshi relationship
+     * -persiste the message
+     * -delivre real-time notification
+     * -update unread message counters
+     * @param fromId 
+     * @param receiverId 
+     * @param content 
+     * @returns 
+     */
     async sendPrivateMessage(fromId: number, receiverId: number, content: string): Promise<ChatMessageDTO>{
         
         //check if they are friends 

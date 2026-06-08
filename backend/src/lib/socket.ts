@@ -11,19 +11,36 @@ import { UserPayload } from "../types/express";
 import { prisma } from "./prisma";
 dotenv.config();
 
-
+/**
+ * Socket.IO authentication middleware
+ * 
+ * validates the JWT stored in the auth_token cookie
+ * during the Websocket process
+ * 
+ * On success:
+ * - Retrieves the user from the database
+ * - Stores user information in socket.data
+ *
+ * On failure:
+ * - Rejects the socket connection
+ * @param socket 
+ * @param next 
+ */
 export async function authMiddleware(socket: any, next: any) {
+    //Retrieve cookies sent during the WebSocket handshake.
     const rawcookie = socket.handshake.headers.cookie;
     if (!rawcookie){
         return next(new AppError('Unauthorized in socket', ErrorCode.AUTH_UNAUTHORIZED));
     }
 
     try {
+        //extract the authentication token from the auth_token cookie
         const parsed = cookie.parse(rawcookie);
         const token = parsed.auth_token;
         if (!token){
             return next(new AppError('Unauthorized token in socket', ErrorCode.AUTH_UNAUTHORIZED));
         }
+        //verify jwt signature and decode payload 
         const payload = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
         //get user from database and update the username 
         const user = await prisma.user.findUnique({
@@ -34,6 +51,7 @@ export async function authMiddleware(socket: any, next: any) {
             throw  new AppError("User not found in middleware socket", ErrorCode.USER_NOT_FOUND)
         }
 
+        //store authenticated user information in the socket context
         socket.data.userId = String(payload.id);
         socket.data.nickname = user.username;
         next();
@@ -43,7 +61,19 @@ export async function authMiddleware(socket: any, next: any) {
 
 }
 
+/**
+ * Socket.IO Configuration
+ *
+ * - create and configure the socket.io server
+ * - initialize all application namespaces and applies authentication middleware 
+ *
+ * Namespaces:
+ * - /game       : Multiplayer game events
+ * - /chat       : Real-time chat events
+ * - /friendship : Friend request and presence events
+ */
 export function createSocketServer(httpserver: HttpServer, redis: typeof Redis){
+    //create the root socket.io server with CORS support 
     const io = new Server(httpserver, {
         cors:{ 
             origin: true, 
@@ -62,3 +92,11 @@ export function createSocketServer(httpserver: HttpServer, redis: typeof Redis){
     
     return {io, gameNs, chatNs, friendNs};
 }
+
+
+/**
+ * Security Note:
+ * WebSocket connections reuse the same authentication
+ * cookie as HTTP requests, ensuring a single
+ * authentication mechanism across the application.
+ */

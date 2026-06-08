@@ -18,6 +18,12 @@ import { GameState } from "../game/game.types";
 type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
 
+/**
+ * @class GameSocketHandler
+ * @description Statefully manages real-time socket events for the gaming system. 
+ * Handles lifecycle events like network connections, intentional or accidental disconnections 
+ * (with fault tolerance/grace periods), matchmaking status recovery, and interactive multi-player game loops.
+ */
 export class GameSocketHandler{
     private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -35,9 +41,11 @@ export class GameSocketHandler{
         private questionTimer: QuestionTimerService,
     ){}
 
+    /** Generates the Redis key used to map a user ID to their active Socket ID */
     private gameuserkey(userId: string){
         return RedisKeys.socket.gameUser(userId);
     }
+    /** Generates the Redis key used to track transient disconnected states */
     private disconnectkey(userId: string){
         return RedisKeys.socket.disconnect(userId);
     }
@@ -45,7 +53,7 @@ export class GameSocketHandler{
     async onConnection(socket: TypedSocket): Promise<void>{
         const userId = socket.data.userId;
 
-        //delete from disconnect timer if exist
+        // Abort the disconnection grace period timer if the user returned before the timeout expired
         const existingTimer = this.disconnectTimers.get(userId);
         if (existingTimer){
             clearTimeout(existingTimer);
@@ -53,7 +61,7 @@ export class GameSocketHandler{
         }
         await this.redis.del(this.disconnectkey(userId));
 
-        // save in redis
+        // Persist mapping of User ID -> Socket ID to support accurate targeted events
         await this.redis.set(this.gameuserkey(userId), socket.id);
 
         // make sure a session exists for this user (otherwise sessionService.update is a no-op
@@ -79,6 +87,7 @@ export class GameSocketHandler{
         if (!session) return ;
 
         const {status} = session;
+        // Re-join Socket.io rooms if the session indicates active membership
         if (session.roomId){
             socket.join(session.roomId);
         }
@@ -97,6 +106,8 @@ export class GameSocketHandler{
             case "matched":{
                 const match = await this.matchservice.getMyMatch(userId);
                 if (!match){
+                    // Fallback defensive logic: if the match expired or was closed out, 
+                    // check if the base room object is still available, otherwise flag the user as idle.
                     const session = await this.sessionService.get(userId);
                     if (session?.roomId){
                         await this.sessionService.update(userId, {status: 'in_room'});
@@ -203,7 +214,7 @@ export class GameSocketHandler{
 
         await this.redis.del(this.gameuserkey(userId));
 
-        // 给 60 秒重连窗口，超时才真正处理离开逻辑
+        // Provide a 60-second grace window before definitively applying leaving penalties and state cleanup
         const RECONNECT_WINDOW_MS = 60_000;
         await this.redis.set(this.disconnectkey(userId), '1', {EX: RECONNECT_WINDOW_MS / 1000});
 
@@ -212,7 +223,7 @@ export class GameSocketHandler{
             const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
             if (!stillDisconnected) return; // 已重连，不处理
 
-            // 真正离开：从队列和房间里清理
+            // Execute cleanup: Evict user from existing matchmaking pools
             await this.matchservice.leaveQueue(userId);
 
             const session = await this.sessionService.get(userId);
