@@ -140,7 +140,7 @@
       selectedIndex = answerIndex;
       correctIndex = correctIdx;
       revealing = true;
-      feedback = isCorrect ? 'Correct answer.' : `Wrong answer. Correct answer: ${correct}`;
+      feedback = isCorrect ? 'Correct answer.' : `Wrong answer. The correct answer was: ${correct}`;
 
       if (data.status === 'finished' || data.finalScore) {
         setTimeout(() => {

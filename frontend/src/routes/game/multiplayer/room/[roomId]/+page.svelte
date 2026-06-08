@@ -212,7 +212,7 @@ async function toggleReady() {
       </span>
       <span class="block text-xs text-blue-100/50 mt-1">
         {inTournament
-          ? "If there is no response, you forfeit the contract."
+          ? "If there is no response, you forfeit the match."
           : "If there is no response, the game is cancelled."}
       </span>
     </p>

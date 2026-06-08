@@ -130,12 +130,12 @@
         revealing = true;
         if (info.timedOut) {
           feedback = correctText
-            ? `Temps écoulé ! Bonne réponse : ${correctText}`
-            : 'Temps écoulé !';
+            ? `Time's up! The correct answer was: ${correctText}`
+            : `Time's up!`;
         } else {
           feedback = selectedIndex === null
             ? `Correct answer: ${correctText}`
-            : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+            : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. The correct answer was: ${correctText}`);
         }
         setTimeout(transitionToFinished, REVEAL_DELAY_MS);
       } else {
@@ -151,12 +151,12 @@
       revealing = true;
       if (info.timedOut) {
         feedback = correctText
-          ? `Temps écoulé ! Bonne réponse : ${correctText}`
-          : 'Temps écoulé !';
+          ? `Time's up! The correct answer was: ${correctText}`
+          : `Time's up!`;
       } else {
         feedback = selectedIndex === null
           ? `Correct answer: ${correctText}`
-          : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. Correct answer: ${correctText}`);
+          : (selectedIndex === correctIndex ? 'Correct answer.' : `Wrong answer. The correct answer was: ${correctText}`);
       }
     }
 
@@ -383,7 +383,7 @@
       </div>
 
       {#if inTournamentGame}
-        <p class="text-center text-blue-100/70 text-sm mt-6">Retour au tournoi…</p>
+        <p class="text-center text-blue-100/70 text-sm mt-6">Back to the tournament…</p>
       {:else}
         <div class="flex justify-center gap-4 mt-6">
           <a href="/modes" class="px-6 py-3 rounded bg-white/20 hover:bg-white/30 border border-white/20 text-blue-100 font-semibold transition">
