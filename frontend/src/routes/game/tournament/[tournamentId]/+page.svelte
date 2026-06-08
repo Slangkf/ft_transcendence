@@ -57,6 +57,9 @@
   let redirectOpponent = $state<string | null>(null);
   let redirectCountdown = $state(0);
   let redirectInterval: ReturnType<typeof setInterval> | null = null;
+  // HTTP safety-net poll: re-fetch the bracket every few seconds so a player whose
+  // socket events were lost still discovers their 'ready' room and gets redirected.
+  let bracketPoll: ReturnType<typeof setInterval> | null = null;
 
   function scheduleRedirect(roomId: string, opponent?: string) {
     if (redirectRoomId) return; // already scheduled
@@ -132,6 +135,46 @@
     return 'unknown';
   }
 
+  // Derive "do I have a match waiting for me to ready up?" purely from the bracket
+  // state. This is the RELIABLE path: the bracket data arrives both via the socket
+  // broadcast (bracket_update) AND via plain HTTP (fetchBracket / the poll below),
+  // so it works even when the targeted `next_match_ready` socket event was lost
+  // (e.g. the player's socketId wasn't in Redis at match-creation time → the log's
+  // "NO socketId in Redis" → forfeited to the bracket). Only matches a 'ready' room
+  // where I'm actually a participant, so an eliminated/spectating player is never
+  // dragged into a match.
+  function myReadyRoom(b: PublicBracketView | null, uid: string):
+    { roomId: string; opponentNickname: string; players: { userId: string; nickname: string }[] } | null {
+    if (!b || !uid || b.status === 'finished') return null;
+    const m = b.matches.find(mm =>
+      (mm.p1 === uid || mm.p2 === uid) && mm.status === 'ready' && !!mm.roomId);
+    if (!m || !m.roomId) return null;
+    const oppId = m.p1 === uid ? m.p2 : m.p1;
+    const opp = b.players.find(p => p.userId === oppId);
+    const p1 = b.players.find(p => p.userId === m.p1);
+    const p2 = b.players.find(p => p.userId === m.p2);
+    return {
+      roomId: m.roomId,
+      opponentNickname: opp?.nickname ?? oppId ?? '',
+      players: [p1, p2].filter((p): p is { userId: string; nickname: string } => !!p)
+        .map(p => ({ userId: p.userId, nickname: p.nickname })),
+    };
+  }
+
+  // If the current bracket says I have a 'ready' room, head there. Idempotent:
+  // scheduleRedirect() bails if a redirect is already scheduled, so calling this
+  // from several places (socket events + HTTP poll) never double-redirects.
+  function maybeRedirectFromBracket() {
+    if (redirectRoomId) return;
+    const r = myReadyRoom(bracket, myUserId);
+    if (!r) return;
+    try {
+      sessionStorage.setItem('mp_room_players', JSON.stringify(r.players));
+      if (bracket) sessionStorage.setItem('current_tournament_id', bracket.tournamentId);
+    } catch {}
+    scheduleRedirect(r.roomId, r.opponentNickname);
+  }
+
   function setupListeners() {
     const socket = getGameSocket();
     socket.off('tournament_started');
@@ -145,10 +188,12 @@
     socket.on('tournament_started', (payload: { tournamentId: string; bracket: PublicBracketView }) => {
       bracket = payload.bracket;
       onchainTx = null;
+      maybeRedirectFromBracket();
     });
 
     socket.on('bracket_update', (payload: { tournamentId: string; bracket: PublicBracketView }) => {
       bracket = payload.bracket;
+      maybeRedirectFromBracket();
     });
 
     socket.on('next_match_ready', (payload: { tournamentId: string; roomId: string; opponentId: string; opponentNickname: string; round: number; players: { userId: string; nickname: string }[] }) => {
@@ -226,6 +271,10 @@
     // Always load the bracket first so the user can see who's where during the redirect countdown
     await fetchBracket();
 
+    // Reliable path: derive the redirect straight from the freshly fetched bracket
+    // (works even if every socket event was missed).
+    maybeRedirectFromBracket();
+
     // If next_match_ready arrived during navigation (race condition).
     // Never honour this for an eliminated player or a finished tournament — a
     // stale pending room must not drag a spectator back into an old match.
@@ -238,19 +287,23 @@
       }
     } catch {}
 
-    // Fallback: server knows if this user has a ready room (handles dropped next_match_ready)
-    try {
-      const resp = await fetch('/api/tournament/my/room', { credentials: 'include' });
-      const json = await resp.json();
-      if (resp.ok && json?.data?.roomId) {
-        scheduleRedirect(json.data.roomId);
+    // HTTP safety net: keep polling the bracket. This is the ONLY channel that does
+    // not depend on the socket at all, so it rescues a player whose socketId was
+    // missing in Redis (no next_match_ready, not even bracket_update). Stops itself
+    // once a redirect is scheduled or the tournament is over.
+    bracketPoll = setInterval(async () => {
+      if (redirectRoomId || bracket?.status === 'finished') {
+        if (bracketPoll) { clearInterval(bracketPoll); bracketPoll = null; }
         return;
       }
-    } catch {}
+      await fetchBracket();
+      maybeRedirectFromBracket();
+    }, 3000);
   });
 
   onDestroy(() => {
     if (redirectInterval) { clearInterval(redirectInterval); redirectInterval = null; }
+    if (bracketPoll) { clearInterval(bracketPoll); bracketPoll = null; }
     if (!leaving) {
       // user navigated away manually — keep socket alive if still in tournament
       let inTournament = false;

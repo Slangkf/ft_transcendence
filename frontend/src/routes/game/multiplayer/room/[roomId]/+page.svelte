@@ -19,7 +19,7 @@
   // Readiness countdown (server-authoritative; this is just the visible mirror).
   // If players don't all ready up before it hits 0 the backend resolves the
   // lobby and emits `ready_timeout`.
-  const READY_SECONDS = 45;
+  const READY_SECONDS = 60;
   let readyCountdown = $state(READY_SECONDS);
   let readyTick: ReturnType<typeof setInterval> | null = null;
 
