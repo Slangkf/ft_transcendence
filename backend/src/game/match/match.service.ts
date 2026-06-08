@@ -5,13 +5,31 @@ import { MatchPlayer } from "../game.types";
 import { AppError, ErrorCode } from "../../error/apperror";
 import {GameMode} from "@prisma/client"
 
+/**
+ * @class MatchService
+ * @description manage player matchmaking
+ * - add players to matchmaking queues
+ * - remove players from queues
+ * - track queue state
+ * - match players when enough participants are available
+ * - create match records
+ * - retrieve existing match information 
+ */
 export class    MatchService{
     constructor(private matchrepository: MatchRepository){}
 
+    /**
+     * @method joinQueue
+     * @description add a player to matchmaking queue
+     * if the player is already queued, their current queue position is returned
+     * @param params 
+     * @returns 
+     */
     async joinQueue(params: JoinQueueParams): Promise<MathQueueResult>{
         const queue = await this.matchrepository.getqueue(params.mode);
         const exist = queue.find(q => q.userId === params.userId);
         if (exist) return { status: "in queue", position: queue.indexOf(exist) + 1 };
+        //register player in the matchmaking queue
         await this.matchrepository.enqueue(params.mode, {
             userId: params.userId,
             nickname: params.nickname,
@@ -24,6 +42,14 @@ export class    MatchService{
         }
     }
 
+    /**
+     * @method matchPlayers
+     * @description attempt to create a match from queued players
+     * a match is created only when enough players are available for the selected game mode
+     * @param mode 
+     * @param size 
+     * @returns 
+     */
     async matchPlayers(mode: GameMode, size?: number): Promise<MatchResult | null>{
         const queue = await this.matchrepository.getqueue(mode);
         const maxplayers = size ?? this.getmaxplayersfrommode(mode);
@@ -32,6 +58,7 @@ export class    MatchService{
                     'Game mode unkown',
                     ErrorCode.GAME_UNKOWN_MODE,
                 )
+        //not enough players available, continue waiting in queue
         if (queue.length < maxplayers)
             return null;
         const matchplayers: MatchPlayer[] = queue.slice(0, maxplayers)
@@ -102,12 +129,3 @@ export class    MatchService{
     }
 }
 
-/**
- * match service: 
- *  put the players in the systeme of queue to wait
- *  get the maxplayers from the different mode of game
- *  try to match the players for the mode
- * 
- * 
- * 
- */

@@ -4,10 +4,31 @@ import { AppError, ErrorCode } from '../error/apperror';
 import { PublicQuestion } from '@shared/game.schema';
 import { GameQuestion } from '../game/game.types';
 
-
+/**
+ * @class QuestionService
+ * @description service for quiz question management.
+ * responsabilites: 
+ * - retireve questions from the repository
+ * - filter questions by category
+ * - randomize question order
+ * - randomize answer options
+ * - convert database entities into game-ready questions
+ * - expose public question data without answers 
+ */
 export class QuestionService{
     constructor(private  repo: QuestionRepository){}
 
+    /**
+     * @method getQuestions
+     * @description if a category is provided, only questions belonging to that 
+     *  category are considered.
+     * The returned questions are shuffled and limited
+     * to the requested amount.
+     * @param total Number of questions requested
+     * @param category Optional category filter
+     * @returns Game-ready questions with shuffled answers
+     * @throws AppError when no questions are available
+     */
     async getQuestions(total: number = 10, category?: string): Promise<GameQuestion[]> {
         const questions = await this.repo.get_questions_byCategory(category);
         if (questions.length === 0) throw new AppError(
@@ -33,6 +54,14 @@ export class QuestionService{
         return this.shuffle(quiz.questions).map((q: PrismaQuestion) => this.toGameQuestion(q));
     }
 
+    /**
+     * @method toGameQuestion
+     * @description couvert a database question into a game question
+     *  the answer options are randomized and the 
+     *  correct answer index is recalculated accordingly
+     * @param question 
+     * @returns Question formatted for gameplay
+     */
     private toGameQuestion(question: PrismaQuestion): GameQuestion {
         const shuffledOptions = this.shuffle(question.options);
         return {
@@ -43,6 +72,11 @@ export class QuestionService{
         };
     }
 
+    /**
+     * Creates a new array without mutating the original.
+     * @param items 
+     * @returns 
+     */
     private shuffle<T>(items: readonly T[]): T[] {
         const shuffled = [...items];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -52,6 +86,14 @@ export class QuestionService{
         return shuffled;
     }
 
+    /**
+     * @method toPublicQuestion
+     * @description convert a game question into a public version
+     * the correct answer information is removed before sending the question
+     * to clients. 
+     * @param question 
+     * @returns Public question 
+     */
     toPublicQuestion(question: GameQuestion): PublicQuestion
     {
         return {
