@@ -304,7 +304,7 @@
             <span class="flex items-center gap-3">
               {#if stats}
                 <span class="text-xs text-blue-100/70">
-                  {stats.correctAnswers} bonnes · {(stats.totalTime / 1000).toFixed(1)}s
+                  {stats.correctAnswers} good answers - In {(stats.totalTime / 1000).toFixed(1)}s
                 </span>
               {/if}
               {#if i === 0}<span class="text-yellow-300 font-bold">Champion</span>{/if}
