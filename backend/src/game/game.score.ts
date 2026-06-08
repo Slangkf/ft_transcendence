@@ -11,6 +11,11 @@ export class PrismaGameRepository {
             const winnerIdNum = parseInt(result.winnerId ?? "");
             const humanPlayers = result.players.filter(p => p.userId !== "brain");
 
+            // SOLO has no opponent, so the single player is always ranked #1 and
+            // would otherwise be credited a "win" for every finished game. A win
+            // only makes sense when there's someone to beat (AI / multiplayer).
+            const countsWins = result.mode !== GameMode.SOLO;
+
             await tx.matchResult.create({
                 data: {
                     mode: result.mode,
@@ -33,7 +38,7 @@ export class PrismaGameRepository {
                         data: {
                             played: { increment: 1 },
                             score: { increment: p.correctAnswers },
-                            wins: result.winnerId === p.userId
+                            wins: countsWins && result.winnerId === p.userId
                                 ? { increment: 1 }
                                 : undefined,
                         }

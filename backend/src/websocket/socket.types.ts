@@ -41,11 +41,13 @@ export type GameStartedPayload = {
     firstQuestion: PublicQuestion;
     players: Record<string, PlayerSnapShot>;
     startedAt: number;
+    totalQuestions: number;
 }
 
 export type AnswerResultPayload = {
     gameId: string;
     status: 'playing' | 'finished';
+    totalQuestions?: number;
     lastAnswerUpdate?: {
         playerId: string;
         isCorrect: boolean;

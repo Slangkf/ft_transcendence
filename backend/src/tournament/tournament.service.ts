@@ -115,6 +115,7 @@ export class TournamentService {
             };
 
             await this.repo.save(state);
+            console.log(`[TOURNEY] tournament FORMED t=${tournamentId} players=[${players.map(p => p.userId).join(',')}]`);
 
             // mark all players as in_tournament
             await Promise.all(
@@ -203,22 +204,31 @@ export class TournamentService {
 
             bm.roomId = room.roomId;
             bm.status = 'ready';
+            console.log(`[TOURNEY] createMatchRoom t=${state.tournamentId} round=${bm.round} slot=${bm.slot} room=${room.roomId} p1=${p1.userId} p2=${p2.userId}`);
 
             // join each player's socket to the room (retry in case onConnection Redis key is not written yet)
             for (const player of [p1, p2]) {
                 let socketId: string | null = null;
+                let attempts = 0;
                 for (let attempt = 0; attempt < 5 && !socketId; attempt++) {
+                    attempts = attempt + 1;
                     socketId = await this.redis.get(RedisKeys.socket.gameUser(player.userId));
                     if (!socketId) await new Promise(r => setTimeout(r, 80));
                 }
                 if (socketId) {
                     const sock = this.gameNs.sockets.get(socketId);
+                    // sock is the in-process socket object. If it's undefined the
+                    // socketId is in Redis but the socket lives nowhere we can reach
+                    // (stale key, or — with multiple backend nodes — another node).
+                    console.log(`[TOURNEY]   join p=${player.userId} room=${room.roomId} socketId=${socketId} attempts=${attempts} sockObjFound=${!!sock} -> ${sock ? 'JOINED' : 'CANNOT JOIN (no local socket)'}`);
                     sock?.join(room.roomId);
                     // (re)join the tournament-wide room here too: the join in
                     // tryStart() has no retry and can miss a socket that wasn't
                     // registered yet, which would silently cut that player off
                     // from every bracket/spectator/finished broadcast.
                     sock?.join(`tournament:${state.tournamentId}`);
+                } else {
+                    console.warn(`[TOURNEY]   join p=${player.userId} room=${room.roomId} NO socketId in Redis after ${attempts} attempts — player will MISS game_started (room broadcast) and get bounced to bracket`);
                 }
 
                 await this.sessionService.update(player.userId, {
@@ -255,13 +265,17 @@ export class TournamentService {
      * Every player of the match is sent back to the bracket.
      */
     async handleReadyTimeout(tournamentId: string, roomId: string, notReadyUserIds: string[]): Promise<void> {
+        console.log(`[TOURNEY] READY-TIMEOUT (forfeit) t=${tournamentId} room=${roomId} notReady=[${notReadyUserIds.join(',')}] -> players bounced to bracket`);
         await this.withTournamentLock(tournamentId, async () => {
             const state = await this.repo.get(tournamentId);
             if (!state || state.status === 'finished') return;
 
             const bm = state.matches.find(m => m.roomId === roomId);
             // ignore if the game already started or the match is already resolved
-            if (!bm || bm.status === 'done' || bm.status === 'playing') return;
+            if (!bm || bm.status === 'done' || bm.status === 'playing') {
+                console.log(`[TOURNEY] READY-TIMEOUT ignored (match already ${bm?.status ?? 'gone'})`);
+                return;
+            }
 
             const matchPlayers = [bm.p1, bm.p2].filter((x): x is string => !!x);
             const survivors = matchPlayers.filter(uid => !notReadyUserIds.includes(uid));
@@ -304,6 +318,7 @@ export class TournamentService {
             bm.gameId = gameId;
             bm.status = 'playing';
             await this.repo.save(state);
+            console.log(`[TOURNEY] match PLAYING t=${tournamentId} room=${roomId} game=${gameId} (game actually started)`);
 
             // let spectators know this match is now live (and learn its gameId) so the
             // bracket page can wire its spectator window to the right game stream
@@ -328,6 +343,7 @@ export class TournamentService {
      * Called when a tournament-linked game finishes.
      */
     async onMatchFinished(tournamentId: string, gameId: string, winnerId: string, stats?: { userId: string; correctAnswers: number; totalTime: number }[]): Promise<void> {
+        console.log(`[TOURNEY] matchFinished t=${tournamentId} game=${gameId} winner=${winnerId}`);
         await this.withTournamentLock(tournamentId, async () => {
             const state = await this.repo.get(tournamentId);
             if (!state || state.status === 'finished') return;
@@ -357,6 +373,7 @@ export class TournamentService {
      * If they have a current match in 'ready' or 'playing', the opponent wins.
      */
     async forfeit(tournamentId: string, userId: string): Promise<void> {
+        console.log(`[TOURNEY] FORFEIT (disconnect) t=${tournamentId} user=${userId}`);
         await this.withTournamentLock(tournamentId, async () => {
             const state = await this.repo.get(tournamentId);
             if (!state || state.status === 'finished') return;

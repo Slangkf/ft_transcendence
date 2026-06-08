@@ -45,12 +45,15 @@ export type GameStartedPayload = {
     gameId: string;
     firstQuestion: PublicQuestion;
     players: Record<string, PlayerSnapShot>;
+    startedAt?: number;
+    totalQuestions?: number;
 }
 
 // Payload emitted after a player submits an answer
 export type AnswerResultPayload = {
     gameId: string;
     status: 'playing' | 'finished';
+    totalQuestions?: number;
     lastAnswerUpdate: {
         playerId: string;
         isCorrect: boolean;

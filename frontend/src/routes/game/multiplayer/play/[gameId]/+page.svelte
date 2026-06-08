@@ -15,6 +15,7 @@
   type AnswerResultPayload = {
     gameId: string;
     status: 'playing' | 'finished';
+    totalQuestions?: number;
     lastAnswerUpdate?: {
       playerId: string;
       isCorrect: boolean;
@@ -118,8 +119,20 @@
   }
 
   function applyAnswerResult(info: AnswerResultPayload) {
-    playersState = Object.values(info.players);
     const correctText = info.lastAnswerUpdate?.correctText;
+
+    // A round is only "resolved" once every player has answered (correctText is
+    // set), the question timed out, or the game finished. Until then this is just
+    // a partial submit (we answered, others haven't): don't touch the scoreboard,
+    // otherwise our own score visibly ticks up before the correct/incorrect reveal.
+    const roundResolved = !!correctText || !!info.timedOut || info.status === 'finished';
+    if (!roundResolved) return;
+
+    // reveal time: now it's safe to surface the updated scores
+    playersState = Object.values(info.players);
+    if (typeof info.totalQuestions === 'number' && info.totalQuestions > 0) {
+      totalQuestions = info.totalQuestions;
+    }
 
     if (info.status === 'finished') {
       finalScore = info.finalScore ?? null;
@@ -143,8 +156,6 @@
       }
       return;
     }
-
-    if (!correctText && !info.timedOut) return; // round not yet complete (partial submit)
 
     if (currentQuestion) {
       correctIndex = info.lastAnswerUpdate?.correctAnswerIndex ?? null;
@@ -236,6 +247,9 @@
         const payload = JSON.parse(raw);
         currentQuestion = payload.question;
         questionNumber = 1;
+        if (typeof payload.totalQuestions === 'number' && payload.totalQuestions > 0) {
+          totalQuestions = payload.totalQuestions;
+        }
         if (payload.startedAt) startedAt = payload.startedAt;
         questionStartedAt = payload.startedAt ?? Date.now();
         sessionStorage.removeItem('mp_first_question');

@@ -38,6 +38,7 @@
     socket.off('error');
 
     socket.on('ready_timeout', (payload: { roomId: string; excluded: boolean }) => {
+      console.log('[TOURNEY-CLIENT] ready_timeout received', payload, '-> going back to bracket');
       if (payload.roomId !== roomId) return;
       stopReadyCountdown();
       starting = true; // suppress the "navigated away mid-lobby" disconnect for tournaments
@@ -88,11 +89,12 @@
       players = players.map(p => String(p.id) === pid ? { ...p, isReady: payload.isReady } : p);
     });
 
-    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number }) => {
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number; totalQuestions?: number }) => {
+      console.log('[TOURNEY-CLIENT] game_started received game=', payload.gameId, '-> going to play page');
       starting = true;
       stopReadyCountdown();
       try {
-        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt }));
+        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt, totalQuestions: payload.totalQuestions }));
       } catch {}
       goto(`/game/multiplayer/play/${payload.gameId}`);
     });
@@ -140,6 +142,8 @@ async function toggleReady() {
     try {
       await ensureGameSocketConnected();
     } catch {}
+    const sock = getGameSocket();
+    console.log('[TOURNEY-CLIENT] room page mounted roomId=', roomId, 'socket.id=', sock.id, 'connected=', sock.connected);
     attachListeners();
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     // We've reached a room, so the "pending room" hint that routed us here has
