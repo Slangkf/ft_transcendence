@@ -1,3 +1,104 @@
+// APRES FIX, version du code actuelle
+ prisma db push --schema=./prisma/schema.prisma
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "quiz_db", schema "public" at "postgres_db:5432"
+
+The database is already in sync with the Prisma schema.
+
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 180ms
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.3 -> 7.8.0                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+
+> backend@1.0.0 db:seed
+> ts-node --project prisma/tsconfig.json prisma/seed.ts
+
+Database connected: [ { current_user: 'psql_user', current_database: 'quiz_db' } ]
+
+> backend@1.0.0 start
+> ts-node -r tsconfig-paths/register --transpile-only src/index.ts
+
+Redis connected
+[blockchain] disabled: AVAX_RPC_URL / CHAIN_PRIVATE_KEY / CHAIN_CONTRACT_ADDRESS not all set
+Server is running on port 3000
+[WS] connect user=3 socket=oGoJ7mtHJjOshtbIAAAE
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=oGoJ7mtHJjOshtbIAAAE
+[WS] connect user=3 socket=YYGRY_U-a4OMHtP9AAAI
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=YYGRY_U-a4OMHtP9AAAI
+error in  GetProfilByUsername:  AppError: Unknown user
+    at UserService.get_profile_by_username (/app/src/User/user.service.ts:28:10)
+    at async UserController.GetProfilByUsername (/app/src/User/user.controller.ts:48:28) {
+  code: 'USER_NOT_FOUND',
+  statusCode: 404,
+  details: { user: 'thomas' }
+}
+[WS] connect user=8 socket=i_J-a9NqjOS_ImqXAAAU
+[WS] connect user=8 socket=3ZTonUfZ3HBKlhB3AAAV
+[WS] reconnect user=8 status=idle room=- game=- tournament=- socket=i_J-a9NqjOS_ImqXAAAU
+[WS] reconnect user=8 status=idle room=- game=- tournament=- socket=3ZTonUfZ3HBKlhB3AAAV
+[WS] connect user=3 socket=6iOlzmtCU1KE2pJAAAAX
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=6iOlzmtCU1KE2pJAAAAX
+[WS] connect user=6 socket=Sdu3E-hsUpxCsv5CAAAb
+[WS] connect user=6 socket=X_LR6A-of0gckD6hAAAc
+[WS] reconnect user=6 status=idle room=- game=- tournament=- socket=Sdu3E-hsUpxCsv5CAAAb
+[WS] reconnect user=6 status=idle room=- game=- tournament=- socket=X_LR6A-of0gckD6hAAAc
+[WS] connect user=2 socket=HPqYvDbkhslvcU9QAAAg
+[WS] user=2 reconnect/2nd-socket new=h5IaRG5I_P3cCNvrAAAh REPLACES prev=HPqYvDbkhslvcU9QAAAg (same account in 2 places? cookie shared?)
+[WS] connect user=2 socket=h5IaRG5I_P3cCNvrAAAh
+[WS] reconnect user=2 status=idle room=- game=- tournament=- socket=HPqYvDbkhslvcU9QAAAg
+[WS] reconnect user=2 status=idle room=- game=- tournament=- socket=h5IaRG5I_P3cCNvrAAAh
+[TOURNEY] tournament FORMED t=6b7f702e-6698-4dd7-8bb6-88eff409683f players=[8,3,6,2]
+[TOURNEY] createMatchRoom t=6b7f702e-6698-4dd7-8bb6-88eff409683f round=1 slot=0 room=85352f52-c2b8-4737-b64b-75d8a9289525 p1=8 p2=3
+[TOURNEY]   join p=8 room=85352f52-c2b8-4737-b64b-75d8a9289525 socketId=3ZTonUfZ3HBKlhB3AAAV attempts=1 sockObjFound=true -> JOINED
+[TOURNEY]   join p=3 room=85352f52-c2b8-4737-b64b-75d8a9289525 socketId=6iOlzmtCU1KE2pJAAAAX attempts=1 sockObjFound=true -> JOINED
+[TOURNEY] createMatchRoom t=6b7f702e-6698-4dd7-8bb6-88eff409683f round=1 slot=1 room=59143a79-9c6b-45b6-898b-0f62921c4b11 p1=6 p2=2
+[TOURNEY]   join p=6 room=59143a79-9c6b-45b6-898b-0f62921c4b11 socketId=X_LR6A-of0gckD6hAAAc attempts=1 sockObjFound=true -> JOINED
+[TOURNEY]   join p=2 room=59143a79-9c6b-45b6-898b-0f62921c4b11 socketId=h5IaRG5I_P3cCNvrAAAh attempts=1 sockObjFound=true -> JOINED
+[TOURNEY] setReady room=85352f52-c2b8-4737-b64b-75d8a9289525 user=8=true changed=true allReady=false status=waiting [3:- 8:R]
+[TOURNEY] setReady room=85352f52-c2b8-4737-b64b-75d8a9289525 user=3=true changed=true allReady=true status=starting [3:R 8:R]
+[Game Init Local] Successfully initialized state for room, mode:  MULTIPLAYER
+roomId:  85352f52-c2b8-4737-b64b-75d8a9289525
+[TOURNEY] match PLAYING t=6b7f702e-6698-4dd7-8bb6-88eff409683f room=85352f52-c2b8-4737-b64b-75d8a9289525 game=2f7ff0a0-021d-4e1c-bb91-1b95c3e4dd9d (game actually started)
+[TOURNEY] game_started room=85352f52-c2b8-4737-b64b-75d8a9289525 game=2f7ff0a0-021d-4e1c-bb91-1b95c3e4dd9d tournament=6b7f702e-6698-4dd7-8bb6-88eff409683f playersInRoom=2 socketsInRoom=2 sockets=[3ZTonUfZ3HBKlhB3AAAV,6iOlzmtCU1KE2pJAAAAX]
+[TOURNEY] setReady room=59143a79-9c6b-45b6-898b-0f62921c4b11 user=2=true changed=true allReady=false status=waiting [2:R 6:-]
+[TOURNEY] setReady room=59143a79-9c6b-45b6-898b-0f62921c4b11 user=6=true changed=true allReady=true status=starting [2:R 6:R]
+[Game Init Local] Successfully initialized state for room, mode:  MULTIPLAYER
+roomId:  59143a79-9c6b-45b6-898b-0f62921c4b11
+[TOURNEY] match PLAYING t=6b7f702e-6698-4dd7-8bb6-88eff409683f room=59143a79-9c6b-45b6-898b-0f62921c4b11 game=050be2a3-f621-487f-ab00-fc53c801fa53 (game actually started)
+[TOURNEY] game_started room=59143a79-9c6b-45b6-898b-0f62921c4b11 game=050be2a3-f621-487f-ab00-fc53c801fa53 tournament=6b7f702e-6698-4dd7-8bb6-88eff409683f playersInRoom=2 socketsInRoom=2 sockets=[X_LR6A-of0gckD6hAAAc,h5IaRG5I_P3cCNvrAAAh]
+[submit] game=2f7ff0a0-021d-4e1c-bb91-1b95c3e4dd9d, user=8, answer=2
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=2
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=3
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=0
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=0
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=3
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=3
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=1
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=2
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=1
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=2
+[submit] game=2f7ff0a0-021d-4e1c-bb91-1b95c3e4dd9d, user=8, answer=0
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=1
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=3
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=0
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=2
+[submit] game=2f7ff0a0-021d-4e1c-bb91-1b95c3e4dd9d, user=8, answer=0
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=6, answer=0
+[submit] game=050be2a3-f621-487f-ab00-fc53c801fa53, user=2, answer=2
+
+// AVANT FIX : prednre les ifnormations dans le bracket directemetn vai requete http
 bash-5.2$ podman logs 9e68d0927496
 Waiting for Redis...
 Redis is ready
@@ -137,3 +238,6 @@ roomId:  ea2e25a3-c77b-4494-bbf9-6eb7f6c9aa13
 [submit] game=a283d17c-11db-4b1d-93e0-49773db8de40, user=5, answer=3
 [submit] game=a283d17c-11db-4b1d-93e0-49773db8de40, user=3, answer=0
 [TOURNEY] matchFinished t=acc1c0f3-7b92-4975-a060-70983f414a14 game=a283d17c-11db-4b1d-93e0-49773db8de40 winner=5
+
+
+process attendu -> room 4 plaers puis activation du multiplayer x4 avec front static de quelques seond entre chaque match
