@@ -1,3 +1,187 @@
+// dernier logs Backend et frontend avec 2 machines, chaque machine sur chroome avec un browser en rpivee et lautre en public.
+
+bash-5.2$ podman logs d7070f6eee65
+
+> myapp@0.0.1 dev
+> vite dev
+
+4:41:54 PM [vite] (client) Forced re-optimization of dependencies
+
+  VITE v7.3.2  ready in 1534 ms
+
+  ➜  Local:   http://localhost:5500/
+  ➜  Network: http://10.89.0.37:5500/
+cookies.get error in the /modes section
+bash-5.2$ podman logs f862a0a0f65a
+Waiting for Redis...
+Redis is ready
+Database is up!
+
+> backend@1.0.0 db:migrate
+> prisma db push --schema=./prisma/schema.prisma
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "quiz_db", schema "public" at "postgres_db:5432"
+
+🚀  Your database is now in sync with your Prisma schema. Done in 504ms
+
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 128ms
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.3 -> 7.8.0                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+
+> backend@1.0.0 db:seed
+> ts-node --project prisma/tsconfig.json prisma/seed.ts
+
+Database connected: [ { current_user: 'psql_user', current_database: 'quiz_db' } ]
+
+> backend@1.0.0 start
+> ts-node -r tsconfig-paths/register --transpile-only src/index.ts
+
+Redis connected
+[blockchain] disabled: AVAX_RPC_URL / CHAIN_PRIVATE_KEY / CHAIN_CONTRACT_ADDRESS not all set
+Server is running on port 3000
+[WS] connect user=2 socket=8_oo2UlcW8qwsUldAAAD
+[WS] connect user=2 socket=FMa_cNW1RKmz7pLuAAAE
+[WS] reconnect user=2 status=idle room=- game=- tournament=- socket=8_oo2UlcW8qwsUldAAAD
+[WS] reconnect user=2 status=idle room=- game=- tournament=- socket=FMa_cNW1RKmz7pLuAAAE
+[WS] connect user=3 socket=iJWpvWBi_24MmzHeAAAI
+[WS] user=3 reconnect/2nd-socket new=sit5-Hw6avGBIPlZAAAJ REPLACES prev=iJWpvWBi_24MmzHeAAAI (same account in 2 places? cookie shared?)
+[WS] connect user=3 socket=sit5-Hw6avGBIPlZAAAJ
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=iJWpvWBi_24MmzHeAAAI
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=sit5-Hw6avGBIPlZAAAJ
+[WS] connect user=4 socket=QxDna78GbX-bnBA5AAAN
+[WS] reconnect user=4 status=idle room=- game=- tournament=- socket=QxDna78GbX-bnBA5AAAN
+[WS] connect user=4 socket=bsTlpqn-j_QeMiNbAAAR
+[WS] user=4 reconnect/2nd-socket new=bsTlpqn-j_QeMiNbAAAR REPLACES prev=QxDna78GbX-bnBA5AAAN (same account in 2 places? cookie shared?)
+[WS] reconnect user=4 status=idle room=- game=- tournament=- socket=bsTlpqn-j_QeMiNbAAAR
+[WS] connect user=5 socket=UGImfjLgNwz7nwR8AAAV
+[WS] connect user=5 socket=ttux-uTNBDjHCm92AAAW
+[WS] reconnect user=5 status=idle room=- game=- tournament=- socket=UGImfjLgNwz7nwR8AAAV
+[WS] reconnect user=5 status=idle room=- game=- tournament=- socket=ttux-uTNBDjHCm92AAAW
+[TOURNEY] tournament FORMED t=c8ec3f9e-59e0-489e-92ec-57808b06b527 players=[2,3,4,5]
+[TOURNEY] createMatchRoom t=c8ec3f9e-59e0-489e-92ec-57808b06b527 round=1 slot=0 room=417f8a76-d46f-4f01-8c93-658d0eb0df15 p1=2 p2=3
+[TOURNEY]   join p=2 room=417f8a76-d46f-4f01-8c93-658d0eb0df15 socketId=FMa_cNW1RKmz7pLuAAAE attempts=1 sockObjFound=true -> JOINED
+[TOURNEY]   join p=3 room=417f8a76-d46f-4f01-8c93-658d0eb0df15 socketId=sit5-Hw6avGBIPlZAAAJ attempts=1 sockObjFound=true -> JOINED
+[TOURNEY] createMatchRoom t=c8ec3f9e-59e0-489e-92ec-57808b06b527 round=1 slot=1 room=355baa80-a965-4c4a-bd01-273b67aa1b1b p1=4 p2=5
+[TOURNEY]   join p=4 room=355baa80-a965-4c4a-bd01-273b67aa1b1b socketId=bsTlpqn-j_QeMiNbAAAR attempts=1 sockObjFound=true -> JOINED
+[TOURNEY]   join p=5 room=355baa80-a965-4c4a-bd01-273b67aa1b1b socketId=ttux-uTNBDjHCm92AAAW attempts=1 sockObjFound=true -> JOINED
+[TOURNEY] setReady room=417f8a76-d46f-4f01-8c93-658d0eb0df15 user=2=true changed=true allReady=false status=waiting [2:R 3:-]
+[TOURNEY] setReady room=355baa80-a965-4c4a-bd01-273b67aa1b1b user=4=true changed=true allReady=false status=waiting [4:R 5:-]
+[TOURNEY] setReady room=417f8a76-d46f-4f01-8c93-658d0eb0df15 user=3=true changed=true allReady=true status=starting [2:R 3:R]
+[Game Init Local] Successfully initialized state for room, mode:  MULTIPLAYER
+roomId:  417f8a76-d46f-4f01-8c93-658d0eb0df15
+[TOURNEY] match PLAYING t=c8ec3f9e-59e0-489e-92ec-57808b06b527 room=417f8a76-d46f-4f01-8c93-658d0eb0df15 game=4645d04c-607c-4197-a58d-14b3ddb84d10 (game actually started)
+[TOURNEY] game_started room=417f8a76-d46f-4f01-8c93-658d0eb0df15 game=4645d04c-607c-4197-a58d-14b3ddb84d10 tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 playersInRoom=2 socketsInRoom=2 sockets=[FMa_cNW1RKmz7pLuAAAE,sit5-Hw6avGBIPlZAAAJ]
+[TOURNEY] setReady room=355baa80-a965-4c4a-bd01-273b67aa1b1b user=5=true changed=true allReady=true status=starting [4:R 5:R]
+[Game Init Local] Successfully initialized state for room, mode:  MULTIPLAYER
+roomId:  355baa80-a965-4c4a-bd01-273b67aa1b1b
+[TOURNEY] match PLAYING t=c8ec3f9e-59e0-489e-92ec-57808b06b527 room=355baa80-a965-4c4a-bd01-273b67aa1b1b game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76 (game actually started)
+[TOURNEY] game_started room=355baa80-a965-4c4a-bd01-273b67aa1b1b game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76 tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 playersInRoom=2 socketsInRoom=2 sockets=[bsTlpqn-j_QeMiNbAAAR,ttux-uTNBDjHCm92AAAW]
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=5, answer=1
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=5, answer=3
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=1
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[TOURNEY] FORFEIT (disconnect) t=c8ec3f9e-59e0-489e-92ec-57808b06b527 user=3
+[WS] connect user=3 socket=Bw-1W69o1GmFqgaKAAAY
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=Bw-1W69o1GmFqgaKAAAY
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[WS] connect user=3 socket=OdjEYdGVCr6dSTOWAAAa
+[WS] reconnect user=3 status=idle room=- game=- tournament=- socket=OdjEYdGVCr6dSTOWAAAa
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[submit] game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76, user=4, answer=0
+[TOURNEY] matchFinished t=c8ec3f9e-59e0-489e-92ec-57808b06b527 game=acaf2d6a-9e20-4ce5-a499-9325c7c7fd76 winner=4
+[TOURNEY] createMatchRoom t=c8ec3f9e-59e0-489e-92ec-57808b06b527 round=2 slot=0 room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d p1=2 p2=4
+[TOURNEY]   join p=2 room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d socketId=FMa_cNW1RKmz7pLuAAAE attempts=1 sockObjFound=true -> JOINED
+[TOURNEY]   join p=4 room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d socketId=bsTlpqn-j_QeMiNbAAAR attempts=1 sockObjFound=true -> JOINED
+[TOURNEY] setReady room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d user=4=true changed=true allReady=false status=waiting [2:- 4:R]
+[TOURNEY] FORFEIT (disconnect) t=c8ec3f9e-59e0-489e-92ec-57808b06b527 user=3
+[TOURNEY] setReady room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d user=2=true changed=true allReady=true status=starting [2:R 4:R]
+[Game Init Local] Successfully initialized state for room, mode:  MULTIPLAYER
+roomId:  111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d
+[TOURNEY] match PLAYING t=c8ec3f9e-59e0-489e-92ec-57808b06b527 room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b (game actually started)
+[TOURNEY] game_started room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 playersInRoom=2 socketsInRoom=2 sockets=[FMa_cNW1RKmz7pLuAAAE,bsTlpqn-j_QeMiNbAAAR]
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=2, answer=1
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=1
+[TOURNEY] FORFEIT (disconnect) t=c8ec3f9e-59e0-489e-92ec-57808b06b527 user=3
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=2, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=2, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=2, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=2, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[TOURNEY] matchFinished t=c8ec3f9e-59e0-489e-92ec-57808b06b527 game=4645d04c-607c-4197-a58d-14b3ddb84d10 winner=2
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[WS] connect user=2 socket=nW2FOva0Zx_s_QMYAAAe
+[WS] connect user=2 socket=aSUGaqU4n4n7-8iNAAAf
+[WS] reconnect user=2 status=in_tournament room=- game=- tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=nW2FOva0Zx_s_QMYAAAe
+[WS] reconnect user=2 status=in_tournament room=- game=- tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=aSUGaqU4n4n7-8iNAAAf
+[WS] connect user=2 socket=Lz4UXNPcSXPAVEMhAAAj
+[WS] connect user=2 socket=n16tMlUc5RC6hVAEAAAk
+[WS] reconnect user=2 status=in_tournament room=- game=- tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=Lz4UXNPcSXPAVEMhAAAj
+[WS] reconnect user=2 status=in_tournament room=- game=- tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=n16tMlUc5RC6hVAEAAAk
+[WS] connect user=4 socket=i-TEDSRnQDv1CPLsAAAm
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=i-TEDSRnQDv1CPLsAAAm
+[WS] connect user=4 socket=RhyFwPugnRk3wz1JAAAq
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=RhyFwPugnRk3wz1JAAAq
+[WS] connect user=4 socket=F7cP6_94xmRzzhS2AAAu
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=F7cP6_94xmRzzhS2AAAu
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[WS] connect user=4 socket=KIQuAFm-NDb8N1CPAAAy
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=KIQuAFm-NDb8N1CPAAAy
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[WS] connect user=4 socket=oRTDv6od_4aMZTSdAAA2
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=oRTDv6od_4aMZTSdAAA2
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[WS] connect user=4 socket=r8HYsgGgSGOXBk4cAAA6
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=r8HYsgGgSGOXBk4cAAA6
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[WS] connect user=4 socket=Lnoks1dbLmKuBnjiAAA-
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=Lnoks1dbLmKuBnjiAAA-
+[WS] connect user=4 socket=7s0FAdY6lrSmWIR5AABC
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=7s0FAdY6lrSmWIR5AABC
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=1
+[WS] connect user=4 socket=bdMD56kIKsTLicCUAABG
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=bdMD56kIKsTLicCUAABG
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=1
+[WS] connect user=4 socket=O-VY95h7W4T30dExAABK
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=O-VY95h7W4T30dExAABK
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=1
+[WS] connect user=4 socket=F3lWrzf6OXRBUoETAABO
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=F3lWrzf6OXRBUoETAABO
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=2
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=2
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=2
+[WS] connect user=4 socket=eq3utkn6t4w0452HAABS
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=eq3utkn6t4w0452HAABS
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=2
+[WS] connect user=4 socket=A8B8tkR32E8Ssk2fAABW
+[WS] reconnect user=4 status=in_game room=111c02c4-386c-4e9f-91eb-5dfd4a3f7c7d game=e9476a1c-53e5-439d-be90-f75292699e6b tournament=c8ec3f9e-59e0-489e-92ec-57808b06b527 socket=A8B8tkR32E8Ssk2fAABW
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=2
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=2
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=3
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[submit] game=e9476a1c-53e5-439d-be90-f75292699e6b, user=4, answer=0
+[TOURNEY] matchFinished t=c8ec3f9e-59e0-489e-92ec-57808b06b527 game=e9476a1c-53e5-439d-be90-f75292699e6b winner=4
+[WS] connect user=2 socket=vOORw96kUkDIkN1LAABa
+[WS] reconnect user=2 status=idle room=- game=- tournament=- socket=vOORw96kUkDIkN1LAABa
+
 // APRES FIX, version du code actuelle
 
 Waiting for Redis...
