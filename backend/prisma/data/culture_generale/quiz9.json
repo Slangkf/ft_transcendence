@@ -94,14 +94,14 @@
       "answer": "Russia"
     },
     {
-      "text": "Who directed the movie 'Jurassic Park'?",
+      "text": "What company was originally called 'Cadabra'?",
       "options": [
-        "George Lucas",
-        "James Cameron",
-        "Steven Spielberg",
-        "Ridley Scott"
+      "Google",
+      "Amazon",
+      "Apple",
+      "eBay"
       ],
-      "answer": "Steven Spielberg"
+      "answer": "Amazon"
     }
   ]
 }
