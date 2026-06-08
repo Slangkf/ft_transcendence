@@ -189,6 +189,7 @@ export class Container{
             redis,
             this.readyTimer,
             this.blockchainService,
+            this.questionTimer,
         );
         // wire tournament back into the multiplayer facade so room→game linking can notify the bracket
         this.multiplayerFacade.setTournamentService(this.tournamentService);

@@ -10,6 +10,18 @@ import {initRedis, Redis} from './lib/redis';
 import {createSocketServer} from './lib/socket';
 import { container } from './container';
 
+// ===== Crash guards =====
+// A single unhandled promise rejection / exception used to kill the whole Node
+// process; Docker would then restart it — disconnecting EVERY player at once and
+// wiping the in-memory Socket.IO rooms + game/ready timers MID-tournament, which
+// collapsed the bracket into cascading forfeits/ready-timeouts. We log and stay
+// alive instead. (Genuine startup failures still exit via the try/catch in start().)
+process.on('unhandledRejection', (reason) => {
+  console.error('[GUARD] unhandledRejection (server kept alive):', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[GUARD] uncaughtException (server kept alive):', err);
+});
 
 const app = express();
 const PORT = 3000;

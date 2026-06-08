@@ -16,6 +16,7 @@
     gameId: string;
     status: 'playing' | 'finished';
     totalQuestions?: number;
+    currentQuestionIndex?: number;
     lastAnswerUpdate?: {
       playerId: string;
       isCorrect: boolean;
@@ -39,7 +40,6 @@
   const gameId = $derived(page.params.gameId);
 
   let currentQuestion = $state<PublicQuestion | null>(null);
-  let pendingNext = $state<PublicQuestion | null>(null);
   let questionNumber = $state(1);
   let totalQuestions = $state(0);
   let playersState = $state<PlayerSnapshot[]>([]);
@@ -53,6 +53,11 @@
   let questionStartedAt = $state<number | null>(null);
   let now = $state(Date.now());
   let tickHandle: ReturnType<typeof setInterval> | null = null;
+  // Resync watchdog: detects a game stuck with no question (a raced/lost event) and
+  // forces ONE reconnect to pull fresh server state — the automated equivalent of the
+  // manual refresh the user had to do.
+  let stuckSince: number | null = null;
+  let resyncing = false;
   // tournament games auto-redirect to the bracket on finish, so they don't need
   // the "back to menu" button on the results screen — plain multiplayer does.
   let inTournamentGame = $state(false);
@@ -68,6 +73,10 @@
   const nameOf = (id: string) => playersState.find(p => String(p.id) === String(id))?.nickname ?? id;
   let revealing = $state(false);
   let answered = $state(false);
+  // An answer the user picked but the server hasn't confirmed yet. On remote churn
+  // the emit can be lost with a dying socket; we re-send it on reconnect so a present,
+  // answering player is never scored 0 by the question timer. Keyed by questionId.
+  let pendingAnswer: { questionId: number; answerIndex: number } | null = null;
 
   const secondsLeft = $derived(
     questionStartedAt && !revealing && !answered && !isFinished
@@ -80,6 +89,7 @@
     correctIndex = null;
     revealing = false;
     answered = false;
+    pendingAnswer = null;
   }
 
   let backToBracketHandle: ReturnType<typeof setTimeout> | null = null;
@@ -171,12 +181,20 @@
       }
     }
 
-    pendingNext = info.nextQuestion ?? null;
+    // Capture this result's next question in a LOCAL const, never a shared field.
+    // In a fast semi-final two rounds can resolve within REVEAL_DELAY_MS, scheduling
+    // two reveal timers. The old code read a SHARED `pendingNext` at fire-time: the
+    // first timer consumed it and set it null, so the second timer set currentQuestion
+    // to null → the game froze on the scoreboard until a manual refresh. A per-result
+    // capture lets each timer restore its own question and never nulls it mid-game.
+    const nextQ = info.nextQuestion ?? null;
+    // Server-authoritative counter (the server already advanced its index).
+    const serverNextNumber =
+      typeof info.currentQuestionIndex === 'number' ? info.currentQuestionIndex + 1 : null;
     setTimeout(() => {
-      currentQuestion = pendingNext;
-      pendingNext = null;
+      currentQuestion = nextQ;
       if (currentQuestion) {
-        questionNumber += 1;
+        questionNumber = serverNextNumber ?? questionNumber + 1;
         questionStartedAt = Date.now();
       } else {
         questionStartedAt = null;
@@ -186,6 +204,23 @@
     }, REVEAL_DELAY_MS);
   }
 
+  // Re-send an unconfirmed answer after a reconnect. Safe: the server ignores it if
+  // the question already advanced (expectedQuestionId mismatch) or it was already
+  // recorded (idempotent per question). Without this, an answer emitted on a socket
+  // that dies during remote churn is silently lost and the question timer scores 0.
+  function flushPendingAnswer() {
+    if (!pendingAnswer) return;
+    if (!currentQuestion || currentQuestion.id !== pendingAnswer.questionId) {
+      pendingAnswer = null;
+      return;
+    }
+    const socket = getGameSocket();
+    socket.emit('submit_answer',
+      { gameId, selectedAnswerIndex: pendingAnswer.answerIndex, questionId: pendingAnswer.questionId },
+      (ack: any) => { if (ack?.success) pendingAnswer = null; });
+  }
+  function onSocketConnect() { flushPendingAnswer(); }
+
   function setupSocket() {
     const socket = getGameSocket();
 
@@ -193,6 +228,8 @@
     socket.off('session_reconnect');
     socket.off('tournament_finished');
     socket.off('error');
+    socket.off('connect', onSocketConnect);
+    socket.on('connect', onSocketConnect);
 
     // Finalists are on this page when the tournament ends; bring them back to the
     // bracket so they see the final "Tournament over" ranking (not just their
@@ -202,11 +239,19 @@
     });
 
     socket.on('answer_result', (info: AnswerResultPayload) => {
+      // IGNORE another game's events. The /game socket is a persistent singleton
+      // joined to the tournament room AND to the match room; a player can therefore
+      // receive an event meant for a DIFFERENT match (e.g. the other semi-final, or
+      // a residual event from a previous game in the same tab). Without this guard a
+      // foreign `answer_result`/`game_finished` would wrongly drive THIS page —
+      // notably flipping it to "finished".
+      if (info.gameId !== gameId) return;
       applyAnswerResult(info);
     });
 
     socket.off('game_finished');
     socket.on('game_finished', (payload: { gameId: string; state: any }) => {
+      if (payload.gameId !== gameId) return;
       finalScore = payload?.state?.finalScore ?? finalScore;
       if (payload?.state?.state?.player) {
         playersState = Object.values(payload.state.state.player);
@@ -219,6 +264,9 @@
 
     socket.on('session_reconnect', (payload: ReconnectPayload) => {
       if (payload.type === 'in_game') {
+        // Same guard as above: a request_sync/reconnect replays the session's
+        // CURRENT game. If that isn't the game this page is showing, ignore it.
+        if (payload.gameId !== gameId) return;
         const state = payload.state;
         totalQuestions = state.state?.totalQuestions ?? 0;
         playersState = Object.values(state.state?.player ?? {});
@@ -273,17 +321,24 @@
     if (!currentQuestion || answered || revealing || isFinished) return;
     selectedIndex = answerIndex;
     answered = true;
+    // Capture the choice first so a reconnect can re-send it if this emit is lost
+    // with a dying socket (remote churn). The questionId guards against ever
+    // applying it to a different question.
+    pendingAnswer = { questionId: currentQuestion.id, answerIndex };
     try {
       await ensureGameSocketConnected();
     } catch (err) {
-      error = 'Socket not connected.';
-      answered = false;
+      // Socket down: keep the captured answer and the locked-in UI. onSocketConnect
+      // flushes it on reconnect — don't score a present player 0 for a blip.
       return;
     }
     const socket = getGameSocket();
-    socket.emit('submit_answer', { gameId, selectedAnswerIndex: answerIndex }, (ack: any) => {
-      if (!ack || !ack.success) {
-        // submission failed — revert answered so user can retry
+    socket.emit('submit_answer', { gameId, selectedAnswerIndex: answerIndex, questionId: currentQuestion.id }, (ack: any) => {
+      if (ack?.success) {
+        pendingAnswer = null;
+      } else if (ack && ack.success === false) {
+        // server explicitly rejected (not merely a lost socket) — let the user retry
+        pendingAnswer = null;
         answered = false;
         error = ack?.message ?? 'Failed to submit answer.';
       }
@@ -294,16 +349,49 @@
     try { inTournamentGame = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     setupSocket();
     loadInitialQuestion();
-    // ask backend for current state via reconnection flow
+    // Pull the authoritative current state from the server. The socket persists across
+    // navigation, so there's no reconnect to trigger session_reconnect automatically;
+    // request_sync makes the server replay it (current question, scores, status). This
+    // is what guarantees the question shows even if the sessionStorage hint was missed.
     const socket = getGameSocket();
-    if (!socket.connected) socket.connect();
+    if (!socket.active) socket.connect();
+    socket.emit('request_sync');
     if (!startedAt) startedAt = Date.now();
-    tickHandle = setInterval(() => { now = Date.now(); }, 250);
+    tickHandle = setInterval(() => {
+      now = Date.now();
+      // Watchdog: if the game is running but we have no question to show (and we're
+      // not mid-reveal), an event was raced/lost. Re-pull the authoritative state from
+      // the server (request_sync → session_reconnect) instead of leaving the player
+      // frozen on the scoreboard waiting for a manual refresh. Cheap and non-disruptive.
+      if (!isFinished && currentQuestion === null && !revealing) {
+        if (stuckSince === null) stuckSince = now;
+        else if (!resyncing && now - stuckSince > 3000) {
+          resyncing = true;
+          try { getGameSocket().emit('request_sync'); } catch {}
+          setTimeout(() => { resyncing = false; stuckSince = null; }, 2000);
+        }
+      } else {
+        stuckSince = null;
+      }
+    }, 250);
   });
 
   onDestroy(() => {
     if (tickHandle) clearInterval(tickHandle);
     if (backToBracketHandle) clearTimeout(backToBracketHandle);
+    // Remove every handler this page put on the SHARED singleton socket. The socket
+    // outlives the page (no-op disconnect across navigation), so handlers left behind
+    // keep firing on the next page — a leaked, unfiltered handler from a finished game
+    // is exactly what could end an unrelated match. Tear them all down here.
+    try {
+      const s = getGameSocket();
+      s.off('connect', onSocketConnect);
+      s.off('answer_result');
+      s.off('game_finished');
+      s.off('session_reconnect');
+      s.off('tournament_finished');
+      s.off('error');
+    } catch {}
     // if we are in a tournament, keep the socket alive across navigation
     let inTournament = false;
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}

@@ -41,9 +41,23 @@ export class GameSocketHandler{
     private disconnectkey(userId: string){
         return RedisKeys.socket.disconnect(userId);
     }
+    /**
+     * Per-user Socket.IO room. EVERY one of a user's /game sockets joins it, so:
+     *  - targeted emits (`toUser`) reach all their tabs instead of a single volatile
+     *    socketId pointer that the SECOND tab/reconnect would steal;
+     *  - "is the user offline?" = "are there zero sockets left in this room?".
+     * This is what makes multi-tab / shared-cookie / reconnect churn non-destructive.
+     */
+    private userRoom(userId: string){
+        return `user:${userId}`;
+    }
 
     async onConnection(socket: TypedSocket): Promise<void>{
         const userId = socket.data.userId;
+
+        // join the per-user room first thing, so this socket is reachable by toUser
+        // and counted as "online" immediately
+        socket.join(this.userRoom(userId));
 
         //delete from disconnect timer if exist
         const existingTimer = this.disconnectTimers.get(userId);
@@ -80,9 +94,17 @@ export class GameSocketHandler{
 
         socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
         socket.on('submit_answer', (
-            data: SubmitAnswerReq, 
+            data: SubmitAnswerReq,
             ack:(response: SubmitAnswerRes) => void
         ) => {this.onSubmitAnswer(socket, userId, data, ack)});
+        // On-demand state pull. The /game socket is now persistent across navigation,
+        // so a page (e.g. the in-game page) can no longer rely on a reconnect to
+        // receive `session_reconnect`. It emits `request_sync` on mount and we replay
+        // the authoritative current state (current question, scores, in_game/finished)
+        // — the robust source of truth instead of a fragile sessionStorage hint.
+        socket.on('request_sync', () => {
+            this.handleReconnect(socket, userId).catch(e => console.error('request_sync error', e));
+        });
     }
 
     private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{
@@ -208,54 +230,55 @@ export class GameSocketHandler{
     }
 
     private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
+        // Still online? Answered by the per-user room, not a volatile socketId. By the
+        // time 'disconnect' fires the socket has already left its rooms, so if ANY
+        // socket remains in user:<id> (another tab, or a reconnect that already landed)
+        // the user is still here → do nothing. Multi-tab / churn becomes harmless.
+        const remaining = await this.io.in(this.userRoom(userId)).fetchSockets();
+        if (remaining.length > 0) return;
 
-        // Only the user's *current* socket may run disconnect cleanup. On a remote
-        // network blip, socket.io reconnects with a fresh socket.id before the server
-        // detects the old socket dropped (ping timeout). The stale socket's disconnect
-        // must NOT delete the new socket's gameUser mapping nor schedule a forfeit
-        // while the player is still connected (and possibly mid-game).
-        const current = await this.redis.get(this.gameuserkey(userId));
-        if (current && current !== socket.id) return;
-
-        if (current === socket.id) {
-            await this.redis.del(this.gameuserkey(userId));
-        }
-        // 给 60 秒重连窗口，超时才真正处理离开逻辑
         const RECONNECT_WINDOW_MS = 60_000;
         await this.redis.set(this.disconnectkey(userId), '1', {EX: RECONNECT_WINDOW_MS / 1000});
 
-        const timer =setTimeout(async () => {
-			this.disconnectTimers.delete(userId);
-            const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
-            if (!stillDisconnected) return; // 已重连，不处理
+        const timer = setTimeout(async () => {
+            this.disconnectTimers.delete(userId);
+            // Guard EVERYTHING: an unhandled rejection in this timer (e.g. a transient
+            // Redis error) would otherwise crash the whole process and drop every
+            // player. One user's cleanup must never take the server down.
+            try {
+                const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
+                if (!stillDisconnected) return; // reconnected within the window
 
-            // 真正离开：从队列和房间里清理
-            await this.matchservice.leaveQueue(userId);
+                const cur = await this.redis.get(this.gameuserkey(userId));
+                if (cur === socket.id) await this.redis.del(this.gameuserkey(userId));
 
-            const session = await this.sessionService.get(userId);
-            if (session?.gameId){
-                const gamestate = await this.gamerepos.findById(session.gameId);
-                if (gamestate?.players[userId]){
-                    gamestate.players[userId].status = 'disconnected';
-                    await this.gamerepos.update(gamestate);
-                    if ('roomId' in gamestate && gamestate.roomId){
-                        this.emitter.toRoom(gamestate.roomId, 'player_left', {
-                            playerId: userId,
-                            newHostId: '',
-                        })
+                const session = await this.sessionService.get(userId);
+
+                // TOURNAMENT: a disconnect NEVER forfeits/idles/leaves. The session
+                // stays intact so the player can reconnect straight back into their
+                // match, and the match still resolves on its own — by score (the
+                // question timer force-advances unanswered questions until the game
+                // finishes) or, if the game never started, by the ready-timeout. This
+                // removes the single most damaging mechanism: a transient network blip
+                // can no longer eliminate someone from the bracket.
+                if (session?.tournamentId) return;
+
+                // PLAIN MULTIPLAYER: original cleanup.
+                await this.matchservice.leaveQueue(userId);
+                if (session?.gameId){
+                    const gamestate = await this.gamerepos.findById(session.gameId);
+                    if (gamestate?.players[userId]){
+                        gamestate.players[userId].status = 'disconnected';
+                        await this.gamerepos.update(gamestate);
+                        if ('roomId' in gamestate && gamestate.roomId){
+                            this.emitter.toRoom(gamestate.roomId, 'player_left', {
+                                playerId: userId,
+                                newHostId: '',
+                            })
+                        }
                     }
                 }
-            }
-            // tournament forfeit: if the user was part of a tournament, forfeit their current match
-            if (session?.tournamentId) {
-                try {
-                    await this.tournamentService.forfeit(session.tournamentId, userId);
-                } catch (e) {
-                    console.error("tournament forfeit error:", e);
-                }
-            }
-            if (session?.roomId){
-                try{
+                if (session?.roomId){
                     const room = await this.roomservice.leaveRoom(session.roomId, userId);
                     if (room){
                         this.emitter.toRoom(room.roomId, 'player_left', {
@@ -263,12 +286,11 @@ export class GameSocketHandler{
                             newHostId: room.hostId,
                         });
                     }
-                }catch (error){
-                    console.error("Error leaving room on disconnect:", error);
                 }
+                await this.sessionService.update(userId, { status: "idle" });
+            } catch (e) {
+                console.error('[GUARD] onDisconnect cleanup error (server kept alive):', e);
             }
-            await this.sessionService.update(userId, {
-                status: "idle"});
         }, RECONNECT_WINDOW_MS);
         this.disconnectTimers.set(userId, timer);
     }
@@ -315,6 +337,7 @@ export class GameSocketHandler{
                 gameId,
                 status: 'finished',
                 totalQuestions: response.state.totalQuestions,
+                currentQuestionIndex: response.state.currentQuestionIndex,
                 lastAnswerUpdate,
                 timedOut,
                 nextQuestion: null,
@@ -366,6 +389,7 @@ export class GameSocketHandler{
             gameId,
             status: 'playing',
             totalQuestions: response.state.totalQuestions,
+            currentQuestionIndex: response.state.currentQuestionIndex,
             lastAnswerUpdate,
             timedOut,
             nextQuestion: response.nextQuestion,
@@ -385,7 +409,11 @@ export class GameSocketHandler{
                 return;
             }
 
-            const result = await this.gameService.submitAnswer(gameId, selectedAnswerIndex, userId);
+            // Forward the client's questionId as expectedQuestionId: a retry re-sent on
+            // reconnect (see the play page's pendingAnswer flush) for a question the
+            // server has already advanced past is then safely ignored (ALREADY_PROCESSED)
+            // instead of being mis-recorded against the new current question.
+            const result = await this.gameService.submitAnswer(gameId, selectedAnswerIndex, userId, data.questionId);
             
             if (!result) {
                 socket.emit('error', { message: 'Failed to submit answer' });

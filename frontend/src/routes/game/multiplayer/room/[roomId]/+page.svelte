@@ -9,6 +9,7 @@
   const roomId = $derived(page.params.roomId);
 
   let players = $state<RoomPlayer[]>([]);
+  let myUserId = $state('');
   let myReady = $state(false);
   let readyBusy = $state(false);
   let error = $state('');
@@ -90,6 +91,17 @@
     });
 
     socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number; totalQuestions?: number }) => {
+      // Only act on the game start I'm actually part of. The /game socket is a shared
+      // singleton joined to the tournament room and to BOTH semi rooms over a session;
+      // game_started carries no roomId, so without this check a start meant for the
+      // OTHER match (or a leaked handler from a previous room) would drag this player
+      // onto the wrong game. Eliminated/non-participants are never in `players`.
+      const iAmIn = !!myUserId && !!payload.players && (
+        Array.isArray(payload.players)
+          ? payload.players.some((p: any) => String(p.id ?? p.userId) === myUserId)
+          : !!payload.players[myUserId]
+      );
+      if (!iAmIn) return;
       console.log('[TOURNEY-CLIENT] game_started received game=', payload.gameId, '-> going to play page');
       starting = true;
       stopReadyCountdown();
@@ -139,6 +151,14 @@ async function toggleReady() {
   }
 
   onMount(async () => {
+    // Resolve my user id early so the game_started participation guard works.
+    try {
+      const r = await fetch('/api/user/me', { credentials: 'include' });
+      if (r.ok) {
+        const me = await r.json();
+        myUserId = String(me.data?.id ?? me.id ?? '');
+      }
+    } catch {}
     try {
       await ensureGameSocketConnected();
     } catch {}
@@ -183,6 +203,17 @@ async function toggleReady() {
 
   onDestroy(() => {
     stopReadyCountdown();
+    // Drop this page's handlers from the shared singleton socket so they don't keep
+    // firing (notably the unguarded game_started) once we're on the play/bracket page.
+    try {
+      const s = getGameSocket();
+      s.off('ready_timeout');
+      s.off('session_reconnect');
+      s.off('player_ready');
+      s.off('game_started');
+      s.off('player_left');
+      s.off('error');
+    } catch {}
     let inTournament = false;
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     if (!starting && !inTournament) {

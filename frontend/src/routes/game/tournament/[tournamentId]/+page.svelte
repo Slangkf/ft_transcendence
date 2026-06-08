@@ -180,10 +180,37 @@
     socket.off('tournament_started');
     socket.off('bracket_update');
     socket.off('next_match_ready');
+    socket.off('game_started');
     socket.off('tournament_finished');
     socket.off('tournament_onchain');
     socket.off('spectator_update');
     socket.off('error');
+
+    // SAFETY NET: every one of the player's sockets is joined to the match room
+    // (socketsJoin), so a tab that's still showing the BRACKET also receives the
+    // room-broadcast `game_started`. The bracket has no other reason to act on it,
+    // but if THIS tab is the one the player is looking at while their match starts
+    // (e.g. they have a second tab, or the room→play redirect slipped), it would be
+    // stranded on the bracket and unable to play. So: if I'm a participant of the
+    // game that just started, jump to the play page. Eliminated/spectating players
+    // are NOT in `players`, so they stay on the bracket to watch.
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number; totalQuestions?: number }) => {
+      const iAmIn = !!myUserId && !!payload.players && (
+        Array.isArray(payload.players)
+          ? payload.players.some((p: any) => String(p.id ?? p.userId) === myUserId)
+          : !!payload.players[myUserId]
+      );
+      if (!iAmIn) return;
+      try {
+        sessionStorage.setItem('mp_first_question', JSON.stringify({
+          gameId: payload.gameId, question: payload.firstQuestion, players: payload.players,
+          startedAt: payload.startedAt, totalQuestions: payload.totalQuestions,
+        }));
+        if (bracket) sessionStorage.setItem('current_tournament_id', bracket.tournamentId);
+      } catch {}
+      leaving = true; // suppress the bracket's onDestroy socket teardown
+      goto(`/game/multiplayer/play/${payload.gameId}`);
+    });
 
     socket.on('tournament_started', (payload: { tournamentId: string; bracket: PublicBracketView }) => {
       bracket = payload.bracket;
@@ -265,7 +292,7 @@
     } catch {}
 
     const socket = getGameSocket();
-    if (!socket.connected) socket.connect();
+    if (!socket.active) socket.connect();
     setupListeners();
 
     // Always load the bracket first so the user can see who's where during the redirect countdown
@@ -304,6 +331,20 @@
   onDestroy(() => {
     if (redirectInterval) { clearInterval(redirectInterval); redirectInterval = null; }
     if (bracketPoll) { clearInterval(bracketPoll); bracketPoll = null; }
+    // Remove this page's handlers from the shared singleton socket so they don't keep
+    // running (and mutating a destroyed component's closures) once we're on the
+    // room/play page.
+    try {
+      const s = getGameSocket();
+      s.off('tournament_started');
+      s.off('bracket_update');
+      s.off('next_match_ready');
+      s.off('game_started');
+      s.off('tournament_finished');
+      s.off('tournament_onchain');
+      s.off('spectator_update');
+      s.off('error');
+    } catch {}
     if (!leaving) {
       // user navigated away manually — keep socket alive if still in tournament
       let inTournament = false;

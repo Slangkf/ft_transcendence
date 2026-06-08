@@ -11,6 +11,7 @@ import { GameMode } from "@prisma/client";
 import { TournamentRepository } from "./tournament.repository";
 import { BracketMatch, PublicBracketView, TournamentPlayer, TournamentState } from "./tournament.types";
 import { ReadyTimerService } from "../game/ready-timer.service";
+import { QuestionTimerService } from "../game/question-timer.service";
 import { BlockchainService, OnchainTournament } from "../blockchain/blockchain.service";
 
 const TOURNAMENT_SIZE = 4;
@@ -26,6 +27,7 @@ export class TournamentService {
         private redis: typeof Redis,
         private readyTimer: ReadyTimerService,
         private blockchain: BlockchainService,
+        private questionTimer: QuestionTimerService,
     ) {}
 
     /**
@@ -132,12 +134,13 @@ export class TournamentService {
                 }))
             );
 
-            // make sure all players join a tournament-wide socket room so we can broadcast
+            // make sure ALL of every player's sockets join the tournament-wide room
+            // (via the per-user room) so broadcasts reach every tab, with no reliance
+            // on a single volatile socketId pointer.
             await Promise.all(
-                players.map(async p => {
-                    const socketId = await this.redis.get(RedisKeys.socket.gameUser(p.userId));
-                    if (socketId) this.gameNs.sockets.get(socketId)?.join(`tournament:${tournamentId}`);
-                })
+                players.map(p =>
+                    this.gameNs.in(`user:${p.userId}`).socketsJoin(`tournament:${tournamentId}`)
+                )
             );
 
             // 1. announce the tournament so frontends can navigate to the bracket page
@@ -213,30 +216,14 @@ export class TournamentService {
             bm.status = 'ready';
             console.log(`[TOURNEY] createMatchRoom t=${state.tournamentId} round=${bm.round} slot=${bm.slot} room=${room.roomId} p1=${p1.userId} p2=${p2.userId}`);
 
-            // join each player's socket to the room (retry in case onConnection Redis key is not written yet)
+            // Join ALL of each player's sockets (every tab) to the match room AND the
+            // tournament room, via the per-user room. No socketId lookup, no retry: a
+            // player who isn't connected at this instant re-joins session.roomId on
+            // reconnect (handleReconnect, set just below) and the bracket HTTP poll
+            // also redirects them — so a momentary disconnect no longer bounces them.
             for (const player of [p1, p2]) {
-                let socketId: string | null = null;
-                let attempts = 0;
-                for (let attempt = 0; attempt < 5 && !socketId; attempt++) {
-                    attempts = attempt + 1;
-                    socketId = await this.redis.get(RedisKeys.socket.gameUser(player.userId));
-                    if (!socketId) await new Promise(r => setTimeout(r, 80));
-                }
-                if (socketId) {
-                    const sock = this.gameNs.sockets.get(socketId);
-                    // sock is the in-process socket object. If it's undefined the
-                    // socketId is in Redis but the socket lives nowhere we can reach
-                    // (stale key, or — with multiple backend nodes — another node).
-                    console.log(`[TOURNEY]   join p=${player.userId} room=${room.roomId} socketId=${socketId} attempts=${attempts} sockObjFound=${!!sock} -> ${sock ? 'JOINED' : 'CANNOT JOIN (no local socket)'}`);
-                    sock?.join(room.roomId);
-                    // (re)join the tournament-wide room here too: the join in
-                    // tryStart() has no retry and can miss a socket that wasn't
-                    // registered yet, which would silently cut that player off
-                    // from every bracket/spectator/finished broadcast.
-                    sock?.join(`tournament:${state.tournamentId}`);
-                } else {
-                    console.warn(`[TOURNEY]   join p=${player.userId} room=${room.roomId} NO socketId in Redis after ${attempts} attempts — player will MISS game_started (room broadcast) and get bounced to bracket`);
-                }
+                await this.gameNs.in(`user:${player.userId}`).socketsJoin([room.roomId, `tournament:${state.tournamentId}`]);
+                console.log(`[TOURNEY]   join p=${player.userId} room=${room.roomId} (socketsJoin via user room)`);
 
                 await this.sessionService.update(player.userId, {
                     status: 'matched',
@@ -387,9 +374,17 @@ export class TournamentService {
 
             if (!state.withdrawn.includes(userId)) state.withdrawn.push(userId);
 
+            // Only an ACTIVE match (room created & awaiting ready, or game running)
+            // can be forfeited here. A 'pending' match — crucially the FINAL while it
+            // still waits for the other semi-final — must NOT be force-resolved: its
+            // opponent isn't known yet, so we'd mark the final 'done' with no winner,
+            // and advance() would then skip creating the real final (its guard requires
+            // final.status === 'pending') → the tournament ends on a final nobody
+            // played. A player who abandons while their next match is still pending is
+            // already handled by the `withdrawn` list + advance()'s auto-forfeit check.
             const bm = state.matches.find(m =>
                 (m.p1 === userId || m.p2 === userId) &&
-                (m.status === 'ready' || m.status === 'playing' || m.status === 'pending')
+                (m.status === 'ready' || m.status === 'playing')
             );
             if (bm) {
                 const opponentId = bm.p1 === userId ? bm.p2 : bm.p1;
@@ -575,6 +570,20 @@ export class TournamentService {
      * and reset their session so they can join a new one.
      */
     async leave(userId: string): Promise<void> {
+        // HARD GUARD: a player who is actively in a match (in a ready room or
+        // mid-game) must NEVER be torn out of it by an out-of-band /leave HTTP call.
+        // This is the real cause of the "a player jumps" bug: with the auth cookie
+        // shared across tabs, a SECOND tab sitting on the tournament lobby (or a
+        // re-click of "Join") fires joinTournament(), whose cleanup used to POST
+        // /leave — which forfeited the user from the very tournament their first tab
+        // was playing, INSTANTLY (not after any timer). A real match is only ever
+        // resolved by the game's own score/ready timers, never by this endpoint.
+        const session = await this.sessionService.get(userId);
+        if (session?.status === 'in_game' || session?.status === 'matched') {
+            console.log(`[TOURNEY] leave() IGNORED user=${userId} (status=${session.status}: in an active match)`);
+            return;
+        }
+
         // Remove from matchmaking queue in case they were still waiting
         await this.matchService.leaveQueue(userId);
 
@@ -630,11 +639,19 @@ export class TournamentService {
                     if (bm.status === 'ready' && bm.roomId) {
                         this.readyTimer.arm(bm.roomId);
                         rearmed++;
+                    } else if (bm.status === 'playing' && bm.gameId) {
+                        // A match whose GAME was already running when the process died:
+                        // its per-question deadline lived only in memory and is now gone,
+                        // so the game would never auto-advance (a player who stops
+                        // answering would freeze the match forever). Re-arm the question
+                        // timer from the persisted game state so play resumes cleanly.
+                        void this.questionTimer.schedule(bm.gameId);
+                        rearmed++;
                     }
                 }
             }
             if (rearmed > 0) {
-                console.log(`[tournament] re-armed ${rearmed} readiness deadline(s) after restart`);
+                console.log(`[tournament] re-armed ${rearmed} deadline(s) after restart`);
             }
         } catch (e) {
             console.error('[tournament] rearmPendingDeadlines failed', e);
