@@ -10,7 +10,15 @@ import { Player,
 import {GameMode} from "@prisma/client";
 
 
-
+/**
+ * @class GameBaseService
+ * @description service to prepare the game
+ *  - init the players
+ *  - create game state instances
+ *  - load quiz questions
+ *  - process player answers 
+ *  - advance game process 
+ */
 export class GameBaseService
 {
     constructor(
@@ -30,8 +38,17 @@ export class GameBaseService
         return player;
     }
 
+    /**
+     * @method prepareGame
+     * @description create a new game state and load questions 
+     *  multiplayer modes additionnally require: 
+     *  -hostId
+     *  -roomId
+     */
     protected async prepareGame(players: Record<string, Player>, mode: GameMode, extra?: {roomId?: string, hostId?: string, category?: string, tournamentId?: string}): Promise<GameState> {
+        // Retrieve randomized questions for the game.
         const questions = await this.questionService.getQuestions(10, extra?.category);
+        // Generate a unique identifier for the game session.
         const gameId = crypto.randomUUID();
         const now = Date.now();
        // const hasAI = Object.values(players).some(p => p.isAI === true);
@@ -69,6 +86,15 @@ export class GameBaseService
         } as SoloGameState;
     }
 
+    /**
+     * @method processAnswer
+     * @description valide answer selection, verify player existence, determine correctness
+     *  record answer history, update player status, update score
+     * @param state 
+     * @param selectedIndex 
+     * @param userId 
+     * @returns  Answer result information
+     */
     protected async processAnswer(state: BaseGameState, selectedIndex: number, userId: string): Promise<{playerId: string, isCorrect: boolean; correctAnswerIndex: number, correctText: string}> {
 
         const currentQuestion = state.questions[state.currentQuestionIndex];
@@ -86,6 +112,7 @@ export class GameBaseService
                 400
             )
         };
+        //value of -1: timeout to reply 
         const isCorrect = selectedIndex === -1 ? false : (selectedIndex === currentQuestion.correctAnswerIndex);
         
         const player = state.players[userId];
@@ -109,6 +136,13 @@ export class GameBaseService
         return {playerId: userId, isCorrect, correctAnswerIndex: currentQuestion.correctAnswerIndex, correctText: currentQuestion.options[currentQuestion.correctAnswerIndex]};
     }
 
+    /**
+     * @method advanceGame
+     * @description advance the game to the next question
+     *  mark game as finished if no question remain, move to the next question otherwise, 
+     *  reset player status, start a new question timer
+     * @param state 
+     */
     protected advanceGame(state: BaseGameState): void {
         if (state.currentQuestionIndex + 1 >= state.questions.length){
             state.isFinished = true;

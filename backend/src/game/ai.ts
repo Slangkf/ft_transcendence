@@ -52,7 +52,7 @@ export class AIService {
         const maxAllowedCorrect = Math.floor(totalQuestions * successThreshold);
 
         if (currentAiScore >= maxAllowedCorrect) {
-            // 🔥 Hard Rule: If the AI has reached or exceeded its score ceiling, force it to choose a wrong answer!
+            //  Hard Rule: If the AI has reached or exceeded its score ceiling, force it to choose a wrong answer!
             console.log(`[IA] Score ceiling triggered! Current score ${currentAiScore} reached max allowed ${maxAllowedCorrect}. Forcing an incorrect answer.`);
             do {
                 selectedAnswerIndex = Math.floor(Math.random() * totalOptions);

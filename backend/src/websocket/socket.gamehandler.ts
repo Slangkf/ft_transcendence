@@ -18,6 +18,12 @@ import { GameState } from "../game/game.types";
 type TypedNamespace = Namespace<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>; //socket <listend, emit>;
 
+/**
+ * @class GameSocketHandler
+ * @description Statefully manages real-time socket events for the gaming system. 
+ * Handles lifecycle events like network connections, intentional or accidental disconnections 
+ * (with fault tolerance/grace periods), matchmaking status recovery, and interactive multi-player game loops.
+ */
 export class GameSocketHandler{
     private disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -35,9 +41,11 @@ export class GameSocketHandler{
         private questionTimer: QuestionTimerService,
     ){}
 
+    /** Generates the Redis key used to map a user ID to their active Socket ID */
     private gameuserkey(userId: string){
         return RedisKeys.socket.gameUser(userId);
     }
+    /** Generates the Redis key used to track transient disconnected states */
     private disconnectkey(userId: string){
         return RedisKeys.socket.disconnect(userId);
     }
@@ -134,6 +142,8 @@ export class GameSocketHandler{
             case "matched":{
                 const match = await this.matchservice.getMyMatch(userId);
                 if (!match){
+                    // Fallback defensive logic: if the match expired or was closed out, 
+                    // check if the base room object is still available, otherwise flag the user as idle.
                     const session = await this.sessionService.get(userId);
                     if (session?.roomId){
                         await this.sessionService.update(userId, {status: 'in_room'});

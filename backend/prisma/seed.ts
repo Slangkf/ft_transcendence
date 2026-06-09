@@ -18,8 +18,6 @@ import { fileURLToPath } from 'url';
 import 'dotenv/config';
 
 const prisma: PrismaClient = new PrismaClient();
-//const __filename: string = fileURLToPath(import.meta.url);
-//const __dirname: string = path.dirname(__filename);
 
 interface Question
 {
@@ -35,6 +33,7 @@ interface Quiz
     questions:  Question[];
 }
 
+// Establishes database connection with automatic retries and logs the result
 async function connectWithRetry(retries = 5) {
   while (retries > 0) {
     try {
@@ -50,7 +49,7 @@ async function connectWithRetry(retries = 5) {
   throw new Error('Cannot to connecte Prisma');
 }
 
-
+// Creates the admin user and populates the database with quizzes from JSON files
 async function main(): Promise<void> {
     await connectWithRetry();
     const adminEmail = process.env.ADMIN_EMAIL;
@@ -108,7 +107,6 @@ async function main(): Promise<void> {
                     }
                 }
             });
-            // console.log(`good : ${folder}/${file}`);
         }
     }
 

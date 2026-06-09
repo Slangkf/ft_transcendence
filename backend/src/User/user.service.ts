@@ -5,6 +5,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import { AppError, ErrorCode } from '../error/apperror';
 
+/**
+ * @class UserService
+ * @description logic for user management profil modifications.
+ * 
+ */
 export class UserService{
     constructor(private userrepository: UserRepository)
     {}
@@ -23,7 +28,7 @@ export class UserService{
     }
 
     async get_profile_by_username(username: string): Promise<UserOutput>{
-        const user = await this.userrepository.findByUsername(username);
+        const user = await this.userrepository.find_by_username(username);
         if (!user){
 			throw new AppError(
 				'Unknown user', 

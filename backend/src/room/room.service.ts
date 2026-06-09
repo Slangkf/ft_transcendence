@@ -3,12 +3,27 @@ import type { RoomPlayer, Room, CreateRoomParams, JoinRoomParams, RoomStatus } f
 import { RoomRepository } from './room.repository';
 import { AppError, ErrorCode } from '../error/apperror';
 
-
+/**
+ * @class RoomService
+ * handles: 
+ * - Room creation
+ * - player join/leav operations
+ * - ready status management
+ * - room status update
+ *  
+ */
 export class RoomService{
 
     constructor(private roomrepository: RoomRepository)
     {}
 
+    /**
+     * @method createRoom
+     * @description create a new room and register the host as the first player.
+     *  The room is initialized in the "waiting" status
+     * @param params 
+     * @returns 
+     */
     async createRoom(params: CreateRoomParams): Promise<Room>{
         const roomId = randomUUID();
 
@@ -48,6 +63,16 @@ export class RoomService{
         return room
     }
 
+    /**
+     * @method joinRoom
+     * @description add a player to an existing room.
+     * Validation:
+     * - Room must exist
+     * - Room must be in waiting state
+     * - Room must not be full
+     * @param params 
+     * @returns Updated room or null if the room was deleted
+     */
     async joinRoom(params: JoinRoomParams): Promise<Room>{
         //1. check the status of the room
         const room = await this.roomrepository.getroom(params.roomId);
@@ -91,6 +116,19 @@ export class RoomService{
         return room
     }
 
+    /**
+     * @method leaveRoom
+     * @description Update a player's ready status.
+     *
+     * Uses an atomic repository operation to avoid
+     * race conditions when multiple players change
+     * readiness simultaneously.
+     *
+     * @param roomId Room identifier
+     * @param playerId Player identifier
+     * @param isReady New ready state
+     * @returns Ready state result including whether all players are ready
+     */
     async leaveRoom(roomId: string, playerId: string): Promise<Room | null>{
         const room = await this.roomrepository.getroom(roomId);
         if (!room)  throw new AppError(
