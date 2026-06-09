@@ -82,16 +82,19 @@ export class MatchRepository{
     }
 
     async removeFromQueue(userId: string): Promise<void>{
-        // Try to remove from all possible queues since we don't know which mode the player was in
-        const modes = ['multiplayer', 'tournament', 'solo', 'ai'];
-        
-        for (const mode of modes) {
-            const queue = await this.getqueue(mode);
-            const playerInQueue = queue.find(p => p.userId === userId);
-            
-            if (playerInQueue) {
+        // Scan the ACTUAL queue keys instead of guessing mode names. The previous
+        // version hard-coded lowercase modes ('tournament', 'multiplayer', …), but the
+        // queues are keyed by the Prisma GameMode enum, which is UPPERCASE
+        // (matchmaking:v1:queue:TOURNAMENT). The case never matched, so a player who
+        // pressed "Cancel" in the tournament lobby was never actually removed from the
+        // queue — they stayed "in the tournament" and got pulled into the next one.
+        const keys = await Redis.keys(this.queuekey('*'));
+
+        for (const key of keys) {
+            const data = await Redis.lRange(key, 0, -1);
+            const queue = data.map(item => JSON.parse(item) as QueuePlayer);
+            if (queue.some(p => p.userId === userId)) {
                 const new_queue = queue.filter(p => p.userId !== userId);
-                const key = this.queuekey(mode);
                 await Redis.del(key);
                 if (new_queue.length > 0){
                     for(const item of new_queue){
@@ -101,7 +104,7 @@ export class MatchRepository{
                 break; // Player was only in one queue
             }
         }
-        
+
         // Also clean up the player key
         await Redis.del(this.playerkey(userId));
     }
