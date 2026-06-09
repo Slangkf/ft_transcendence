@@ -40,6 +40,7 @@
 
     socket.on('ready_timeout', (payload: { roomId: string; excluded: boolean }) => {
       console.log('[TOURNEY-CLIENT] ready_timeout received', payload, '-> going back to bracket');
+      console.log(`[JUMP-CLI] room got ready_timeout room=${payload.roomId?.slice(0, 8)} excluded=${payload.excluded} me=${myUserId} (mine=${roomId?.slice(0, 8)})${payload.roomId !== roomId ? ' -> IGNORED (other room)' : ' -> back to bracket'}`);
       if (payload.roomId !== roomId) return;
       stopReadyCountdown();
       starting = true; // suppress the "navigated away mid-lobby" disconnect for tournaments
@@ -79,6 +80,7 @@
           }
         } catch {}
       } else if (payload.type === 'in_game' && payload.gameId) {
+        console.log(`[JUMP-CLI] room got session_reconnect in_game game=${payload.gameId?.slice(0, 8)} me=${myUserId} -> JUMP to play page`);
         starting = true;
         stopReadyCountdown();
         goto(`/game/multiplayer/play/${payload.gameId}`);
@@ -101,6 +103,7 @@
           ? payload.players.some((p: any) => String(p.id ?? p.userId) === myUserId)
           : !!payload.players[myUserId]
       );
+      console.log(`[JUMP-CLI] room got game_started game=${payload.gameId?.slice(0, 8)} iAmIn=${iAmIn} me=${myUserId} (mine=${roomId?.slice(0, 8)})${iAmIn ? ' -> JUMP to play' : ' -> IGNORED (not a participant)'}`);
       if (!iAmIn) return;
       console.log('[TOURNEY-CLIENT] game_started received game=', payload.gameId, '-> going to play page');
       starting = true;
@@ -164,6 +167,7 @@ async function toggleReady() {
     } catch {}
     const sock = getGameSocket();
     console.log('[TOURNEY-CLIENT] room page mounted roomId=', roomId, 'socket.id=', sock.id, 'connected=', sock.connected);
+    console.log(`[JUMP-CLI] room page MOUNT room=${roomId?.slice(0, 8)} me=${myUserId} inTournament=${(() => { try { return !!sessionStorage.getItem('current_tournament_id'); } catch { return false; } })()}`);
     attachListeners();
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     // We've reached a room, so the "pending room" hint that routed us here has

@@ -1,5 +1,20 @@
 # Tournoi — diagnostic & correctifs (doc de reprise)
 
+## ✅ FIX (run nº8 — semble résolu) — déconnexions en demi-finale
+
+**Fix : le `pingTimeout` de Socket.IO était trop court (~20 s par défaut). Porté à 60 s.**
+
+Cause racine : sur **une seule machine**, les onglets en arrière-plan sont bridés (macOS App Nap + throttling + hotspot). Un onglet répondait au « ping » trop tard ; avec le défaut ~20 s le serveur le **coupait** (`transport close`) → tempête de reconnexions → joueur re-routé/**coincé sur le bracket**. Ce n'était **pas** la logique tournoi (les demies sont déjà de vrais matchs 1v1) ni le `timedOut`.
+
+**3 changements — le 1ᵉʳ *empêche* le problème, les 2 autres sont des filets :**
+1. **`backend/src/lib/socket.ts`** — `pingInterval: 25000`, `pingTimeout: 60000` (au lieu du défaut ~20 s). *Fix principal : un gel passager d'un onglet ne coupe plus le socket → plus d'éjection.*
+2. **`frontend/src/lib/shared/gameSocket.ts`** — au retour de focus (`visibilitychange`) : reconnect + `request_sync` → l'état autoritatif est re-pull et la page re-route (corrige la « fenêtre Ready figée »).
+3. **`frontend/src/routes/game/tournament/[tournamentId]/+page.svelte`** — `myPlayingGame()` : si on atterrit sur le bracket alors que son match est `playing`, renvoi direct dans la partie (`goto /play`). Filet anti-« coincé sur le bracket ».
+
+**⚠️ Restant à faire avant le merge :**
+- Le **timer `timedOut`** (`QuestionTimerService`) est encore **désactivé** (`[TEST timedOut OFF]` : 3 appels `questionTimer.schedule` commentés). Tant qu'il l'est, un match où un joueur **arrête de répondre se fige pour toujours** → **réactiver**.
+- Aucun fix n'empêche un **reboot backend en plein match** (restart Docker/manuel) : si ça resaute, vérifier `docker logs backend` (un `Waiting for Redis…` pendant un match = restart, pas le code).
+
 > À lire en premier avant de reprendre le sujet (après un `/clear`).
 > Bug d'origine : « un joueur de tournoi est renvoyé au bracket / déconnecté du jeu
 > sans pouvoir jouer ». L'enquête a traversé **6 runs Docker** ; ce document est
@@ -81,9 +96,16 @@ Signes de succès : aucun `FORFEIT (disconnect)` ni `leave() IGNORED` pendant un
 - [ ] Élucider le **2ᵉ socket zombie** (2× `CONNECT` même `create#1`) si ça persiste — sinon laisser (inoffensif).
 - [ ] Pilier 3, amélioration UX : marquer un joueur parti `disconnected` (+ reset à la reconnexion) pour que l'adversaire n'attende pas le timeout par question.
 - [ ] Vérifier/empêcher la diversion d'un joueur de tournoi vers le matchmaking MP classique (bug « diversion », vu une fois run `6b7f702e`).
-- [ ] **Retirer les logs** `[TOURNEY]` / `[WS]` / `[TOURNEY-CLIENT]` avant le merge final.
+- [ ] **Retirer les logs** `[TOURNEY]` / `[WS]` / `[TOURNEY-CLIENT]` / `[JUMP]` / `[JUMP-CLI]` avant le merge final.
 - [ ] `npm run type-check` / build **dans Docker** (l'hôte n'a pas les deps, `.bin` vide).
 - [ ] Finaliser le merge `fix_Arthur` → `main` (PR).
+
+## Instrumentation « bracket-jump » (tag `[JUMP]` / `[JUMP-CLI]`)
+But : tracer **exactement** ce qui se passe quand un joueur est renvoyé au bracket (fin normale **ou** éjection) pour trouver la cause du « jump ».
+- **Backend `[JUMP]`** (`tournament.service.ts`, `socket.gamehandler.ts`) : les 3 portes vers `advance()` — `gamehandler GAME FINISHED (normal)`→`onMatchFinished()`, `READY-TIMEOUT (eject)`, `FORFEIT` — puis `advance() ENTER/decision/emit bracket_update` avec **snapshot complet du bracket** (`snap()`), `createMatchRooms()` (promotion = « SENT INTO a new/FINAL match » + transition de session), `linkGameToMatch()` (PLAYING), `finish()`. Plus `reconnect/sync REPLAY status=…` (ce que le serveur rejoue → où le client atterrit) et `onDisconnect … IGNORED` (confirme qu'aucune éjection ne vient d'un blip).
+- **Client `[JUMP-CLI]`** : page bracket (`bracket_update`/`next_match_ready`/`game_started`/`maybeRedirectFromBracket`/`scheduleRedirect` avec rôle calculé + snapshot), page play (`game_finished`/`transitionToFinished`/`maybeReturnToBracket`/`session_reconnect`), page room (`ready_timeout`/`game_started`/`session_reconnect`).
+- **Clés de corrélation** : `user=`/`me=`, `room=`, `game=`, `R<round>.<slot>`, transitions `role X->Y`.
+- **Capture** : backend → `docker logs -t backend > backend_jump.log 2>&1` (envoyer le fichier entier, le contexte `[TOURNEY]`/`[WS]` compte). Client → DevTools Console, cocher **Preserve log** (essentiel : il y a des navigations bracket↔room↔play), filtre `JUMP`, clic droit → **Save as…**, un export **par compte**.
 
 ## Run nº7 — « le 3ᵉ joueur saute toujours » : causes probables & test multi-machines
 

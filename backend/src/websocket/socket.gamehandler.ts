@@ -156,6 +156,7 @@ export class GameSocketHandler{
                     break;
                 }
 
+                console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=matched -> tells client to go to ROOM room=${match.roomId?.slice(0, 8)} socket=${socket.id}`);
                 socket.emit('session_reconnect', {
                     type: "matched",
                     players: match.players,
@@ -192,18 +193,20 @@ export class GameSocketHandler{
                 });
                 break;}
                 if (gamestate.isFinished){
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_game but game=${gamestate.gameId.slice(0, 8)} ALREADY FINISHED -> client gets game_finished (will head back to bracket)`);
                     socket.emit('game_finished', {
                         gameId: gamestate.gameId,
                         state: this.mapper.toUpdateResponse(gamestate),
                     });
                     break;
                 } else {
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_game game=${gamestate.gameId.slice(0, 8)} qIndex=${gamestate.currentQuestionIndex} -> client stays in PLAY`);
                     socket.emit('session_reconnect', {
                         type: "in_game",
                         gameId: gamestate.gameId,
                         state: this.mapper.toUpdateResponse(gamestate),
                     })
-                    break; 
+                    break;
                 }
             }
             case "in_tournament": {
@@ -214,9 +217,15 @@ export class GameSocketHandler{
                 }
                 const bracket = await this.tournamentService.getPublic(session.tournamentId);
                 if (!bracket) {
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_tournament but bracket GONE -> idle`);
                     await this.sessionService.update(userId, { status: "idle", tournamentId: undefined });
                     socket.emit('session_reconnect', {type: "idle"});
                     break;
+                }
+                {
+                    const myReady = bracket.matches.find(m =>
+                        (m.p1 === userId || m.p2 === userId) && m.status === 'ready' && !!m.roomId);
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_tournament -> client gets bracket_update (will sit on BRACKET${myReady ? `, but has a READY room=${myReady.roomId?.slice(0, 8)} R${myReady.round}.${myReady.slot} -> client should redirect itself there` : ', no ready room for me'})`);
                 }
                 socket.emit('bracket_update', {
                     tournamentId: session.tournamentId,
@@ -235,6 +244,7 @@ export class GameSocketHandler{
         // socket remains in user:<id> (another tab, or a reconnect that already landed)
         // the user is still here → do nothing. Multi-tab / churn becomes harmless.
         const remaining = await this.io.in(this.userRoom(userId)).fetchSockets();
+        console.log(`[JUMP] onDisconnect socket=${socket.id} user=${userId} remainingSockets=${remaining.length}${remaining.length > 0 ? ' -> still online, no-op' : ' -> last socket gone, arming 60s window'}`);
         if (remaining.length > 0) return;
 
         const RECONNECT_WINDOW_MS = 60_000;
@@ -261,7 +271,10 @@ export class GameSocketHandler{
                 // finishes) or, if the game never started, by the ready-timeout. This
                 // removes the single most damaging mechanism: a transient network blip
                 // can no longer eliminate someone from the bracket.
-                if (session?.tournamentId) return;
+                if (session?.tournamentId) {
+                    console.log(`[JUMP] onDisconnect user=${userId} is in tournament=${session.tournamentId.slice(0, 8)} (status=${session.status}) -> IGNORED, NO forfeit/idle (session kept intact for reconnect)`);
+                    return;
+                }
 
                 // PLAIN MULTIPLAYER: original cleanup.
                 await this.matchservice.leaveQueue(userId);
@@ -351,6 +364,7 @@ export class GameSocketHandler{
             this.questionTimer.cancel(gameId);
 
             if (tournamentId) {
+                console.log(`[JUMP] gamehandler GAME FINISHED (normal) t=${tournamentId.slice(0, 8)} game=${gameId.slice(0, 8)} room=${roomId.slice(0, 8)} timedOut=${timedOut} players=[${Object.keys(gamestate.players).join(',')}] winner=${response.finalScore?.winnerId ?? '-'} -> reset BOTH to in_tournament, then onMatchFinished`);
                 // Send BOTH players back to the bracket FIRST. onMatchFinished may
                 // promote the winner into the next match (createMatchRooms sets a
                 // fresh 'matched' + roomId session); doing this reset afterwards
@@ -373,6 +387,8 @@ export class GameSocketHandler{
                         totalTime: p.Totaltime || 0,
                     }));
                     await this.tournamentService.onMatchFinished(tournamentId, gameId, winnerId, stats);
+                } else {
+                    console.log(`[JUMP] gamehandler GAME FINISHED but NO winnerId (draw?) game=${gameId.slice(0, 8)} — onMatchFinished NOT called, match stays unresolved`);
                 }
             } else {
                 await Promise.all(
@@ -397,7 +413,8 @@ export class GameSocketHandler{
             finalScore: null,
         });
         // game continues — arm the deadline for the (possibly new) current question
-        await this.questionTimer.schedule(gameId);
+        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
+        // await this.questionTimer.schedule(gameId);
     }
 
     private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0], ack?: (response: any) => void): Promise<void> {

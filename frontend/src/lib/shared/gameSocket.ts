@@ -26,6 +26,28 @@ export function getGameSocket(): Socket {
   socket.on('connect', () => console.log(`[TOURNEY-CLIENT] /game CONNECT id=${socket?.id} (create#${createCount})`));
   socket.on('disconnect', (reason) => console.log(`[TOURNEY-CLIENT] /game DISCONNECT reason=${reason}`));
   socket.on('connect_error', (err) => console.log(`[TOURNEY-CLIENT] /game CONNECT_ERROR ${err?.message ?? err}`));
+
+  // Resync on focus-return. A backgrounded tab gets throttled/suspended (macOS App
+  // Nap, hotspot jitter): its socket may have dropped while the user wasn't looking.
+  // When the tab becomes visible again we (re)connect if needed and pull the
+  // authoritative state via `request_sync`. The server replays the session
+  // (handleReconnect) and each page's session_reconnect/bracket_update handler
+  // re-routes to the correct screen — so a tab that was away no longer sits on a
+  // stale "Ready" / play screen after a reconnect or a backend restart.
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      const s = socket;
+      if (!s) return;
+      const resync = () => { try { s.emit('request_sync'); } catch {} };
+      if (s.connected) {
+        resync();
+      } else {
+        if (!s.active) s.connect();
+        s.once('connect', resync);
+      }
+    });
+  }
   return socket;
 }
 

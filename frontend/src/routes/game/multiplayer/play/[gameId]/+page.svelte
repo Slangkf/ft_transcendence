@@ -96,9 +96,11 @@
   function maybeReturnToBracket(explicitTid?: string) {
     let tid: string | null = explicitTid ?? null;
     if (!tid) { try { tid = sessionStorage.getItem('current_tournament_id'); } catch {} }
-    if (!tid) return;
-    if (backToBracketHandle) return;
+    if (!tid) { console.log(`[JUMP-CLI] play maybeReturnToBracket: no tournament id -> staying on results (plain MP)`); return; }
+    if (backToBracketHandle) { console.log(`[JUMP-CLI] play maybeReturnToBracket: already scheduled`); return; }
+    console.log(`[JUMP-CLI] play maybeReturnToBracket -> goto bracket ${tid.slice(0, 8)} in 4s (game=${gameId?.slice(0, 8)})`);
     backToBracketHandle = setTimeout(() => {
+      console.log(`[JUMP-CLI] play maybeReturnToBracket FIRING -> goto /game/tournament/${tid!.slice(0, 8)}`);
       goto(`/game/tournament/${tid}`);
     }, 4000);
   }
@@ -118,6 +120,7 @@
   }
 
   function transitionToFinished() {
+    console.log(`[JUMP-CLI] play transitionToFinished game=${gameId?.slice(0, 8)} winner=${finalScore?.winnerId ?? '-'} inTournament=${inTournamentGame}`);
     revealing = false;
     answered = false;
     isFinished = true;
@@ -235,6 +238,7 @@
     // bracket so they see the final "Tournament over" ranking (not just their
     // own match result). Robust even if the game_finished redirect timing slips.
     socket.on('tournament_finished', (payload: { tournamentId: string }) => {
+      console.log(`[JUMP-CLI] play got tournament_finished t=${payload.tournamentId?.slice(0, 8)} -> return to bracket`);
       maybeReturnToBracket(payload.tournamentId);
     });
 
@@ -251,7 +255,11 @@
 
     socket.off('game_finished');
     socket.on('game_finished', (payload: { gameId: string; state: any }) => {
-      if (payload.gameId !== gameId) return;
+      if (payload.gameId !== gameId) {
+        console.log(`[JUMP-CLI] play got game_finished for OTHER game=${payload.gameId?.slice(0, 8)} (mine=${gameId?.slice(0, 8)}) -> IGNORED`);
+        return;
+      }
+      console.log(`[JUMP-CLI] play got game_finished game=${payload.gameId?.slice(0, 8)} revealing=${revealing} hasQ=${!!currentQuestion}${revealing && currentQuestion ? ' -> let reveal timer finish' : ' -> transitionToFinished now'}`);
       finalScore = payload?.state?.finalScore ?? finalScore;
       if (payload?.state?.state?.player) {
         playersState = Object.values(payload.state.state.player);
@@ -263,10 +271,11 @@
     });
 
     socket.on('session_reconnect', (payload: ReconnectPayload) => {
+      console.log(`[JUMP-CLI] play got session_reconnect type=${payload.type}${payload.type === 'in_game' ? ` game=${(payload as any).gameId?.slice(0, 8)} finished=${(payload as any).state?.status === 'finished'}` : ''} (mine=${gameId?.slice(0, 8)})`);
       if (payload.type === 'in_game') {
         // Same guard as above: a request_sync/reconnect replays the session's
         // CURRENT game. If that isn't the game this page is showing, ignore it.
-        if (payload.gameId !== gameId) return;
+        if (payload.gameId !== gameId) { console.log(`[JUMP-CLI] play session_reconnect in_game for OTHER game -> IGNORED`); return; }
         const state = payload.state;
         totalQuestions = state.state?.totalQuestions ?? 0;
         playersState = Object.values(state.state?.player ?? {});
@@ -347,6 +356,7 @@
 
   onMount(() => {
     try { inTournamentGame = !!sessionStorage.getItem('current_tournament_id'); } catch {}
+    console.log(`[JUMP-CLI] play page MOUNT game=${gameId?.slice(0, 8)} inTournament=${inTournamentGame}`);
     setupSocket();
     loadInitialQuestion();
     // Pull the authoritative current state from the server. The socket persists across
