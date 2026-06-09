@@ -47,6 +47,19 @@ export class GameEmitter extends BaseSocketEmitter<ServerToClientEvents> {
     constructor(io: Server, redis: typeof Redis) {
         super(io.of('/game'), redis, RedisKeys.socket.gameUser);
     }
+
+    // Deliver to ALL of a user's /game sockets via the per-user room (every socket
+    // joins `user:<id>` in onConnection), instead of a single volatile socketId
+    // pointer that a second tab / reconnect would steal. Multi-tab safe and immune
+    // to pointer churn — so a targeted event (matched / next_match_ready / …) is no
+    // longer silently lost when the pointer is stale.
+    async toUser<K extends keyof ServerToClientEvents>(
+        userId: string,
+        event: K,
+        data: Parameters<ServerToClientEvents[K]>[0]
+    ): Promise<void> {
+        this.ns.to(`user:${userId}`).emit(String(event), data);
+    }
 }
 
 export class FriendEmitter extends BaseSocketEmitter<FriendSocketEvents> {

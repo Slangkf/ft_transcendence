@@ -9,6 +9,7 @@
   const roomId = $derived(page.params.roomId);
 
   let players = $state<RoomPlayer[]>([]);
+  let myUserId = $state('');
   let myReady = $state(false);
   let readyBusy = $state(false);
   let error = $state('');
@@ -19,7 +20,7 @@
   // Readiness countdown (server-authoritative; this is just the visible mirror).
   // If players don't all ready up before it hits 0 the backend resolves the
   // lobby and emits `ready_timeout`.
-  const READY_SECONDS = 45;
+  const READY_SECONDS = 60;
   let readyCountdown = $state(READY_SECONDS);
   let readyTick: ReturnType<typeof setInterval> | null = null;
 
@@ -38,6 +39,8 @@
     socket.off('error');
 
     socket.on('ready_timeout', (payload: { roomId: string; excluded: boolean }) => {
+      console.log('[TOURNEY-CLIENT] ready_timeout received', payload, '-> going back to bracket');
+      console.log(`[JUMP-CLI] room got ready_timeout room=${payload.roomId?.slice(0, 8)} excluded=${payload.excluded} me=${myUserId} (mine=${roomId?.slice(0, 8)})${payload.roomId !== roomId ? ' -> IGNORED (other room)' : ' -> back to bracket'}`);
       if (payload.roomId !== roomId) return;
       stopReadyCountdown();
       starting = true; // suppress the "navigated away mid-lobby" disconnect for tournaments
@@ -77,6 +80,7 @@
           }
         } catch {}
       } else if (payload.type === 'in_game' && payload.gameId) {
+        console.log(`[JUMP-CLI] room got session_reconnect in_game game=${payload.gameId?.slice(0, 8)} me=${myUserId} -> JUMP to play page`);
         starting = true;
         stopReadyCountdown();
         goto(`/game/multiplayer/play/${payload.gameId}`);
@@ -88,11 +92,24 @@
       players = players.map(p => String(p.id) === pid ? { ...p, isReady: payload.isReady } : p);
     });
 
-    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number }) => {
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number; totalQuestions?: number }) => {
+      // Only act on the game start I'm actually part of. The /game socket is a shared
+      // singleton joined to the tournament room and to BOTH semi rooms over a session;
+      // game_started carries no roomId, so without this check a start meant for the
+      // OTHER match (or a leaked handler from a previous room) would drag this player
+      // onto the wrong game. Eliminated/non-participants are never in `players`.
+      const iAmIn = !!myUserId && !!payload.players && (
+        Array.isArray(payload.players)
+          ? payload.players.some((p: any) => String(p.id ?? p.userId) === myUserId)
+          : !!payload.players[myUserId]
+      );
+      console.log(`[JUMP-CLI] room got game_started game=${payload.gameId?.slice(0, 8)} iAmIn=${iAmIn} me=${myUserId} (mine=${roomId?.slice(0, 8)})${iAmIn ? ' -> JUMP to play' : ' -> IGNORED (not a participant)'}`);
+      if (!iAmIn) return;
+      console.log('[TOURNEY-CLIENT] game_started received game=', payload.gameId, '-> going to play page');
       starting = true;
       stopReadyCountdown();
       try {
-        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt }));
+        sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt, totalQuestions: payload.totalQuestions }));
       } catch {}
       goto(`/game/multiplayer/play/${payload.gameId}`);
     });
@@ -137,9 +154,20 @@ async function toggleReady() {
   }
 
   onMount(async () => {
+    // Resolve my user id early so the game_started participation guard works.
+    try {
+      const r = await fetch('/api/user/me', { credentials: 'include' });
+      if (r.ok) {
+        const me = await r.json();
+        myUserId = String(me.data?.id ?? me.id ?? '');
+      }
+    } catch {}
     try {
       await ensureGameSocketConnected();
     } catch {}
+    const sock = getGameSocket();
+    console.log('[TOURNEY-CLIENT] room page mounted roomId=', roomId, 'socket.id=', sock.id, 'connected=', sock.connected);
+    console.log(`[JUMP-CLI] room page MOUNT room=${roomId?.slice(0, 8)} me=${myUserId} inTournament=${(() => { try { return !!sessionStorage.getItem('current_tournament_id'); } catch { return false; } })()}`);
     attachListeners();
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     // We've reached a room, so the "pending room" hint that routed us here has
@@ -179,6 +207,17 @@ async function toggleReady() {
 
   onDestroy(() => {
     stopReadyCountdown();
+    // Drop this page's handlers from the shared singleton socket so they don't keep
+    // firing (notably the unguarded game_started) once we're on the play/bracket page.
+    try {
+      const s = getGameSocket();
+      s.off('ready_timeout');
+      s.off('session_reconnect');
+      s.off('player_ready');
+      s.off('game_started');
+      s.off('player_left');
+      s.off('error');
+    } catch {}
     let inTournament = false;
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     if (!starting && !inTournament) {

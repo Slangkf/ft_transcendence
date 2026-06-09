@@ -80,7 +80,7 @@
 		</div>
 		<div class="flex justify-between mb-3">
 			<span>Average score</span>
-			<span>{ data.user.played ? ((data.user.score ?? 0 ) / (data.user.played * 10) * 100): 0}%</span>
+			<span>{data.user.played ? (((data.user.score ?? 0) / (data.user.played * 10) * 100).toFixed(1)) : 0}%</span>
 		</div>
 	</div>
 

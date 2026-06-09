@@ -11,6 +11,7 @@ import { GameMode } from "@prisma/client";
 import { TournamentRepository } from "./tournament.repository";
 import { BracketMatch, PublicBracketView, TournamentPlayer, TournamentState } from "./tournament.types";
 import { ReadyTimerService } from "../game/ready-timer.service";
+import { QuestionTimerService } from "../game/question-timer.service";
 import { BlockchainService, OnchainTournament } from "../blockchain/blockchain.service";
 
 const TOURNAMENT_SIZE = 4;
@@ -26,6 +27,7 @@ export class TournamentService {
         private redis: typeof Redis,
         private readyTimer: ReadyTimerService,
         private blockchain: BlockchainService,
+        private questionTimer: QuestionTimerService,
     ) {}
 
     /**
@@ -122,6 +124,7 @@ export class TournamentService {
             };
 
             await this.repo.save(state);
+            console.log(`[TOURNEY] tournament FORMED t=${tournamentId} players=[${players.map(p => p.userId).join(',')}]`);
 
             // mark all players as in_tournament
             await Promise.all(
@@ -131,12 +134,13 @@ export class TournamentService {
                 }))
             );
 
-            // make sure all players join a tournament-wide socket room so we can broadcast
+            // make sure ALL of every player's sockets join the tournament-wide room
+            // (via the per-user room) so broadcasts reach every tab, with no reliance
+            // on a single volatile socketId pointer.
             await Promise.all(
-                players.map(async p => {
-                    const socketId = await this.redis.get(RedisKeys.socket.gameUser(p.userId));
-                    if (socketId) this.gameNs.sockets.get(socketId)?.join(`tournament:${tournamentId}`);
-                })
+                players.map(p =>
+                    this.gameNs.in(`user:${p.userId}`).socketsJoin(`tournament:${tournamentId}`)
+                )
             );
 
             // 1. announce the tournament so frontends can navigate to the bracket page
@@ -210,23 +214,19 @@ export class TournamentService {
 
             bm.roomId = room.roomId;
             bm.status = 'ready';
+            console.log(`[TOURNEY] createMatchRoom t=${state.tournamentId} round=${bm.round} slot=${bm.slot} room=${room.roomId} p1=${p1.userId} p2=${p2.userId}`);
+            console.log(`[JUMP] createMatchRooms() round=${bm.round} slot=${bm.slot} room=${room.roomId.slice(0, 8)} -> these players are being SENT INTO a${bm.round === 2 ? ' FINAL' : ' new'} match: p1=${p1.nickname}#${p1.userId} p2=${p2.nickname}#${p2.userId}`);
 
-            // join each player's socket to the room (retry in case onConnection Redis key is not written yet)
+            // Join ALL of each player's sockets (every tab) to the match room AND the
+            // tournament room, via the per-user room. No socketId lookup, no retry: a
+            // player who isn't connected at this instant re-joins session.roomId on
+            // reconnect (handleReconnect, set just below) and the bracket HTTP poll
+            // also redirects them — so a momentary disconnect no longer bounces them.
             for (const player of [p1, p2]) {
-                let socketId: string | null = null;
-                for (let attempt = 0; attempt < 5 && !socketId; attempt++) {
-                    socketId = await this.redis.get(RedisKeys.socket.gameUser(player.userId));
-                    if (!socketId) await new Promise(r => setTimeout(r, 80));
-                }
-                if (socketId) {
-                    const sock = this.gameNs.sockets.get(socketId);
-                    sock?.join(room.roomId);
-                    // (re)join the tournament-wide room here too: the join in
-                    // tryStart() has no retry and can miss a socket that wasn't
-                    // registered yet, which would silently cut that player off
-                    // from every bracket/spectator/finished broadcast.
-                    sock?.join(`tournament:${state.tournamentId}`);
-                }
+                const prevSession = await this.sessionService.get(player.userId);
+                await this.gameNs.in(`user:${player.userId}`).socketsJoin([room.roomId, `tournament:${state.tournamentId}`]);
+                console.log(`[TOURNEY]   join p=${player.userId} room=${room.roomId} (socketsJoin via user room)`);
+                console.log(`[JUMP]   session p=${player.userId} ${prevSession?.status ?? 'none'}(room=${prevSession?.roomId?.slice(0, 8) ?? '-'},game=${prevSession?.gameId?.slice(0, 8) ?? '-'}) -> matched(room=${room.roomId.slice(0, 8)}) + next_match_ready emitted`);
 
                 await this.sessionService.update(player.userId, {
                     status: 'matched',
@@ -262,16 +262,21 @@ export class TournamentService {
      * Every player of the match is sent back to the bracket.
      */
     async handleReadyTimeout(tournamentId: string, roomId: string, notReadyUserIds: string[]): Promise<void> {
+        console.log(`[TOURNEY] READY-TIMEOUT (forfeit) t=${tournamentId} room=${roomId} notReady=[${notReadyUserIds.join(',')}] -> players bounced to bracket`);
         await this.withTournamentLock(tournamentId, async () => {
             const state = await this.repo.get(tournamentId);
             if (!state || state.status === 'finished') return;
 
             const bm = state.matches.find(m => m.roomId === roomId);
             // ignore if the game already started or the match is already resolved
-            if (!bm || bm.status === 'done' || bm.status === 'playing') return;
+            if (!bm || bm.status === 'done' || bm.status === 'playing') {
+                console.log(`[TOURNEY] READY-TIMEOUT ignored (match already ${bm?.status ?? 'gone'})`);
+                return;
+            }
 
             const matchPlayers = [bm.p1, bm.p2].filter((x): x is string => !!x);
             const survivors = matchPlayers.filter(uid => !notReadyUserIds.includes(uid));
+            console.log(`[JUMP] READY-TIMEOUT (eject) match R${bm.round}.${bm.slot} room=${roomId.slice(0, 8)} players=[${matchPlayers.join(',')}] notReady=[${notReadyUserIds.join(',')}] survivors=[${survivors.join(',')}] -> winner=${survivors.length === 1 ? survivors[0] : 'NONE'}; ALL these players bounced to bracket`);
 
             for (const uid of notReadyUserIds) {
                 if (!state.withdrawn.includes(uid)) state.withdrawn.push(uid);
@@ -311,6 +316,8 @@ export class TournamentService {
             bm.gameId = gameId;
             bm.status = 'playing';
             await this.repo.save(state);
+            console.log(`[TOURNEY] match PLAYING t=${tournamentId} room=${roomId} game=${gameId} (game actually started)`);
+            console.log(`[JUMP] linkGameToMatch() match R${bm.round}.${bm.slot} room=${roomId.slice(0, 8)} -> PLAYING game=${gameId.slice(0, 8)} p1=${bm.p1} p2=${bm.p2} (both sessions -> in_game)`);
 
             // let spectators know this match is now live (and learn its gameId) so the
             // bracket page can wire its spectator window to the right game stream
@@ -335,6 +342,7 @@ export class TournamentService {
      * Called when a tournament-linked game finishes.
      */
     async onMatchFinished(tournamentId: string, gameId: string, winnerId: string, stats?: { userId: string; correctAnswers: number; totalTime: number }[]): Promise<void> {
+        console.log(`[TOURNEY] matchFinished t=${tournamentId} game=${gameId} winner=${winnerId}`);
         await this.withTournamentLock(tournamentId, async () => {
             const state = await this.repo.get(tournamentId);
             if (!state || state.status === 'finished') return;
@@ -343,7 +351,15 @@ export class TournamentService {
             // Idempotent under the lock: if a concurrent trigger (the other semi
             // finishing, or a forfeit) already resolved this match, bail out so we
             // don't advance — or create the next round — twice.
-            if (!bm || bm.status === 'done') return;
+            if (!bm) {
+                console.log(`[JUMP] onMatchFinished() NO bracket match for game=${gameId.slice(0, 8)} — ignored. ${this.snap(state)}`);
+                return;
+            }
+            if (bm.status === 'done') {
+                console.log(`[JUMP] onMatchFinished() match R${bm.round}.${bm.slot} ALREADY done (idempotent bail) — ignored`);
+                return;
+            }
+            console.log(`[JUMP] onMatchFinished() NORMAL finish: match R${bm.round}.${bm.slot} game=${gameId.slice(0, 8)} winner=${winnerId} -> mark done, both players already reset to in_tournament by gamehandler`);
 
             bm.winnerId = winnerId;
             bm.status = 'done';
@@ -364,15 +380,24 @@ export class TournamentService {
      * If they have a current match in 'ready' or 'playing', the opponent wins.
      */
     async forfeit(tournamentId: string, userId: string): Promise<void> {
+        console.log(`[TOURNEY] FORFEIT (disconnect) t=${tournamentId} user=${userId}`);
         await this.withTournamentLock(tournamentId, async () => {
             const state = await this.repo.get(tournamentId);
             if (!state || state.status === 'finished') return;
 
             if (!state.withdrawn.includes(userId)) state.withdrawn.push(userId);
 
+            // Only an ACTIVE match (room created & awaiting ready, or game running)
+            // can be forfeited here. A 'pending' match — crucially the FINAL while it
+            // still waits for the other semi-final — must NOT be force-resolved: its
+            // opponent isn't known yet, so we'd mark the final 'done' with no winner,
+            // and advance() would then skip creating the real final (its guard requires
+            // final.status === 'pending') → the tournament ends on a final nobody
+            // played. A player who abandons while their next match is still pending is
+            // already handled by the `withdrawn` list + advance()'s auto-forfeit check.
             const bm = state.matches.find(m =>
                 (m.p1 === userId || m.p2 === userId) &&
-                (m.status === 'ready' || m.status === 'playing' || m.status === 'pending')
+                (m.status === 'ready' || m.status === 'playing')
             );
             if (bm) {
                 const opponentId = bm.p1 === userId ? bm.p2 : bm.p1;
@@ -380,6 +405,9 @@ export class TournamentService {
                     bm.winnerId = opponentId;
                 }
                 bm.status = 'done';
+                console.log(`[JUMP] FORFEIT resolves ACTIVE match R${bm.round}.${bm.slot} (was ${bm.status}) user=${userId} -> opponent=${opponentId ?? '-'} wins; both bounced to bracket`);
+            } else {
+                console.log(`[JUMP] FORFEIT user=${userId} has NO active(ready/playing) match — only added to withdrawn=[${state.withdrawn.join(',')}] (pending match left untouched)`);
             }
             await this.advance(state);
         });
@@ -390,13 +418,18 @@ export class TournamentService {
      * or finish the tournament if all matches are done.
      */
     private async advance(state: TournamentState): Promise<void> {
+        console.log(`[JUMP] advance() ENTER ${this.snap(state)}`);
         // propagate R1 winners into the final slot
         const r1 = state.matches.filter(m => m.round === 1);
         const final = state.matches.find(m => m.round === 2 && m.slot === 0)!;
 
-        if (r1.every(m => m.status === 'done') && final.status === 'pending') {
+        const r1AllDone = r1.every(m => m.status === 'done');
+        console.log(`[JUMP] advance() r1AllDone=${r1AllDone} finalStatus=${final.status} r1=[${r1.map(m => `slot${m.slot}:${m.status}/win=${m.winnerId ?? '-'}`).join(', ')}]`);
+
+        if (r1AllDone && final.status === 'pending') {
             const w0 = r1.find(m => m.slot === 0)?.winnerId;
             const w1 = r1.find(m => m.slot === 1)?.winnerId;
+            console.log(`[JUMP] advance() filling FINAL from semis: w0=${w0 ?? '-'} w1=${w1 ?? '-'}`);
 
             if (w0 && w1) {
                 final.p1 = w0;
@@ -410,18 +443,22 @@ export class TournamentService {
                 if (w0Out || w1Out) {
                     final.winnerId = w0Out && !w1Out ? w1 : (!w0Out && w1Out ? w0 : undefined);
                     final.status = 'done';
+                    console.log(`[JUMP] advance() FINAL auto-forfeit (w0Out=${w0Out} w1Out=${w1Out}) winner=${final.winnerId ?? '-'} — NO final room created`);
                 } else {
+                    console.log(`[JUMP] advance() -> creating FINAL room for ${w0} vs ${w1} (these two are PROMOTED into a new match)`);
                     await this.createMatchRooms(state, [final]);
                 }
             } else {
                 // double forfeit, or one R1 had no winner — tournament cannot continue normally
                 final.status = 'done';
                 final.winnerId = w0 ?? w1; // whoever remains
+                console.log(`[JUMP] advance() FINAL collapsed (a semi had no winner) winner=${final.winnerId ?? '-'}`);
             }
         }
 
         // broadcast bracket update
         await this.repo.save(state);
+        console.log(`[JUMP] advance() -> emit bracket_update to tournament:${state.tournamentId.slice(0, 8)} ${this.snap(state)}`);
         this.emitter.toRoom(`tournament:${state.tournamentId}`, 'bracket_update', {
             tournamentId: state.tournamentId,
             bracket: this.toPublic(state),
@@ -429,6 +466,7 @@ export class TournamentService {
 
         // check for tournament end
         if (state.matches.every(m => m.status === 'done')) {
+            console.log(`[JUMP] advance() ALL matches done -> finish()`);
             await this.finish(state);
         }
     }
@@ -492,6 +530,7 @@ export class TournamentService {
         state.finalRanking = ranking;
         await this.repo.save(state);
 
+        console.log(`[JUMP] finish() champion=${champion} ranking=[${ranking.join(',')}] -> emit tournament_finished + free all sessions to idle`);
         this.emitter.toRoom(`tournament:${state.tournamentId}`, 'tournament_finished', {
             tournamentId: state.tournamentId,
             bracket: this.toPublic(state),
@@ -558,6 +597,20 @@ export class TournamentService {
      * and reset their session so they can join a new one.
      */
     async leave(userId: string): Promise<void> {
+        // HARD GUARD: a player who is actively in a match (in a ready room or
+        // mid-game) must NEVER be torn out of it by an out-of-band /leave HTTP call.
+        // This is the real cause of the "a player jumps" bug: with the auth cookie
+        // shared across tabs, a SECOND tab sitting on the tournament lobby (or a
+        // re-click of "Join") fires joinTournament(), whose cleanup used to POST
+        // /leave — which forfeited the user from the very tournament their first tab
+        // was playing, INSTANTLY (not after any timer). A real match is only ever
+        // resolved by the game's own score/ready timers, never by this endpoint.
+        const session = await this.sessionService.get(userId);
+        if (session?.status === 'in_game' || session?.status === 'matched') {
+            console.log(`[TOURNEY] leave() IGNORED user=${userId} (status=${session.status}: in an active match)`);
+            return;
+        }
+
         // Remove from matchmaking queue in case they were still waiting
         await this.matchService.leaveQueue(userId);
 
@@ -613,15 +666,42 @@ export class TournamentService {
                     if (bm.status === 'ready' && bm.roomId) {
                         this.readyTimer.arm(bm.roomId);
                         rearmed++;
+                    } else if (bm.status === 'playing' && bm.gameId) {
+                        // A match whose GAME was already running when the process died:
+                        // its per-question deadline lived only in memory and is now gone,
+                        // so the game would never auto-advance (a player who stops
+                        // answering would freeze the match forever). Re-arm the question
+                        // timer from the persisted game state so play resumes cleanly.
+                        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
+                        // void this.questionTimer.schedule(bm.gameId);
+                        rearmed++;
                     }
                 }
             }
             if (rearmed > 0) {
-                console.log(`[tournament] re-armed ${rearmed} readiness deadline(s) after restart`);
+                console.log(`[tournament] re-armed ${rearmed} deadline(s) after restart`);
             }
         } catch (e) {
             console.error('[tournament] rearmPendingDeadlines failed', e);
         }
+    }
+
+    /**
+     * Compact one-line snapshot of the whole bracket — used by the [JUMP] logs to
+     * reconstruct exactly what the bracket looked like at each return-to-bracket /
+     * advance step. Format per match:
+     *   R<round>.<slot>{<p1Nick>#<p1id> vs <p2Nick>#<p2id> <status> [win=..] [room=..] [game=..]}
+     */
+    private snap(state: TournamentState): string {
+        const fmt = (bm: BracketMatch) => {
+            const p1 = `${bm.p1Nickname ?? '?'}#${bm.p1 ?? '-'}`;
+            const p2 = `${bm.p2Nickname ?? '?'}#${bm.p2 ?? '-'}`;
+            const win = bm.winnerId ? ` win=${bm.winnerId}` : '';
+            const room = bm.roomId ? ` room=${bm.roomId.slice(0, 8)}` : '';
+            const game = bm.gameId ? ` game=${bm.gameId.slice(0, 8)}` : '';
+            return `R${bm.round}.${bm.slot}{${p1} vs ${p2} ${bm.status}${win}${room}${game}}`;
+        };
+        return `t=${state.tournamentId.slice(0, 8)} status=${state.status} withdrawn=[${state.withdrawn.join(',')}] ${state.matches.map(fmt).join('  ')}`;
     }
 
     private toPublic(state: TournamentState): PublicBracketView {

@@ -67,7 +67,7 @@
     } catch {}
 
     const socket = getGameSocket();
-    if (!socket.connected) socket.connect();
+    if (!socket.active) socket.connect();
     setupSocketListeners();
   });
 
