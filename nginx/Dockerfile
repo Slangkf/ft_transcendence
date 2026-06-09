@@ -12,7 +12,7 @@ RUN		mkdir -p /etc/nginx/ssl	&& \
 		-keyout /etc/nginx/ssl/server.key \
 		-out /etc/nginx/ssl/server.crt \
 		-subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Transcendence/CN=trans.42.fr" \
-		-addext "subjectAltName=DNS:trans.42.fr,DNS:localhost,IP:127.0.0.1"
+		-addext "subjectAltName=DNS:trans.42.fr,IP:127.0.0.1"
 
 # Replace the default NGINX configuration with a custom template.
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf.template

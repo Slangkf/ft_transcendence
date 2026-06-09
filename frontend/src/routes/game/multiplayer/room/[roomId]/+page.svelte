@@ -16,17 +16,6 @@
   let leaving = false;
   let inTournament = $state(false);
 
-  // Readiness countdown (server-authoritative; this is just the visible mirror).
-  // If players don't all ready up before it hits 0 the backend resolves the
-  // lobby and emits `ready_timeout`.
-  const READY_SECONDS = 45;
-  let readyCountdown = $state(READY_SECONDS);
-  let readyTick: ReturnType<typeof setInterval> | null = null;
-
-  function stopReadyCountdown() {
-    if (readyTick) { clearInterval(readyTick); readyTick = null; }
-  }
-
   function attachListeners() {
     const socket = getGameSocket();
 
@@ -34,29 +23,7 @@
     socket.off('game_started');
     socket.off('player_left');
     socket.off('session_reconnect');
-    socket.off('ready_timeout');
     socket.off('error');
-
-    socket.on('ready_timeout', (payload: { roomId: string; excluded: boolean }) => {
-      if (payload.roomId !== roomId) return;
-      stopReadyCountdown();
-      starting = true; // suppress the "navigated away mid-lobby" disconnect for tournaments
-      let tid: string | null = null;
-      try { tid = sessionStorage.getItem('current_tournament_id'); } catch {}
-      if (tid) {
-        // tournament: back to the bracket (advancing / eliminated / final ranking)
-        goto(`/game/tournament/${tid}`);
-      } else {
-        // plain multiplayer: the match is cancelled — back to the menu with a notice
-        try {
-          sessionStorage.setItem('mp_notice', payload.excluded
-            ? "You have been excluded: you did not declare yourself ready in time."
-            : "Game cancelled: a player did not declare themselves ready in time.");
-          sessionStorage.removeItem('mp_room_players');
-        } catch {}
-        goto('/game/multiplayer');
-      }
-    });
     socket.on('session_reconnect', async (payload: any) => {
       if ((payload.type === 'in_room' || payload.type === 'matched') && payload.roomId === roomId) {
         console.log(`socket id: ${socket.id}`);
@@ -78,7 +45,6 @@
         } catch {}
       } else if (payload.type === 'in_game' && payload.gameId) {
         starting = true;
-        stopReadyCountdown();
         goto(`/game/multiplayer/play/${payload.gameId}`);
       }
     });
@@ -90,7 +56,6 @@
 
     socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number }) => {
       starting = true;
-      stopReadyCountdown();
       try {
         sessionStorage.setItem('mp_first_question', JSON.stringify({ gameId: payload.gameId, question: payload.firstQuestion, players: payload.players, startedAt: payload.startedAt }));
       } catch {}
@@ -142,20 +107,6 @@ async function toggleReady() {
     } catch {}
     attachListeners();
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
-    // We've reached a room, so the "pending room" hint that routed us here has
-    // done its job. Clear it now: otherwise it lingers as a stale roomId and,
-    // when this match ends and we return to the bracket, bounces us back into
-    // this now-finished room (the "ready / not ready" screen) instead of letting
-    // the bracket show the spectator view / next match.
-    try { sessionStorage.removeItem('tournament_pending_room'); } catch {}
-
-    // mirror the server-side readiness deadline
-    readyCountdown = READY_SECONDS;
-    readyTick = setInterval(() => {
-      if (readyCountdown > 0) readyCountdown -= 1;
-      else stopReadyCountdown();
-    }, 1000);
-
     // load players from sessionStorage (set by next_match_ready)
     try {
       const raw = sessionStorage.getItem('mp_room_players');
@@ -178,7 +129,6 @@ async function toggleReady() {
   });
 
   onDestroy(() => {
-    stopReadyCountdown();
     let inTournament = false;
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     if (!starting && !inTournament) {
@@ -202,20 +152,6 @@ async function toggleReady() {
     <div class="mb-4 rounded bg-red-500/20 border border-red-300/30 px-4 py-3 text-red-100">
       {error}
     </div>
-  {/if}
-
-  {#if !starting}
-    <p class="text-center mb-4">
-      <span class="text-blue-100/80 text-sm">Everyone needs to be ready — </span>
-      <span class="inline-block font-mono text-lg font-bold {readyCountdown <= 3 ? 'text-red-300 animate-pulse' : readyCountdown <= 5 ? 'text-yellow-200' : 'text-blue-100/90'}">
-        {readyCountdown}s
-      </span>
-      <span class="block text-xs text-blue-100/50 mt-1">
-        {inTournament
-          ? "If there is no response, you forfeit the contract."
-          : "If there is no response, the game is cancelled."}
-      </span>
-    </p>
   {/if}
 
   <div class="grid gap-3 p-4">

@@ -68,11 +68,6 @@ export class    MatchService{
         return await this.matchrepository.removeFromQueue(userId);
     }
 
-    async getQueue(mode: GameMode): Promise<{userId: string; nickname: string}[]>{
-        const queue = await this.matchrepository.getqueue(mode);
-        return queue.map(({userId, nickname}) => ({userId, nickname}));
-    }
-
     async updatateMatch(match: MatchResult): Promise<void>{
         return await this.matchrepository.saveMatch(match);
     }

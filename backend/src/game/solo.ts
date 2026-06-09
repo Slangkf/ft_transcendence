@@ -51,16 +51,28 @@ export class SoloService extends GameBaseService{
         this.aiService?.generateAIAnswer(state as SoloGameState, aiPlayer.id);
     }
 
-    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string): Promise<{state: BaseGameState;
+    async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string, expectedQuestionId?: number): Promise<{state: BaseGameState;
         lastAnswer: { playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string };
     }>{
         const state = await this.gamerepository.findById(gameId);
         if (!state) 
             throw new AppError('Game not found', ErrorCode.GAME_NOT_FOUND, 404);
-        if (!state.questions[state.currentQuestionIndex]) 
+        const currentQuestion = state.questions[state.currentQuestionIndex];
+        if (!currentQuestion)
             throw new AppError('No more questions', ErrorCode.GAME_ALREADY_FINISHED, 400);
         if (state.isFinished) 
             throw new AppError('Game is already finished', ErrorCode.GAME_ALREADY_FINISHED, 400);
+        if (expectedQuestionId !== undefined && expectedQuestionId !== currentQuestion.id) {
+            return {
+                state,
+                lastAnswer: {
+                    playerId: userId,
+                    isCorrect: false,
+                    correctAnswerIndex: -1,
+                    correctText: 'ALREADY_PROCESSED'
+                }
+            };
+        }
         
         const player = state.players[userId];
         if (!player) 

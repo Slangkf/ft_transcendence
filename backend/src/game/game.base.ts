@@ -17,7 +17,7 @@ export class GameBaseService
         protected readonly questionService: QuestionService,
     ){}
 
-    protected initPlayers(userId: string, nickname: string): Player {
+    public initPlayers(userId: string, nickname: string): Player {
         const player: Player = {
             id: userId,
             score: 0,
@@ -34,17 +34,19 @@ export class GameBaseService
         const questions = await this.questionService.getQuestions(10, extra?.category);
         const gameId = crypto.randomUUID();
         const now = Date.now();
+       // const hasAI = Object.values(players).some(p => p.isAI === true);
         const base = {
             gameId,
-            mode: mode,
+            mode,
             questions,
             players,
             currentQuestionIndex: 0,
             isFinished: false,
             startedAt: now,
-            questionStartedAt: now
+            questionStartedAt: now,
+            category: extra?.category
         }
-        if (mode === "MULTIPLAYER" || mode === "TOURNAMENT"){
+        if (mode === "MULTIPLAYER" || mode === "TOURNAMENT" || mode === "AI"){
             if (!extra){
                 throw new AppError(
                     'roomId and hostId required for multiplayer',
@@ -77,14 +79,14 @@ export class GameBaseService
                 404
             )
         };
-        if (selectedIndex >= currentQuestion.options.length || selectedIndex < 0){
+        if (selectedIndex >= currentQuestion.options.length){
             throw new AppError(
                 'Selected Answer Index problem',
                 ErrorCode.BAD_REQUEST,
                 400
             )
         };
-        const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
+        const isCorrect = selectedIndex === -1 ? false : (selectedIndex === currentQuestion.correctAnswerIndex);
         
         const player = state.players[userId];
         if (!player){

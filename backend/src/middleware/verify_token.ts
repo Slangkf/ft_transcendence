@@ -33,13 +33,16 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
         //check if the user found in database
         const user = await prisma.user.findUnique({
             where: {id: Number(decoded.id)},
-            select:{ id: true}
+            select:{ id: true, username: true}
         })
         if (!user){
             return next(new AppError("User no longer exist", ErrorCode.AUTH_UNAUTHORIZED));
         }
 
-        req.user = decoded
+        req.user = {
+            ...decoded,
+            username: user.username
+        }
         next()
     }catch(error){
         return next(new AppError(

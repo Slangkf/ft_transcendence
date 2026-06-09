@@ -1,215 +1,169 @@
+// src/game/game.redis.repository.ts
 import { Redis, RedisKeys } from '../lib/redis';
 import { GameState } from './game.types';
 
-
-export class RedisGameRepository 
-{
-    private key(gameId: string) {
-        return RedisKeys.game.state(gameId);
-    }
-   public async create(game: GameState): Promise<void>{
-    await Redis.set(
-        this.key(game.gameId),
-        JSON.stringify(game),
-        {EX: 3600})
-   }
-
-   public async findById(gameId: string): Promise<GameState | null>{
-    const data = await Redis.get(this.key(gameId));
-    return data ? JSON.parse(data) : null
-   }
-
-   public async update(game: GameState): Promise<void>{
-    await Redis.set(
-        this.key(game.gameId),
-        JSON.stringify(game),
-        {EX: 3600}
-    )
-   }
-
-   public async delete(gameId: string): Promise<void>{
-    await Redis.del(this.key(gameId))
-   }
-
-   //lua script for datarace in sumbit answer with multiplayer
-   public async submitanswerAtomic(gameId: string, userId: string, selectedAnswerIndex: number)
-   {
-    //script to finish all submit answer at one time 
-    //1. check if the game finishe 
-    //2. check if the question is already answer, check if is correct for the score, not yeat update the player with the new answer 
-    //3. check every player answered the question, advance the game
-    //4. add in redis the ttl 
-    const script = `
-        local data = redis.call('get', KEYS[1])
-        if not data then return nil end
-
-        local state = cjson.decode(data)
-        local userId = ARGV[1]
-        local selectIndex = tonumber(ARGV[2])
-
-        if state.isFinished then return nil end 
-
-        local player = state.players[userId]
-        if not player then return nil end 
-
-        local currentQuestion = state.questions[state.currentQuestionIndex + 1]
-        local answered = false
-        if type(player.answers) == 'table' then
-            for _, answer in pairs(player.answers) do
-                if answer.questionId == currentQuestion.id then
-                    answered = true
-                    break
-                end
-            end
-        end
-        if answered then return nil end
-
-        local isCorrect = (selectIndex == currentQuestion.correctAnswerIndex)
-        local now = tonumber(ARGV[3])
-        local qStart = tonumber(state.questionStartedAt) or now
-        local elapsed = now - qStart
-        if elapsed < 0 then elapsed = 0 end
-
-        local newAnswer = {
-            questionId = currentQuestion.id,
-            selectedAnswerIndex = selectIndex,
-            isCorrect = isCorrect,
-            answeredAt = now
-        }
-        table.insert(player.answers, newAnswer)
-        player.status = 'answered'
-        player.Totaltime = (tonumber(player.Totaltime) or 0) + elapsed
-        if isCorrect then
-            player.score = player.score + 1
-        end
-        state.players[userId] = player
-
-        --check if all players answered
-
-        local allAnswered = true
-        for pid, p in pairs(state.players) do
-            if p.status ~= 'disconnected' and p.status ~= 'answered' then
-                allAnswered = false
-                break
-            end
-        end
+/**
+ * RedisGameRepository
+ * 负责高频、临时的内存游戏状态数据读写。
+ * 🌟 注意：Redis 驱动没有 .create() 和 .delete() 方法，
+ * 写入/修改必须使用 .set()，删除必须使用 .del()。
+ */
+export class RedisGameRepository {
     
-        --advance the game
-        if allAnswered then
-            if state.currentQuestionIndex + 1 >= #state.questions then
-                state.isFinished = true
-                state.status = 'finished'
-            else
-                state.currentQuestionIndex = state.currentQuestionIndex + 1
-                state.questionStartedAt = now
-                for pid, p in pairs(state.players) do
-                    if p.status ~= 'disconnected' then
-                        p.status = 'playing'
-                    end 
-                    state.players[pid] = p
-                end
-            end
-        end
-
-        local ttl = redis.call('TTL', KEYS[1])
-        if ttl <= 0 then ttl = 3600 end
-        redis.call('SET', KEYS[1], cjson.encode(state), 'EX', ttl)
-        
-        return cjson.encode(state)
-        `;    
-    const key = RedisKeys.game.state(gameId);
-    const result = await Redis.eval(script, {
-    keys: [key],
-    arguments: [
-        String(userId),
-        String(selectedAnswerIndex),
-        String(Date.now())
-        ],
-    })
-    return result ? JSON.parse(result as string) : null
+    /**
+     * 统一生成 Redis 中的游戏状态 Key 字符串
+     */
+    private key(gameId: string): string {
+        return RedisKeys.game.state(gameId);
     }
 
     /**
-     * Forcibly close the current question for any player who has not answered yet,
-     * recording a wrong answer (selectedAnswerIndex = -1) and then advancing the game.
-     * Only fires if the game is still on `expectedQIndex` (no-op otherwise — protects
-     * against a race where the question advanced naturally just before the timer fired).
-     * Returns the new state, or null if no-op.
+     * 创建（或覆盖）游戏状态
+     * 🌟 修复：将原本不存在的 Redis.create 改为标准的 Redis.set
      */
-    public async forceAdvanceOnTimeout(gameId: string, expectedQIndex: number): Promise<GameState | null> {
+    public async create(game: GameState): Promise<void> {
+        await Redis.set(
+            this.key(game.gameId),
+            JSON.stringify(game),
+            { EX: 3600 } // 1小时强行过期的内存垃圾回收保护垫
+        );
+    }
+
+    /**
+     * 读取分布式缓存中的完整游戏快照
+     */
+    public async findById(gameId: string): Promise<GameState | null> {
+        // 标准的 Redis GET 命令
+        const data = await Redis.get(this.key(gameId));
+        return data ? JSON.parse(data) : null;
+    }
+
+    /**
+     * 覆盖更新游戏状态
+     */
+    public async update(game: GameState): Promise<void> {
+        await Redis.set(
+            this.key(game.gameId),
+            JSON.stringify(game),
+            { EX: 3600 }
+        );
+    }
+
+    /**
+     * 销毁缓存生命周期
+     * 🌟 修复：将原本不存在的 Redis.delete 改为标准的 Redis.del
+     */
+    public async delete(gameId: string): Promise<void> {
+        await Redis.del(this.key(gameId));
+    }
+
+    /**
+     * 方案 3 的原子 Lua 答题脚本：human 和 AI 统一作为 tasks 处理。
+     */
+    public async submitanswerAtomic(
+        gameId: string,
+        tasks: Array<{ id: string; ans: number; questionId: number; visibleAt?: number }>,
+        now: number
+    ) {
         const script = `
             local data = redis.call('get', KEYS[1])
-            if not data then return nil end
+            if not data then return cjson.encode({ error = "STATE_NOT_FOUND" }) end
 
             local state = cjson.decode(data)
-            local now = tonumber(ARGV[1])
-            local expected = tonumber(ARGV[2])
+            local tasks = cjson.decode(ARGV[1])
+            local now = tonumber(ARGV[2])
 
-            if state.isFinished then return nil end
-            if tonumber(state.currentQuestionIndex) ~= expected then return nil end
+            if state.isFinished then 
+                return cjson.encode({ error = "GAME_FINISHED", state = state }) 
+            end 
 
             local currentQuestion = state.questions[state.currentQuestionIndex + 1]
-            if not currentQuestion then return nil end
-
+            if not currentQuestion then return cjson.encode({ error = "NO_QUESTION", state = state }) end
+            local correct = tonumber(currentQuestion.correctAnswerIndex)
             local qStart = tonumber(state.questionStartedAt) or now
             local elapsed = now - qStart
             if elapsed < 0 then elapsed = 0 end
 
-            local timedOutAny = false
-            for pid, p in pairs(state.players) do
-                if p.status ~= 'disconnected' and p.status ~= 'answered' then
-                    if type(p.answers) ~= 'table' then p.answers = {} end
-                    local newAnswer = {
+            for _, task in ipairs(tasks) do
+                local taskId = tostring(task.id)
+                if string.sub(taskId, 1, 3) ~= "ai_" then
+                    local dedupKey = KEYS[1] .. ":q:" .. currentQuestion.id .. ":u:" .. taskId
+                    if redis.call("GET", dedupKey) == "1" then
+                        return cjson.encode({ error = "ALREADY_ANSWERED", state = state })
+                    end
+                    redis.call("SET", dedupKey, "1", "EX", 3600)
+                end
+            end
+
+            for _, task in ipairs(tasks) do
+                local taskId = tostring(task.id)
+                local p = state.players[taskId]
+                if p and tonumber(task.questionId) == tonumber(currentQuestion.id) then
+                    if type(p.answers) ~= "table" then
+                        p.answers = {}
+                    end
+
+                    local ans = tonumber(task.ans)
+                    local isCorrect = (ans == correct)
+                    table.insert(p.answers, {
                         questionId = currentQuestion.id,
-                        selectedAnswerIndex = -1,
-                        isCorrect = false,
+                        selectedAnswerIndex = ans,
+                        isCorrect = isCorrect,
                         answeredAt = now
-                    }
-                    table.insert(p.answers, newAnswer)
+                    })
                     p.status = 'answered'
                     p.Totaltime = (tonumber(p.Totaltime) or 0) + elapsed
-                    state.players[pid] = p
-                    timedOutAny = true
-                end
-            end
-
-            if not timedOutAny then return nil end
-
-            -- advance (everyone is now answered)
-            if state.currentQuestionIndex + 1 >= #state.questions then
-                state.isFinished = true
-                state.status = 'finished'
-            else
-                state.currentQuestionIndex = state.currentQuestionIndex + 1
-                state.questionStartedAt = now
-                for pid, p in pairs(state.players) do
-                    if p.status ~= 'disconnected' then
-                        p.status = 'playing'
+                    if isCorrect then p.score = (p.score or 0) + 1 end
+                    state.players[taskId] = p
+                    
+                    if string.sub(taskId, 1, 3) == "ai_" then
+                        state.aiAnswerVisibleAt = tonumber(task.visibleAt) or now
+                        state.aiCachedAnswer = {
+                            userId = taskId,
+                            questionId = currentQuestion.id,
+                            isCorrect = isCorrect,
+                            selectedAnswerIndex = ans
+                        }
                     end
-                    state.players[pid] = p
                 end
             end
 
-            local ttl = redis.call('TTL', KEYS[1])
-            if ttl <= 0 then ttl = 3600 end
-            redis.call('SET', KEYS[1], cjson.encode(state), 'EX', ttl)
+            local allAnswered = true
+            for pid, player in pairs(state.players) do
+                if player.status ~= 'disconnected' and player.status ~= 'answered' then
+                    allAnswered = false
+                    break
+                end
+            end
 
-            return cjson.encode(state)
+            if allAnswered then
+                if state.currentQuestionIndex + 1 >= #state.questions then
+                    state.isFinished = true
+                    state.status = 'finished'
+                else
+                    state.currentQuestionIndex = state.currentQuestionIndex + 1
+                    state.questionStartedAt = now
+                    for pid, player in pairs(state.players) do
+                        if player.status ~= 'disconnected' then
+                            player.status = 'playing'
+                        end 
+                        state.players[pid] = player
+                    end
+                end
+            end
+
+            redis.call('SET', KEYS[1], cjson.encode(state), 'EX', 3600)
+            return cjson.encode({ state = state, success = true })
         `;
-        const key = RedisKeys.game.state(gameId);
+
+        const key = this.key(gameId);
         const result = await Redis.eval(script, {
             keys: [key],
-            arguments: [String(Date.now()), String(expectedQIndex)],
+            arguments: [
+                JSON.stringify(tasks),
+                String(now)
+            ],
         });
         return result ? JSON.parse(result as string) : null;
     }
 }
-
-// redis version: 
-/***
- * 1. save the gamestate in json version in redis 
- * 2. when lost connection can come back with redis 
- * 3. redis can save the information for only 1h 
- * 4. when all information saved in database, delete in redis 
- * 
- */

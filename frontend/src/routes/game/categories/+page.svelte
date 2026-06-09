@@ -1,6 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+
+  const mode = $derived(
+  	page.url.searchParams.get('mode') ?? 'solo'
+  );
 
   type CategoriesApiResponse = {
     success: boolean;
@@ -30,24 +35,24 @@
         return;
       }
       if (!response.ok || !result?.success || !result.data) {
-        error = result?.message ?? 'Unable to load categories.';
+        error = result?.message ?? 'Impossible de charger les catégories.';
         return;
       }
       categories = result.data;
     } catch (err) {
       console.error('categories error:', err);
-      error = 'Network error or inaccessible server.';
+      error = 'Erreur réseau ou backend inaccessible.';
     } finally {
       loading = false;
     }
   });
 
   async function pickCategory(category: string) {
-    await goto(`/game?mode=solo&category=${encodeURIComponent(category)}`);
+    await goto(`/game?mode=${mode}&category=${encodeURIComponent(category)}`);
   }
 
   async function pickRandom() {
-    await goto('/game?mode=solo');
+    await goto(`/game?mode=${mode}&autostart=true`);
   }
 </script>
 

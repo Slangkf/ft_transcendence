@@ -70,7 +70,7 @@ export class UserController{
                 res.clearCookie('auth_token', {
                     httpOnly: true,
                     secure: true,
-                    sameSite: 'lax'
+                    sameSite: 'strict'
                 })
                 //need to login again
                 res.json({

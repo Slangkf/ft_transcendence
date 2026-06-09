@@ -6,24 +6,18 @@ import { GameQuestion } from '../game/game.types';
 
 
 export class QuestionService{
-    private availableQuizIds: number[] = [];
     constructor(private  repo: QuestionRepository){}
 
     async getQuestions(total: number = 10, category?: string): Promise<GameQuestion[]> {
-    const allIds = category
-        ? await this.repo.get_QuizIds_byCategory(category)
-        : await this.repo.get_all_QuizIds();
-    if (allIds.length === 0) throw new AppError(
-        category ? `No quiz available for category "${category}"` : 'No quiz available',
-        ErrorCode.QUESTION_NOT_FOUND);
+        const questions = await this.repo.get_questions_byCategory(category);
+        if (questions.length === 0) throw new AppError(
+            category ? `No quiz available for category "${category}"` : 'No quiz available',
+            ErrorCode.QUESTION_NOT_FOUND);
 
-    const randomId = allIds[Math.floor(Math.random() * allIds.length)];
-    const questions = await this.fetchQuizQuestions(randomId);
-    if (!questions) throw new AppError(
-        'Quiz not found',
-         ErrorCode.QUESTION_NOT_FOUND);
-
-    return questions;
+        const requestedTotal = Math.max(1, Math.floor(total));
+        return this.shuffle(questions)
+            .slice(0, requestedTotal)
+            .map(question => this.toGameQuestion(question));
     }
 
     async getCategories(): Promise<string[]> {
@@ -36,16 +30,28 @@ export class QuestionService{
         if (!quiz || quiz.questions.length === 0)
             return null;
 
-        return quiz.questions.map((q: PrismaQuestion) => {
-            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-            return {
-                id: q.id,
-                question: q.text,
-                options: shuffledOptions,
-                correctAnswerIndex: shuffledOptions.findIndex(opt => opt === q.answer),
-            };
-        });
+        return this.shuffle(quiz.questions).map((q: PrismaQuestion) => this.toGameQuestion(q));
     }
+
+    private toGameQuestion(question: PrismaQuestion): GameQuestion {
+        const shuffledOptions = this.shuffle(question.options);
+        return {
+            id: question.id,
+            question: question.text,
+            options: shuffledOptions,
+            correctAnswerIndex: shuffledOptions.findIndex(opt => opt === question.answer),
+        };
+    }
+
+    private shuffle<T>(items: readonly T[]): T[] {
+        const shuffled = [...items];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
     toPublicQuestion(question: GameQuestion): PublicQuestion
     {
         return {

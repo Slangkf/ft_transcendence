@@ -1,105 +1,139 @@
-import { QuestionService } from "src/question/question.service";
-import { BaseGameState, FinalScore, GameState, GameUpdateResponse, MatchResult, Player, PlayerSnapShot } from "./game.types";
+// src/game/game.mapper.ts
+import { 
+    BaseGameState,
+    GameUpdateResponse, 
+    PlayerSnapShot, 
+    FinalScore, 
+    MatchResult, 
+    PublicQuestion 
+} from "./game.types";
+import { GameMode } from "@prisma/client";
 
 export class GameMapper {
 
-    constructor(
-        private questionService: QuestionService
-    ){}
+    /**
+     * 将 Redis 中的运行时 GameState 转换成前端 DTO。
+     * lastAnswerUpdate 独立携带刚刚答完那题的正确答案，nextQuestion 始终指向服务端真实当前题。
+     * @param rawState 从 Redis 中捞出来的绝对真实的最新快照
+     * @param lastAnswerOverride 外部传入的当前用户的答题动作结果
+     */
+    public toUpdateResponse(rawState: BaseGameState, lastAnswerOverride?: any): GameUpdateResponse {
+        // 🌟 1. 【防污染深拷贝】：必须深拷贝一份镜像发给前端，绝对不能修改 Redis 原生内存对象
+        const state = JSON.parse(JSON.stringify(rawState)) as BaseGameState;
 
-    toUpdateResponse(state: BaseGameState, lastAnswerUpdate?:{
-        playerId: string, isCorrect: boolean, correctAnswerIndex: number, correctText: string
-    }): GameUpdateResponse{
-        const isfinished = state.isFinished;
-        const currentQuestion = state.questions[state.currentQuestionIndex];
+        const playerSnapshots: Record<string, PlayerSnapShot> = {};
+        for (const [id, p] of Object.entries(state.players)) {
+            playerSnapshots[id] = {
+                id: p.id,
+                nickname: p.nickname,
+                score: p.score,
+                status: p.status,
+                isAI: p.isAI ?? false,
+                totalTime: p.Totaltime // 确保与类型定义的字段大小写对齐
+            };
+        }
+
+        let nextQuestion: PublicQuestion | null = null;
+        if (!state.isFinished) {
+            const currentQ = state.questions[state.currentQuestionIndex];
+            if (currentQ) {
+                nextQuestion = {
+                    id: currentQ.id,
+                    question: currentQ.question,
+                    options: currentQ.options
+                };
+            }
+        }
+
+        let finalScore: FinalScore | null = null;
+        if (state.isFinished) {
+            finalScore = this.toFinalScore(state);
+        }
 
         return {
             gameId: state.gameId,
-            mode: state.mode,
-            status: isfinished? "finished" : "playing",
+            mode: state.mode as GameMode,
+            status: state.isFinished ? "finished" : "playing",
             state: {
                 currentQuestionIndex: state.currentQuestionIndex,
                 totalQuestions: state.questions.length,
-                player:  this.buildPublicPlayerSnapShot(state.players),
+                player: playerSnapshots,
                 startedAt: state.startedAt,
-                questionStartedAt: state.questionStartedAt,
-                // Elapsed time of the current question, computed on the SERVER. It's a
-                // duration (not an absolute timestamp the client must compare to its own
-                // clock), so a reconnecting client can resume the countdown accurately
-                // even if the two machines' clocks differ (remote play).
-                questionElapsedMs: Math.max(0, Date.now() - state.questionStartedAt),
+                questionStartedAt: state.questionStartedAt
             },
-            nextQuestion: isfinished? null : this.questionService.toPublicQuestion(currentQuestion),
-            finalScore: isfinished? this.buildFinalScore(state.players) : null,
-            lastAnswerUpdate: lastAnswerUpdate ?? undefined,
+            lastAnswerUpdate: lastAnswerOverride ?? null,
+            nextQuestion,
+            finalScore
+        };
+    }
+
+    /**
+     * 辅助方法：生成最终得分排行榜
+     */
+    private toFinalScore(state: BaseGameState): FinalScore {
+        const scores: Record<string, number> = {};
+        const playerEntries = Object.values(state.players);
+
+        for (const p of playerEntries) {
+            scores[p.id] = p.score;
         }
-    }
 
-    toMatchResult(state: BaseGameState): MatchResult{
-        const finalScore = this.buildFinalScore(state.players);
-        const players = Object.values(state.players);
-
-        return {
-            gameId: state.gameId,
-            mode: state.mode,
-            winnerId: finalScore.winnerId,
-            startedAt: state.startedAt,
-            finishedAt: finalScore.finishedAt,
-            players: finalScore.ranking.map(({ playerId, score, rank }) => {
-            const player = state.players[playerId];
-            return {
-                userId: playerId,
-                score,
-                rank,
-                correctAnswers: player.answers.filter(a => a.isCorrect).length,
-                totalQuestions: state.questions.length,
-            };
-        }), }
-    }
-
-    private buildFinalScore(players: Record<string, Player>): FinalScore{
-        const scores = Object.fromEntries(
-            Object.entries(players).map(([id, player]: [string, Player]) => [
-                id,
-                player.score
-            ])
-        );
-
-        const sorted = Object.entries(players).sort((a, b) => {
-            if (b[1].score !== a[1].score) return b[1].score - a[1].score;
-            return (a[1].Totaltime || 0) - (b[1].Totaltime || 0);
+        // 根据分数降序，分数相同按总用时升序排序
+        const sortedPlayers = [...playerEntries].sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.Totaltime - b.Totaltime;
         });
 
-        const ranking = sorted.map(([playerId, p], index) => ({
-            playerId,
+        const winnerId = sortedPlayers[0]?.id ?? "";
+
+        const ranking = sortedPlayers.map((p, index) => ({
+            playerId: p.id,
             nickname: p.nickname,
             score: p.score,
             rank: index + 1,
-            totalTime: p.Totaltime || 0,
+            totalTime: p.Totaltime
         }));
 
-        const winnerId = ranking[0]?.playerId ?? "";
         return {
             winnerId,
             finishedAt: Date.now(),
             scores,
-            ranking,
-        }
+            ranking
+        };
     }
 
-    private buildPublicPlayerSnapShot(players: Record<string, Player>): Record<string, PlayerSnapShot> {
-        return Object.fromEntries(
-            Object.entries(players).map(([id, player]: [string, Player]) => [
-                id,
-                {
-                    id: player.id,
-                    nickname: player.nickname,
-                    score: player.score,
-                    status: player.status,
-                    isAI: player.isAI || false,
-                    totalTime: player.Totaltime || 0,
-                }
-            ])
-        )
+    /**
+     * 将内存状态转换成可以交付给 Prisma 存入 SQL 数据库的历史战绩实体 (MatchResult)
+     */
+    public toMatchResult(state: BaseGameState): MatchResult {
+        const playerEntries = Object.values(state.players);
+
+        // 生成最终的名次分布
+        const sortedPlayers = [...playerEntries].sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.Totaltime - b.Totaltime;
+        });
+
+        const winnerId = sortedPlayers[0]?.id;
+
+        const playersMapped = playerEntries.map(p => {
+            const rankIndex = sortedPlayers.findIndex(sortedP => sortedP.id === p.id);
+            return {
+                userId: p.id,
+                score: p.score,
+                rank: rankIndex !== -1 ? rankIndex + 1 : 1,
+                correctAnswers: p.answers.filter(a => a.isCorrect).length,
+                totalQuestions: state.questions.length
+            };
+        });
+
+        return {
+            gameId: state.gameId,
+            mode: state.mode as GameMode,
+            winnerId,
+            startedAt: state.startedAt,
+            finishedAt: Date.now(),
+            players: playersMapped
+        };
     }
 }

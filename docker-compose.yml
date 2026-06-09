@@ -61,9 +61,6 @@ services:
       - DATABASE_URL=${DATABASE_URL_DOCKER}
       - JWT_SECRET=${JWT_SECRET}
       - REDIS_URL=${REDIS_URL}
-      - AVAX_RPC_URL=${AVAX_RPC_URL}
-      - CHAIN_PRIVATE_KEY=${CHAIN_PRIVATE_KEY}
-      - CHAIN_CONTRACT_ADDRESS=${CHAIN_CONTRACT_ADDRESS}
     depends_on:
       redis:
         condition: service_healthy

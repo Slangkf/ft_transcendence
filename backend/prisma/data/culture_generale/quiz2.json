@@ -4,14 +4,14 @@
   "authorId": 1,
   "questions": [
     {
-      "text": "What is the capital of Australia?",
+      "text": "Which animal's milk is naturally pink?",
       "options": [
-        "Sydney",
-        "Melbourne",
-        "Canberra",
-        "Brisbane"
+        "Hippopotamus",
+        "Blue Whale",
+        "Flamingo",
+        "Rhinoceros"
       ],
-      "answer": "Canberra"
+      "answer": "Hippopotamus"
     },
     {
       "text": "In which year did the French Revolution begin?",

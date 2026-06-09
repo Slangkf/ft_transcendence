@@ -44,14 +44,14 @@
       "answer": "206"
     },
     {
-      "text": "In what year did World War I begin?",
+      "text": "What luxury brand is known for its iconic interlocking 'C' logo?",
       "options": [
-        "1914",
-        "1918",
-        "1939",
-        "1945"
+        "Gucci",
+        "Chanel",
+        "Cartier",
+        "Coach"
       ],
-      "answer": "1914"
+      "answer": "Chanel"
     },
     {
       "text": "Who is the author of the play 'Romeo and Juliet'?",
@@ -64,14 +64,14 @@
       "answer": "William Shakespeare"
     },
     {
-      "text": "Which planet is closest to the Sun?",
+      "text": "Which animal sleeps standing up and can’t vomit?",
       "options": [
-        "Venus",
-        "Mars",
-        "Mercury",
-        "Jupiter"
+        "Cow",
+        "Horse",
+        "Giraffe",
+        "Elephant"
       ],
-      "answer": "Mercury"
+      "answer": "Horse"
     },
     {
       "text": "What is the largest living land mammal?",

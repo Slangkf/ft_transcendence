@@ -26,6 +26,12 @@ export class QuestionRepository{
         return rows.map(r => r.category).filter(Boolean).sort();
     }
 
+    async get_questions_byCategory(category?: string): Promise<Question[]> {
+        return prisma.question.findMany({
+            where: category ? { quiz: { category } } : undefined,
+        });
+    }
+
     async get_Quiz_withquestions(quizId: number){
         return prisma.quiz.findUnique({
             where: {id: quizId},

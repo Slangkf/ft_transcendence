@@ -74,14 +74,14 @@
       "answer": "Japan"
     },
     {
-      "text": "In which year did World War I begin?",
+      "text": "What Renaissance artist is buried in Rome's Pantheon?",
       "options": [
-        "1912", 
-        "1913", 
-        "1914", 
-        "1915"
+        "Michelangelo",
+        "Leonardo da Vinci",
+        "Raphael",
+        "Donatello"
       ],
-      "answer": "1914"
+      "answer": "Raphael"
     },
     {
       "text": "What is the longest river in Europe?",

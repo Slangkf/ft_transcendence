@@ -20,11 +20,6 @@ export type TournamentPlayer = {
     nickname: string;
 };
 
-export type PlayerMatchStats = {
-    correctAnswers: number;
-    totalTime: number;
-};
-
 export type TournamentState = {
     tournamentId: string;
     size: number;           // for now: 4
@@ -33,7 +28,6 @@ export type TournamentState = {
     matches: BracketMatch[]; // for size=4: [R1m0, R1m1, R2m0]
     withdrawn: string[];     // userIds who forfeited mid-tournament
     finalRanking?: string[]; // userIds, winner first
-    playerStats?: Record<string, PlayerMatchStats>; // last finished-match stats per player, for tie-breaking
     startedAt: number;
     finishedAt?: number;
 };
@@ -44,5 +38,4 @@ export type PublicBracketView = {
     players: TournamentPlayer[];
     matches: BracketMatch[];
     finalRanking?: string[];
-    playerStats?: Record<string, PlayerMatchStats>;
 };

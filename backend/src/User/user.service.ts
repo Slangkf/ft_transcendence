@@ -48,7 +48,6 @@ export class UserService{
 				ErrorCode.USER_NOT_FOUND,
 				404,
 				{userID: userid});
-
         }
 
         const is_valide = await bcrypt.compare(input.oldpassword, user.password);
@@ -82,7 +81,6 @@ export class UserService{
 				ErrorCode.USER_NOT_FOUND,
 				404,
 				{userID: userid});
-		
         }
 
         if (user.username === input.username) {

@@ -9,7 +9,10 @@ export class PrismaGameRepository {
     async create(result: MatchResult): Promise<void> {
         await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const winnerIdNum = parseInt(result.winnerId ?? "");
-            const humanPlayers = result.players.filter(p => p.userId !== "brain");
+            const humanPlayers = result.players.filter(p => {
+            const id = String(p.userId);
+            return !id.startsWith('ai_') && !isNaN(parseInt(id));
+        });
 
             await tx.matchResult.create({
                 data: {
@@ -17,7 +20,7 @@ export class PrismaGameRepository {
                     winnerId: !isNaN(winnerIdNum) ? winnerIdNum : null,
                     players: {
                         create: humanPlayers.map(p => ({
-                            userId: parseInt(p.userId),
+                            userId: parseInt(String(p.userId)),
                             score: p.score,
                             correctAnswers: p.correctAnswers,
                             rank: p.rank,

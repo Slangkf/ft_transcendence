@@ -15,8 +15,10 @@ export class AuthController{
 
     private cookieOptions : CookieOptions = {
         httpOnly: true,
-        sameSite: 'lax', // même origine (tout passe par nginx:8888) → pas de cross-site, fonctionne via IP distante
-        secure: true,    // site servi uniquement en HTTPS
+        // secure: process.env.NODE_ENV === 'production',	// JIANXIN
+        sameSite: 'none',									// JIANXIN
+		secure: true, // required for sameSite: 'none', cookies are ignored otherwise
+        //sameSite: 'none', // for cross-site infrastructure
         //maxAge:  1 * 60 * 60 * 1000
     };
 

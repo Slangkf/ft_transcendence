@@ -55,20 +55,6 @@ export class TournamentController {
         }
     }
 
-    onchain = async (req: Request, res: Response) => {
-        try {
-            const id = req.params.tournamentId as string;
-            const scores = await this.tournamentService.getOnchainScores(id);
-            if (!scores) {
-                return res.status(404).json(Apiresponse.error("ONCHAIN_NOT_FOUND", "No on-chain record for this tournament"));
-            }
-            return res.status(200).json(Apiresponse.success(scores, "On-chain tournament scores"));
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json(Apiresponse.error("INTERNAL_ERROR", "Internal tournament onchain"));
-        }
-    }
-
     bracket = async (req: Request, res: Response) => {
         try {
             const id = req.params.tournamentId as string;
