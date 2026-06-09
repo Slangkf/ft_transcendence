@@ -75,10 +75,18 @@ export async function authMiddleware(socket: any, next: any) {
 export function createSocketServer(httpserver: HttpServer, redis: typeof Redis){
     //create the root socket.io server with CORS support 
     const io = new Server(httpserver, {
-        cors:{ 
-            origin: true, 
+        cors:{
+            origin: true,
             credentials: true,
             methods:['GET', 'POST']},
+        // Tolérer un onglet bridé/suspendu (macOS App Nap, onglet en arrière-plan,
+        // jitter du partage de connexion) avant de déclarer le socket mort. Les
+        // défauts (~20 s) lâchent un onglet en arrière-plan très vite, ce qui en
+        // plein tournoi ressemble à une « déconnexion » : le joueur rate un ping et
+        // le serveur le jette (transport close), puis se fait renvoyer au bracket.
+        // Avec 60 s, un gel passager ne coupe plus la partie.
+        pingInterval: 25000,
+        pingTimeout: 60000,
     })
 
     const gameNs = io.of('/game').use(authMiddleware) as unknown as 

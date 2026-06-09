@@ -146,8 +146,10 @@ export class Container{
         //per-question 30s deadline (server-authoritative)
         this.questionTimer = new QuestionTimerService(this.gameRepo);
 
-        //per-room 45s readiness deadline (server-authoritative)
-        this.readyTimer = new ReadyTimerService(45_000);
+        //per-room 60s readiness deadline (server-authoritative). 60s (not 45s) gives
+        //comfortable margin for a player who reaches the room via the slower HTTP-poll
+        //recovery path (when their socket events were lost) before being forfeited.
+        this.readyTimer = new ReadyTimerService(60_000);
 
         //blockchain (Avalanche Fuji) — fail-soft if env is missing
         this.blockchainService = new BlockchainService();
@@ -187,6 +189,7 @@ export class Container{
             redis,
             this.readyTimer,
             this.blockchainService,
+            this.questionTimer,
         );
         // wire tournament back into the multiplayer facade so room→game linking can notify the bracket
         this.multiplayerFacade.setTournamentService(this.tournamentService);

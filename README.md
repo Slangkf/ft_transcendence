@@ -97,7 +97,13 @@ Technical Lead / Architect: Oversees technical decisions and architecture.
 
 ### alandel
 
-Technical Lead support:  Supports the Technical Lead in architectural and technical decisions.
+Technical Lead support: Supports the Technical Lead in architectural and technical decisions.
+
+Mainly responsible for the development of the game modes (solo, remote multiplayer, and tournament) and the blockchain feature.
+
+- Implements the solo, multiplayer, and tournament game logic.
+- Handles real-time gameplay synchronization between players.
+- Implements the blockchain integration for storing tournament results.
 
 ### ikayiban
 
@@ -466,29 +472,29 @@ We implemented a tournament flow where players compete in multiple rounds, with 
 
 ## alandel
 
-- Designed and implemented the core game engine, including solo mode, remote multiplayer, and tournament system.
+- Developed the three game modes — solo, remote multiplayer, and tournament — both their game logic and their pages (lobby, in-game, results, and bracket).
 
-- Developed real-time gameplay mechanics ensuring synchronization between players.
+- Implemented matchmaking and the full tournament flow: 4-player brackets with semi-finals, a final, rankings, and a spectator view for eliminated players.
 
-- Implemented matchmaking logic for automatic player pairing.
+- Made gameplay reliable in real time, so players stay in sync and a brief network drop never kicks someone out of a match.
 
-- Integrated blockchain functionality to store tournament results in a decentralized way.
+- Integrated the blockchain feature that records final tournament scores on the Avalanche network.
 
 **Challenges faced:**
 
-- Maintaining real-time consistency between multiple clients during gameplay.
+- Keeping players in sync during fast-paced rounds.
 
-- Handling latency differences between players in remote matches.
+- Preventing network drops from eliminating a player or breaking a tournament mid-way.
 
-- Ensuring reliability of blockchain transactions within the application flow.
+- Recording scores on the blockchain without slowing down the game.
 
 **Solutions:**
 
-- Designed an event-driven game loop synchronized through WebSockets.
+- Made the server the single source of truth for the game state, so a lost or late event self-heals instead of freezing the match.
 
-- Implemented server-authoritative game state to avoid desynchronization.
+- Kept tournament players connected through reconnections and removed disconnection-based forfeits.
 
-- Added fallback mechanisms for blockchain transaction confirmation and retry handling.
+- Wrote scores to the blockchain in the background, so a slow transaction never affects the game.
 
 
 ## ikayiban

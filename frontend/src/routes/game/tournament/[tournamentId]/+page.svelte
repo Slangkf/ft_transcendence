@@ -33,16 +33,23 @@
     players: Record<string, SpectatorPlayer>;
   };
 
-  // Keep this short: the server arms the 45s readiness deadline when the match
+  // Keep this short: the server arms the 60s readiness deadline when the match
   // room is created, so a long pre-redirect would eat into the finalist's time
   // to click "Ready".
   const REDIRECT_DELAY_MS = 1500;
+  // For the FINAL, leave more time on the "you're in the final vs X" announcement
+  // screen before sending players into the match room (still well under the 60s
+  // readiness deadline).
+  const FINAL_REDIRECT_DELAY_MS = 6500;
   const tournamentId = $derived(page.params.tournamentId);
   let bracket = $state<PublicBracketView | null>(null);
   let myUserId = $state('');
   let error = $state('');
   let info = $state('');
   let leaving = false;
+  // One-shot guard: once we've decided to jump (back) into a live match, don't let
+  // the 3s poll fire the same goto again before this page unmounts.
+  let playRescued = false;
 
   // Live feed of the final, pushed by the backend to the tournament room so
   // eliminated players can actually watch (scoreboard + current question).
@@ -57,17 +64,33 @@
   let redirectOpponent = $state<string | null>(null);
   let redirectCountdown = $state(0);
   let redirectInterval: ReturnType<typeof setInterval> | null = null;
+  // HTTP safety-net poll: re-fetch the bracket every few seconds so a player whose
+  // socket events were lost still discovers their 'ready' room and gets redirected.
+  let bracketPoll: ReturnType<typeof setInterval> | null = null;
 
-  function scheduleRedirect(roomId: string, opponent?: string) {
-    if (redirectRoomId) return; // already scheduled
+  // Compact one-line snapshot of the bracket for the [JUMP-CLI] logs.
+  function snapBracket(b: PublicBracketView | null): string {
+    if (!b) return 'null';
+    const fmt = (m: BracketMatch) =>
+      `R${m.round}.${m.slot}{${m.p1 ?? '-'}vs${m.p2 ?? '-'} ${m.status}${m.winnerId ? ' win=' + m.winnerId : ''}${m.roomId ? ' room=' + m.roomId.slice(0, 8) : ''}${m.gameId ? ' game=' + m.gameId.slice(0, 8) : ''}}`;
+    return `status=${b.status} ${b.matches.map(fmt).join('  ')}`;
+  }
+
+  function scheduleRedirect(roomId: string, opponent?: string, delayMs: number = REDIRECT_DELAY_MS) {
+    if (redirectRoomId) {
+      console.log(`[JUMP-CLI] scheduleRedirect IGNORED (already scheduled to ${redirectRoomId.slice(0, 8)}) wanted=${roomId.slice(0, 8)}`);
+      return; // already scheduled
+    }
+    console.log(`[JUMP-CLI] scheduleRedirect -> room=${roomId.slice(0, 8)} opp=${opponent ?? '-'} in ${Math.ceil(delayMs / 1000)}s (me=${myUserId})`);
     redirectRoomId = roomId;
     redirectOpponent = opponent ?? null;
-    redirectCountdown = Math.ceil(REDIRECT_DELAY_MS / 1000);
+    redirectCountdown = Math.ceil(delayMs / 1000);
     redirectInterval = setInterval(() => {
       redirectCountdown -= 1;
       if (redirectCountdown <= 0) {
         if (redirectInterval) { clearInterval(redirectInterval); redirectInterval = null; }
         leaving = true;
+        console.log(`[JUMP-CLI] scheduleRedirect FIRING -> goto room/${roomId.slice(0, 8)} (me=${myUserId})`);
         goto(`/game/multiplayer/room/${roomId}`);
       }
     }, 1000);
@@ -132,35 +155,146 @@
     return 'unknown';
   }
 
+  // Derive "do I have a match waiting for me to ready up?" purely from the bracket
+  // state. This is the RELIABLE path: the bracket data arrives both via the socket
+  // broadcast (bracket_update) AND via plain HTTP (fetchBracket / the poll below),
+  // so it works even when the targeted `next_match_ready` socket event was lost
+  // (e.g. the player's socketId wasn't in Redis at match-creation time → the log's
+  // "NO socketId in Redis" → forfeited to the bracket). Only matches a 'ready' room
+  // where I'm actually a participant, so an eliminated/spectating player is never
+  // dragged into a match.
+  function myReadyRoom(b: PublicBracketView | null, uid: string):
+    { roomId: string; opponentNickname: string; players: { userId: string; nickname: string }[] } | null {
+    if (!b || !uid || b.status === 'finished') return null;
+    const m = b.matches.find(mm =>
+      (mm.p1 === uid || mm.p2 === uid) && mm.status === 'ready' && !!mm.roomId);
+    if (!m || !m.roomId) return null;
+    const oppId = m.p1 === uid ? m.p2 : m.p1;
+    const opp = b.players.find(p => p.userId === oppId);
+    const p1 = b.players.find(p => p.userId === m.p1);
+    const p2 = b.players.find(p => p.userId === m.p2);
+    return {
+      roomId: m.roomId,
+      opponentNickname: opp?.nickname ?? oppId ?? '',
+      players: [p1, p2].filter((p): p is { userId: string; nickname: string } => !!p)
+        .map(p => ({ userId: p.userId, nickname: p.nickname })),
+    };
+  }
+
+  // If my own match is already LIVE (a game is running and I'm one of its two
+  // players), I belong on the play page — not stranded on the bracket. The bracket
+  // otherwise only ever redirects a 'ready' room (→ room page) and relies on the
+  // one-shot `game_started` event to reach the play page; anyone who lands on the
+  // bracket AFTER their game already started (missed event, back/forward navigation,
+  // or a reconnect that resolved here) would sit here forever watching their own
+  // match "playing", unable to play it. Derived from the bracket (socket + HTTP poll),
+  // same spirit as myReadyRoom. Only ever matches a participant, so spectators/
+  // eliminated players are never dragged into a game.
+  function myPlayingGame(b: PublicBracketView | null, uid: string): string | null {
+    if (!b || !uid || b.status === 'finished') return null;
+    const m = b.matches.find(mm =>
+      (mm.p1 === uid || mm.p2 === uid) && mm.status === 'playing' && !!mm.gameId);
+    return m?.gameId ?? null;
+  }
+
+  // If the current bracket says I have a 'ready' room, head there. Idempotent:
+  // scheduleRedirect() bails if a redirect is already scheduled, so calling this
+  // from several places (socket events + HTTP poll) never double-redirects.
+  function maybeRedirectFromBracket() {
+    if (redirectRoomId || playRescued) return;
+    // RESCUE FIRST: my match is live and I'm a participant — jump (back) into the game
+    // rather than sit stranded on the bracket. Covers any path that lands a player here
+    // mid-match (missed game_started, back navigation, a reconnect resolved to bracket).
+    const liveGameId = myPlayingGame(bracket, myUserId);
+    if (liveGameId) {
+      console.log(`[JUMP-CLI] maybeRedirectFromBracket: my match is LIVE game=${liveGameId.slice(0, 8)} me=${myUserId} role=${myRole} -> JUMP back to play`);
+      playRescued = true;
+      try { if (bracket) sessionStorage.setItem('current_tournament_id', bracket.tournamentId); } catch {}
+      leaving = true; // suppress the bracket's onDestroy socket teardown
+      goto(`/game/multiplayer/play/${liveGameId}`);
+      return;
+    }
+    const r = myReadyRoom(bracket, myUserId);
+    if (!r) {
+      console.log(`[JUMP-CLI] maybeRedirectFromBracket: NO ready room for me=${myUserId} role=${myRole} | ${snapBracket(bracket)}`);
+      return;
+    }
+    const isFinalDbg = !!bracket?.matches.find(m => m.round === 2 && m.roomId === r.roomId);
+    console.log(`[JUMP-CLI] maybeRedirectFromBracket: FOUND ready room=${r.roomId.slice(0, 8)} (${isFinalDbg ? 'FINAL' : 'semi'}) opp=${r.opponentNickname} me=${myUserId} role=${myRole} -> scheduling redirect`);
+    try {
+      sessionStorage.setItem('mp_room_players', JSON.stringify(r.players));
+      if (bracket) sessionStorage.setItem('current_tournament_id', bracket.tournamentId);
+    } catch {}
+    // Give finalists a longer look at the final-announcement table.
+    const isFinal = !!bracket?.matches.find(m => m.round === 2 && m.roomId === r.roomId);
+    scheduleRedirect(r.roomId, r.opponentNickname, isFinal ? FINAL_REDIRECT_DELAY_MS : REDIRECT_DELAY_MS);
+  }
+
   function setupListeners() {
     const socket = getGameSocket();
     socket.off('tournament_started');
     socket.off('bracket_update');
     socket.off('next_match_ready');
+    socket.off('game_started');
     socket.off('tournament_finished');
     socket.off('tournament_onchain');
     socket.off('spectator_update');
     socket.off('error');
 
+    // SAFETY NET: every one of the player's sockets is joined to the match room
+    // (socketsJoin), so a tab that's still showing the BRACKET also receives the
+    // room-broadcast `game_started`. The bracket has no other reason to act on it,
+    // but if THIS tab is the one the player is looking at while their match starts
+    // (e.g. they have a second tab, or the room→play redirect slipped), it would be
+    // stranded on the bracket and unable to play. So: if I'm a participant of the
+    // game that just started, jump to the play page. Eliminated/spectating players
+    // are NOT in `players`, so they stay on the bracket to watch.
+    socket.on('game_started', (payload: { gameId: string; firstQuestion: any; players: any; startedAt?: number; totalQuestions?: number }) => {
+      const iAmIn = !!myUserId && !!payload.players && (
+        Array.isArray(payload.players)
+          ? payload.players.some((p: any) => String(p.id ?? p.userId) === myUserId)
+          : !!payload.players[myUserId]
+      );
+      console.log(`[JUMP-CLI] bracket page got game_started game=${payload.gameId?.slice(0, 8)} iAmIn=${iAmIn} me=${myUserId}${iAmIn ? ' -> JUMP to play page' : ' -> ignored (not a participant)'}`);
+      if (!iAmIn) return;
+      try {
+        sessionStorage.setItem('mp_first_question', JSON.stringify({
+          gameId: payload.gameId, question: payload.firstQuestion, players: payload.players,
+          startedAt: payload.startedAt, totalQuestions: payload.totalQuestions,
+        }));
+        if (bracket) sessionStorage.setItem('current_tournament_id', bracket.tournamentId);
+      } catch {}
+      leaving = true; // suppress the bracket's onDestroy socket teardown
+      goto(`/game/multiplayer/play/${payload.gameId}`);
+    });
+
     socket.on('tournament_started', (payload: { tournamentId: string; bracket: PublicBracketView }) => {
+      console.log(`[JUMP-CLI] event tournament_started | ${snapBracket(payload.bracket)}`);
       bracket = payload.bracket;
       onchainTx = null;
+      maybeRedirectFromBracket();
     });
 
     socket.on('bracket_update', (payload: { tournamentId: string; bracket: PublicBracketView }) => {
+      const prevRole = myRole;
       bracket = payload.bracket;
+      console.log(`[JUMP-CLI] event bracket_update me=${myUserId} role ${prevRole}->${myRole} redirectScheduled=${!!redirectRoomId} | ${snapBracket(payload.bracket)}`);
+      maybeRedirectFromBracket();
     });
 
     socket.on('next_match_ready', (payload: { tournamentId: string; roomId: string; opponentId: string; opponentNickname: string; round: number; players: { userId: string; nickname: string }[] }) => {
+      console.log(`[JUMP-CLI] event next_match_ready round=${payload.round} room=${payload.roomId?.slice(0, 8)} opp=${payload.opponentNickname} me=${myUserId} role=${myRole} -> scheduleRedirect`);
       info = `Round ${payload.round} : you play against ${payload.opponentNickname}.`;
       try {
         sessionStorage.setItem('mp_room_players', JSON.stringify(payload.players ?? []));
         sessionStorage.setItem('current_tournament_id', payload.tournamentId);
       } catch {}
-      scheduleRedirect(payload.roomId, payload.opponentNickname);
+      scheduleRedirect(payload.roomId, payload.opponentNickname,
+        payload.round === 2 ? FINAL_REDIRECT_DELAY_MS : REDIRECT_DELAY_MS);
     });
 
     socket.on('tournament_finished', (payload: { tournamentId: string; bracket: PublicBracketView; winnerId: string; ranking: string[] }) => {
+      console.log(`[JUMP-CLI] event tournament_finished winner=${payload.winnerId} ranking=[${payload.ranking?.join(',')}] me=${myUserId} role=${myRole}`);
       bracket = payload.bracket;
       spectatorFeed = null;
       try { sessionStorage.removeItem('current_tournament_id'); } catch {}
@@ -221,11 +355,16 @@
     } catch {}
 
     const socket = getGameSocket();
-    if (!socket.connected) socket.connect();
+    if (!socket.active) socket.connect();
     setupListeners();
 
     // Always load the bracket first so the user can see who's where during the redirect countdown
     await fetchBracket();
+    console.log(`[JUMP-CLI] bracket page MOUNT me=${myUserId} role=${myRole} | ${snapBracket(bracket)}`);
+
+    // Reliable path: derive the redirect straight from the freshly fetched bracket
+    // (works even if every socket event was missed).
+    maybeRedirectFromBracket();
 
     // If next_match_ready arrived during navigation (race condition).
     // Never honour this for an eliminated player or a finished tournament — a
@@ -234,24 +373,43 @@
       const pendingRoom = sessionStorage.getItem('tournament_pending_room');
       sessionStorage.removeItem('tournament_pending_room');
       if (pendingRoom && myRole !== 'eliminated' && bracket?.status !== 'finished') {
+        console.log(`[JUMP-CLI] bracket page MOUNT honouring stale pending_room=${pendingRoom.slice(0, 8)} me=${myUserId} role=${myRole}`);
         scheduleRedirect(pendingRoom);
         return;
       }
     } catch {}
 
-    // Fallback: server knows if this user has a ready room (handles dropped next_match_ready)
-    try {
-      const resp = await fetch('/api/tournament/my/room', { credentials: 'include' });
-      const json = await resp.json();
-      if (resp.ok && json?.data?.roomId) {
-        scheduleRedirect(json.data.roomId);
+    // HTTP safety net: keep polling the bracket. This is the ONLY channel that does
+    // not depend on the socket at all, so it rescues a player whose socketId was
+    // missing in Redis (no next_match_ready, not even bracket_update). Stops itself
+    // once a redirect is scheduled or the tournament is over.
+    bracketPoll = setInterval(async () => {
+      if (redirectRoomId || bracket?.status === 'finished') {
+        if (bracketPoll) { clearInterval(bracketPoll); bracketPoll = null; }
         return;
       }
-    } catch {}
+      await fetchBracket();
+      maybeRedirectFromBracket();
+    }, 3000);
   });
 
   onDestroy(() => {
     if (redirectInterval) { clearInterval(redirectInterval); redirectInterval = null; }
+    if (bracketPoll) { clearInterval(bracketPoll); bracketPoll = null; }
+    // Remove this page's handlers from the shared singleton socket so they don't keep
+    // running (and mutating a destroyed component's closures) once we're on the
+    // room/play page.
+    try {
+      const s = getGameSocket();
+      s.off('tournament_started');
+      s.off('bracket_update');
+      s.off('next_match_ready');
+      s.off('game_started');
+      s.off('tournament_finished');
+      s.off('tournament_onchain');
+      s.off('spectator_update');
+      s.off('error');
+    } catch {}
     if (!leaving) {
       // user navigated away manually — keep socket alive if still in tournament
       let inTournament = false;

@@ -78,7 +78,7 @@
 
   onMount(() => {
     const socket = getGameSocket();
-    if (!socket.connected) socket.connect();
+    if (!socket.active) socket.connect();
     setupListeners();
   });
 
@@ -87,9 +87,12 @@
     info = '';
     waiting = true;
     try {
-      // Clean up any previous tournament state before joining a new one
+      // Clear stale client-side hints from a previous tournament. We deliberately do
+      // NOT POST /tournament/leave here: the backend join is already idempotent for an
+      // existing tournament, and a blind /leave would forfeit the user from a
+      // tournament they're still in (e.g. a duplicate tab / re-click) — the root cause
+      // of the "a player jumps" bug. The backend also hard-guards /leave during a match.
       try {
-        await fetch('/api/tournament/leave', { method: 'POST', credentials: 'include' });
         sessionStorage.removeItem('current_tournament_id');
         sessionStorage.removeItem('tournament_pending_room');
         sessionStorage.removeItem('mp_room_players');

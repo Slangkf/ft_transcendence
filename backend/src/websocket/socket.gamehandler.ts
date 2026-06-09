@@ -49,11 +49,25 @@ export class GameSocketHandler{
     private disconnectkey(userId: string){
         return RedisKeys.socket.disconnect(userId);
     }
+    /**
+     * Per-user Socket.IO room. EVERY one of a user's /game sockets joins it, so:
+     *  - targeted emits (`toUser`) reach all their tabs instead of a single volatile
+     *    socketId pointer that the SECOND tab/reconnect would steal;
+     *  - "is the user offline?" = "are there zero sockets left in this room?".
+     * This is what makes multi-tab / shared-cookie / reconnect churn non-destructive.
+     */
+    private userRoom(userId: string){
+        return `user:${userId}`;
+    }
 
     async onConnection(socket: TypedSocket): Promise<void>{
         const userId = socket.data.userId;
 
-        // Abort the disconnection grace period timer if the user returned before the timeout expired
+        // join the per-user room first thing, so this socket is reachable by toUser
+        // and counted as "online" immediately
+        socket.join(this.userRoom(userId));
+
+        //delete from disconnect timer if exist
         const existingTimer = this.disconnectTimers.get(userId);
         if (existingTimer){
             clearTimeout(existingTimer);
@@ -61,7 +75,18 @@ export class GameSocketHandler{
         }
         await this.redis.del(this.disconnectkey(userId));
 
-        // Persist mapping of User ID -> Socket ID to support accurate targeted events
+        // save in redis
+        const prevSocketId = await this.redis.get(this.gameuserkey(userId));
+        if (prevSocketId && prevSocketId !== socket.id) {
+            // Same userId already had a live game socket. This happens when the
+            // SAME account is opened in two windows/tabs (Chrome shares the
+            // auth_token cookie across them — and across incognito windows of the
+            // same session). The new socketId overwrites the old one in Redis, so
+            // only the LAST connection receives `toUser` emits → the other window
+            // silently stops getting next_match_ready / matched / etc.
+            console.warn(`[WS] user=${userId} reconnect/2nd-socket new=${socket.id} REPLACES prev=${prevSocketId} (same account in 2 places? cookie shared?)`);
+        }
+        console.log(`[WS] connect user=${userId} socket=${socket.id}`);
         await this.redis.set(this.gameuserkey(userId), socket.id);
 
         // make sure a session exists for this user (otherwise sessionService.update is a no-op
@@ -77,17 +102,28 @@ export class GameSocketHandler{
 
         socket.on('disconnect', ()=>this.onDisconnect(socket, userId))
         socket.on('submit_answer', (
-            data: SubmitAnswerReq, 
+            data: SubmitAnswerReq,
             ack:(response: SubmitAnswerRes) => void
         ) => {this.onSubmitAnswer(socket, userId, data, ack)});
+        // On-demand state pull. The /game socket is now persistent across navigation,
+        // so a page (e.g. the in-game page) can no longer rely on a reconnect to
+        // receive `session_reconnect`. It emits `request_sync` on mount and we replay
+        // the authoritative current state (current question, scores, in_game/finished)
+        // — the robust source of truth instead of a fragile sessionStorage hint.
+        socket.on('request_sync', () => {
+            this.handleReconnect(socket, userId).catch(e => console.error('request_sync error', e));
+        });
     }
 
     private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{
         const session = await this.sessionService.get(userId);
-        if (!session) return ;
+        if (!session) {
+            console.log(`[WS] reconnect user=${userId} no session`);
+            return ;
+        }
 
         const {status} = session;
-        // Re-join Socket.io rooms if the session indicates active membership
+        console.log(`[WS] reconnect user=${userId} status=${status} room=${session.roomId ?? '-'} game=${session.gameId ?? '-'} tournament=${session.tournamentId ?? '-'} socket=${socket.id}`);
         if (session.roomId){
             socket.join(session.roomId);
         }
@@ -130,6 +166,7 @@ export class GameSocketHandler{
                     break;
                 }
 
+                console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=matched -> tells client to go to ROOM room=${match.roomId?.slice(0, 8)} socket=${socket.id}`);
                 socket.emit('session_reconnect', {
                     type: "matched",
                     players: match.players,
@@ -166,18 +203,20 @@ export class GameSocketHandler{
                 });
                 break;}
                 if (gamestate.isFinished){
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_game but game=${gamestate.gameId.slice(0, 8)} ALREADY FINISHED -> client gets game_finished (will head back to bracket)`);
                     socket.emit('game_finished', {
                         gameId: gamestate.gameId,
                         state: this.mapper.toUpdateResponse(gamestate),
                     });
                     break;
                 } else {
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_game game=${gamestate.gameId.slice(0, 8)} qIndex=${gamestate.currentQuestionIndex} -> client stays in PLAY`);
                     socket.emit('session_reconnect', {
                         type: "in_game",
                         gameId: gamestate.gameId,
                         state: this.mapper.toUpdateResponse(gamestate),
                     })
-                    break; 
+                    break;
                 }
             }
             case "in_tournament": {
@@ -188,9 +227,15 @@ export class GameSocketHandler{
                 }
                 const bracket = await this.tournamentService.getPublic(session.tournamentId);
                 if (!bracket) {
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_tournament but bracket GONE -> idle`);
                     await this.sessionService.update(userId, { status: "idle", tournamentId: undefined });
                     socket.emit('session_reconnect', {type: "idle"});
                     break;
+                }
+                {
+                    const myReady = bracket.matches.find(m =>
+                        (m.p1 === userId || m.p2 === userId) && m.status === 'ready' && !!m.roomId);
+                    console.log(`[JUMP] reconnect/sync user=${userId} REPLAY status=in_tournament -> client gets bracket_update (will sit on BRACKET${myReady ? `, but has a READY room=${myReady.roomId?.slice(0, 8)} R${myReady.round}.${myReady.slot} -> client should redirect itself there` : ', no ready room for me'})`);
                 }
                 socket.emit('bracket_update', {
                     tournamentId: session.tournamentId,
@@ -204,52 +249,59 @@ export class GameSocketHandler{
     }
 
     private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
-        // Only the user's *current* socket may run disconnect cleanup. On a remote
-        // network blip, socket.io reconnects with a fresh socket.id before the server
-        // detects the old socket dropped (ping timeout). The stale socket's disconnect
-        // must NOT delete the new socket's gameUser mapping nor schedule a forfeit
-        // while the player is still connected (and possibly mid-game).
-        const currentSocketId = await this.redis.get(this.gameuserkey(userId));
-        if (currentSocketId && currentSocketId !== socket.id) return;
+        // Still online? Answered by the per-user room, not a volatile socketId. By the
+        // time 'disconnect' fires the socket has already left its rooms, so if ANY
+        // socket remains in user:<id> (another tab, or a reconnect that already landed)
+        // the user is still here → do nothing. Multi-tab / churn becomes harmless.
+        const remaining = await this.io.in(this.userRoom(userId)).fetchSockets();
+        console.log(`[JUMP] onDisconnect socket=${socket.id} user=${userId} remainingSockets=${remaining.length}${remaining.length > 0 ? ' -> still online, no-op' : ' -> last socket gone, arming 60s window'}`);
+        if (remaining.length > 0) return;
 
-        await this.redis.del(this.gameuserkey(userId));
-
-        // Provide a 60-second grace window before definitively applying leaving penalties and state cleanup
         const RECONNECT_WINDOW_MS = 60_000;
         await this.redis.set(this.disconnectkey(userId), '1', {EX: RECONNECT_WINDOW_MS / 1000});
 
-        const timer =setTimeout(async () => {
-			this.disconnectTimers.delete(userId);
-            const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
-            if (!stillDisconnected) return; // 已重连，不处理
+        const timer = setTimeout(async () => {
+            this.disconnectTimers.delete(userId);
+            // Guard EVERYTHING: an unhandled rejection in this timer (e.g. a transient
+            // Redis error) would otherwise crash the whole process and drop every
+            // player. One user's cleanup must never take the server down.
+            try {
+                const stillDisconnected = await this.redis.get(this.disconnectkey(userId));
+                if (!stillDisconnected) return; // reconnected within the window
 
-            // Execute cleanup: Evict user from existing matchmaking pools
-            await this.matchservice.leaveQueue(userId);
+                const cur = await this.redis.get(this.gameuserkey(userId));
+                if (cur === socket.id) await this.redis.del(this.gameuserkey(userId));
 
-            const session = await this.sessionService.get(userId);
-            if (session?.gameId){
-                const gamestate = await this.gamerepos.findById(session.gameId);
-                if (gamestate?.players[userId]){
-                    gamestate.players[userId].status = 'disconnected';
-                    await this.gamerepos.update(gamestate);
-                    if ('roomId' in gamestate && gamestate.roomId){
-                        this.emitter.toRoom(gamestate.roomId, 'player_left', {
-                            playerId: userId,
-                            newHostId: '',
-                        })
+                const session = await this.sessionService.get(userId);
+
+                // TOURNAMENT: a disconnect NEVER forfeits/idles/leaves. The session
+                // stays intact so the player can reconnect straight back into their
+                // match, and the match still resolves on its own — by score (the
+                // question timer force-advances unanswered questions until the game
+                // finishes) or, if the game never started, by the ready-timeout. This
+                // removes the single most damaging mechanism: a transient network blip
+                // can no longer eliminate someone from the bracket.
+                if (session?.tournamentId) {
+                    console.log(`[JUMP] onDisconnect user=${userId} is in tournament=${session.tournamentId.slice(0, 8)} (status=${session.status}) -> IGNORED, NO forfeit/idle (session kept intact for reconnect)`);
+                    return;
+                }
+
+                // PLAIN MULTIPLAYER: original cleanup.
+                await this.matchservice.leaveQueue(userId);
+                if (session?.gameId){
+                    const gamestate = await this.gamerepos.findById(session.gameId);
+                    if (gamestate?.players[userId]){
+                        gamestate.players[userId].status = 'disconnected';
+                        await this.gamerepos.update(gamestate);
+                        if ('roomId' in gamestate && gamestate.roomId){
+                            this.emitter.toRoom(gamestate.roomId, 'player_left', {
+                                playerId: userId,
+                                newHostId: '',
+                            })
+                        }
                     }
                 }
-            }
-            // tournament forfeit: if the user was part of a tournament, forfeit their current match
-            if (session?.tournamentId) {
-                try {
-                    await this.tournamentService.forfeit(session.tournamentId, userId);
-                } catch (e) {
-                    console.error("tournament forfeit error:", e);
-                }
-            }
-            if (session?.roomId){
-                try{
+                if (session?.roomId){
                     const room = await this.roomservice.leaveRoom(session.roomId, userId);
                     if (room){
                         this.emitter.toRoom(room.roomId, 'player_left', {
@@ -257,12 +309,11 @@ export class GameSocketHandler{
                             newHostId: room.hostId,
                         });
                     }
-                }catch (error){
-                    console.error("Error leaving room on disconnect:", error);
                 }
+                await this.sessionService.update(userId, { status: "idle" });
+            } catch (e) {
+                console.error('[GUARD] onDisconnect cleanup error (server kept alive):', e);
             }
-            await this.sessionService.update(userId, {
-                status: "idle"});
         }, RECONNECT_WINDOW_MS);
         this.disconnectTimers.set(userId, timer);
     }
@@ -308,6 +359,8 @@ export class GameSocketHandler{
             this.io.to(roomId).emit('answer_result', {
                 gameId,
                 status: 'finished',
+                totalQuestions: response.state.totalQuestions,
+                currentQuestionIndex: response.state.currentQuestionIndex,
                 lastAnswerUpdate,
                 timedOut,
                 nextQuestion: null,
@@ -321,6 +374,7 @@ export class GameSocketHandler{
             this.questionTimer.cancel(gameId);
 
             if (tournamentId) {
+                console.log(`[JUMP] gamehandler GAME FINISHED (normal) t=${tournamentId.slice(0, 8)} game=${gameId.slice(0, 8)} room=${roomId.slice(0, 8)} timedOut=${timedOut} players=[${Object.keys(gamestate.players).join(',')}] winner=${response.finalScore?.winnerId ?? '-'} -> reset BOTH to in_tournament, then onMatchFinished`);
                 // Send BOTH players back to the bracket FIRST. onMatchFinished may
                 // promote the winner into the next match (createMatchRooms sets a
                 // fresh 'matched' + roomId session); doing this reset afterwards
@@ -343,6 +397,8 @@ export class GameSocketHandler{
                         totalTime: p.Totaltime || 0,
                     }));
                     await this.tournamentService.onMatchFinished(tournamentId, gameId, winnerId, stats);
+                } else {
+                    console.log(`[JUMP] gamehandler GAME FINISHED but NO winnerId (draw?) game=${gameId.slice(0, 8)} — onMatchFinished NOT called, match stays unresolved`);
                 }
             } else {
                 await Promise.all(
@@ -358,6 +414,8 @@ export class GameSocketHandler{
         this.io.to(roomId).emit('answer_result', {
             gameId,
             status: 'playing',
+            totalQuestions: response.state.totalQuestions,
+            currentQuestionIndex: response.state.currentQuestionIndex,
             lastAnswerUpdate,
             timedOut,
             nextQuestion: response.nextQuestion,
@@ -365,7 +423,8 @@ export class GameSocketHandler{
             finalScore: null,
         });
         // game continues — arm the deadline for the (possibly new) current question
-        await this.questionTimer.schedule(gameId);
+        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
+        // await this.questionTimer.schedule(gameId);
     }
 
     private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0], ack?: (response: any) => void): Promise<void> {
@@ -377,7 +436,11 @@ export class GameSocketHandler{
                 return;
             }
 
-            const result = await this.gameService.submitAnswer(gameId, selectedAnswerIndex, userId);
+            // Forward the client's questionId as expectedQuestionId: a retry re-sent on
+            // reconnect (see the play page's pendingAnswer flush) for a question the
+            // server has already advanced past is then safely ignored (ALREADY_PROCESSED)
+            // instead of being mis-recorded against the new current question.
+            const result = await this.gameService.submitAnswer(gameId, selectedAnswerIndex, userId, data.questionId);
             
             if (!result) {
                 socket.emit('error', { message: 'Failed to submit answer' });

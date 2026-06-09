@@ -41,11 +41,17 @@ export type GameStartedPayload = {
     firstQuestion: PublicQuestion;
     players: Record<string, PlayerSnapShot>;
     startedAt: number;
+    totalQuestions: number;
 }
 
 export type AnswerResultPayload = {
     gameId: string;
     status: 'playing' | 'finished';
+    totalQuestions?: number;
+    // Server-authoritative index of the (now) current question. The client derives
+    // its "Question N / M" counter from this instead of incrementing locally, which
+    // used to drift (counter > 10 / a question re-shown) across refresh/reconnect.
+    currentQuestionIndex?: number;
     lastAnswerUpdate?: {
         playerId: string;
         isCorrect: boolean;
@@ -171,6 +177,11 @@ export type ClientToServerEvents = {
         data: SubmitAnswerReq,
          ack:(response: SubmitAnswerRes) => void
     ) => void;
+
+    // Client asks the server to (re)send its authoritative session state. Used by the
+    // in-game page on mount now that the socket persists across navigation (no reconnect
+    // → no automatic session_reconnect).
+    request_sync: () => void;
 
     //ready: (data: {
     //    roomId: string;
