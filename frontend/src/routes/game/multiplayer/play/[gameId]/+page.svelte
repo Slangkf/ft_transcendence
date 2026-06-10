@@ -424,12 +424,12 @@
 </script>
 
 <svelte:head>
-  <title>Multiplayer Game</title>
+  <title>{inTournamentGame ? 'Tournament Game' : 'Multiplayer Game'}</title>
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 py-6 leading-relaxed font-serif text-blue-200 bg-white/15 backdrop-blur-xs rounded">
   <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-pink-200 text-center mb-2">
-    Multiplayer Quiz
+    {inTournamentGame ? 'Tournament Quiz' : 'Multiplayer Quiz'}
   </h1>
   <p class="text-center text-blue-100/80 text-sm mb-4">
     Time: <span class="font-mono text-pink-200">{formatTime(elapsedMs)}</span>
