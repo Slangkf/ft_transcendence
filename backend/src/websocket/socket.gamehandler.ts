@@ -423,8 +423,7 @@ export class GameSocketHandler{
             finalScore: null,
         });
         // game continues — arm the deadline for the (possibly new) current question
-        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
-        // await this.questionTimer.schedule(gameId);
+        await this.questionTimer.schedule(gameId);
     }
 
     private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0], ack?: (response: any) => void): Promise<void> {

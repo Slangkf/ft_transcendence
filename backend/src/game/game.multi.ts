@@ -113,8 +113,7 @@ export class MultiPlayerFacade {
                 totalQuestions: response.state.totalQuestions,
             })
             // arm the per-question deadline for the first question
-            // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
-            // await this.questionTimer.schedule(response.gameId);
+            await this.questionTimer.schedule(response.gameId);
             return {
                 allReady: true,
                 gameresponse: response,

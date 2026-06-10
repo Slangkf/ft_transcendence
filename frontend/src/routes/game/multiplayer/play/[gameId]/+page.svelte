@@ -291,8 +291,22 @@
           finalScore = state.finalScore ?? finalScore;
           if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
         }
-        // restore current question from server-provided nextQuestion
-        try { currentQuestion = state.nextQuestion ?? null; } catch { currentQuestion = null; }
+        // Restore the current question from the server. If the server has moved on to
+        // a DIFFERENT question than the one we were showing, this is a fresh question:
+        // wipe any leftover answer state, otherwise the new question appears already
+        // answered (old option highlighted, buttons disabled) — an "automatic answer"
+        // the user never gave, which also locks them out of answering. If it's the SAME
+        // question we already answered, keep `answered` so the buttons stay locked (no
+        // double answer). This matters because a resync (reconnect / focus-return
+        // request_sync / watchdog) can land across a question boundary.
+        let restoredQ: PublicQuestion | null = null;
+        try { restoredQ = state.nextQuestion ?? null; } catch { restoredQ = null; }
+        const sameQuestion = restoredQ?.id != null && restoredQ.id === currentQuestion?.id;
+        currentQuestion = restoredQ;
+        if (!sameQuestion) {
+          resetReveal();   // selectedIndex/correctIndex/revealing/answered/pendingAnswer
+          feedback = '';
+        }
       }
     });
 

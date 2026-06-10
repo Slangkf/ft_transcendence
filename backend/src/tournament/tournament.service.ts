@@ -672,8 +672,7 @@ export class TournamentService {
                         // so the game would never auto-advance (a player who stops
                         // answering would freeze the match forever). Re-arm the question
                         // timer from the persisted game state so play resumes cleanly.
-                        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
-                        // void this.questionTimer.schedule(bm.gameId);
+                        void this.questionTimer.schedule(bm.gameId);
                         rearmed++;
                     }
                 }
