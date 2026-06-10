@@ -24,26 +24,9 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 	- `ADMIN_EMAIL`: your Prisma admin email address.
 	- `ADMIN_PASSWORD`: your Prisma admin password.
 	- `JWT_SECRET`: your JWT secret key.
-
 	- `CHAIN_PRIVATE_KEY` : your private key of your wallet.
 
-#### Deploying your OWN contract from scratch (optional)
-  
-  If you want a fresh contract with no history:
-  
-  1. Add your deployer wallet's private key to `blockchain/.env`:
-     DEPLOYER_PRIVATE_KEY=0x...
-  2. Make sure the wallet has testnet AVAX (faucet:
-  https://faucet.avax.network/)
-  3. Deploy:
-  ```bash
-  cd blockchain && npm install
-  npx hardhat run scripts/deploy.ts --network fuji
-  4. Copy the printed address into the root .env:
-  CHAIN_CONTRACT_ADDRESS=0x<new_address>
-  CHAIN_PRIVATE_KEY=0x<same_deployer_key>
-  5. Restart the backend.
-```
+
 #### Note:
 	- You can use a random key generator to generate a value for JWT_SECRET.
 	- Rename the file to `.env` once all the values ​​have been entered.
@@ -211,6 +194,24 @@ PostgreSQL was chosen because it is a reliable and efficient solution, while als
 **Why Prisma ORM?**
 
 Prisma was chosen for its simplicity and schema-based approach to defining data models. Its single schema file centralizes database structure and relationships, making the project easier to understand and maintain.
+
+**Blockchain : deploying your OWN contract from scratch (optional)**
+  
+  If you want a fresh contract with no history:
+  
+  1. Add your deployer wallet's private key to `blockchain/.env`:
+     DEPLOYER_PRIVATE_KEY=0x...
+  2. Make sure the wallet has testnet AVAX (faucet:
+  https://faucet.avax.network/)
+  3. Deploy:
+  ```bash
+  cd blockchain && npm install
+  npx hardhat run scripts/deploy.ts --network fuji
+  4. Copy the printed address into the root .env:
+  CHAIN_CONTRACT_ADDRESS=0x<new_address>
+  CHAIN_PRIVATE_KEY=0x<same_deployer_key>
+  5. Restart the backend.
+```
 
 ### Other technologies
 - TypeScript for end-to-end type safety across the frontend and backend
