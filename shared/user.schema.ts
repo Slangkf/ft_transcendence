@@ -1,9 +1,14 @@
 import {z} from 'zod'
 
 //type user for database 
+const usernameschema = z.string()
+    .min(3, "Must be at least 3 characters")
+    .max(20, "Must not exceed 20 characters")
+    .regex(/^[a-zA-Z0-9]+$/,"Username can only contain letters and numbers")
+
 export const User_DB = z.object({
     id: z.number().int(),
-    username: z.string().min(3).max(20),
+    username: usernameschema,
     email: z.string().email(),
     password: z.string(),
     createdAt: z.date(),
@@ -19,7 +24,7 @@ export type UserDB = z.infer<typeof User_DB>;
 
 //type data from front
 export const Register_Input = z.object({
-    username: z.string().min(3).max(20),
+    username: usernameschema,
     email: z.string().email(),
     password: z.string().min(8).max(20)
 })
@@ -36,7 +41,7 @@ export type LoginInput = z.infer<typeof Login_Input>;
 export const User_Output = z.object({
     id: z.number().int(),
     createdAt: z.date(),
-    username: z.string().min(3).max(20),
+    username: usernameschema,
     email: z.string().email(),
     url: z.string().max(512).nullable().optional(),
     score: z.number().int().nullable().optional(),
@@ -70,28 +75,14 @@ export const Change_Pd_Input = z.object({
 });
 export type ChangePdInput = z.infer<typeof Change_Pd_Input>;
 
-export const Change_pd_request = z.object({
-    oldpassword: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters"),
-    newpassword: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters"),
-    confirmpd: z.string().min(8, "Must be at least 8 characters").max(20, "Must not exceed 20 characters")
-})
-.refine(
-    (data:{
-        oldpassword: string
-        newpassword: string
-        confirmpd: string
-}) => data.newpassword === data.confirmpd, {
-	path: ["confirmpd"],
-	message: "Passwords do not match",
-});
 
 export const Change_Username_Input = z.object({
-   username: z.string().min(3, "Must be at least 3 characters").max(20, "Must not exceed 20 characters")
+   username: usernameschema,
 })
 export type ChangeUsernameInput = z.infer<typeof Change_Username_Input>;
 
 export const Get_Profil_by_Username = z.object({
-   username: z.string().min(3, "Must be at least 3 characters").max(20, "Must not exceed 20 characters")
+   username: usernameschema,
 })
 export type GetProfilByUsernameInput = z.infer<typeof Get_Profil_by_Username>
 

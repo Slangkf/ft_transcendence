@@ -47,8 +47,9 @@
 		});
 		if (!validation.success) {
 			for (const issue of validation.error.issues) { 
+				console.log(validation.error.issues);
 				const field = issue.path[0] as keyof RegisterInput;
-				errors = { ...errors, [field]: issue.message };
+				if (!errors[field]) errors = { ...errors, [field]: issue.message };
 			}
 			return;
 		}
