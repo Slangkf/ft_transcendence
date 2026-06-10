@@ -5,6 +5,9 @@ import { valideRequest } from "../middleware/zod_check";
 import { Register_Input, Login_Input } from "@shared/user.schema"
 import { container } from "../container";
 
+/*
+ * Builds the /auth router: register and login (both Zod-validated) and logout.
+ */
 export function createAuthRouter(authService: AuthService): Router {
     const router = Router();
     const authController = new AuthController(authService);

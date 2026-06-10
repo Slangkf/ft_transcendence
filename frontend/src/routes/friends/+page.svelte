@@ -24,7 +24,6 @@
 			showToast("Redirected to the requested profile.");
 		}
 		catch (error) {
-			console.error('Error with the contact search bar: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
@@ -37,7 +36,6 @@
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				console.error('Error in the acceptFriendship function')
 				showToast("Sorry, an internal error has occurred. Please try again later.");
 				return;
 			}
@@ -45,7 +43,6 @@
 			showToast("The request has been accepted.");
 		}
 		catch (error) {
-			console.error('Error with acceptFriendship: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
@@ -58,7 +55,6 @@
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				console.error('Error in the rejectFriendship function')
 				showToast("Sorry, an internal error has occurred. Please try again later.");
 				return;
 			}
@@ -66,7 +62,6 @@
 			showToast("The request has been rejected.");
 		}
 		catch (error) {
-			console.error('Error with rejectFriendship: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
@@ -86,7 +81,6 @@
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				console.error('Error in the removeFriend function', response.status);
 				showToast("Sorry, an internal error has occurred. Please try again later.");
 				return;
 			}
@@ -95,7 +89,6 @@
 			showToast("The contact has been successfully deleted.");
 		}
 		catch (error) {
-			console.error('Error with removeFriend: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}

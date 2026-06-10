@@ -17,15 +17,11 @@ let createCount = 0;
 export function getGameSocket(): Socket {
   if (socket) return socket;
   createCount += 1;
-  console.log(`[TOURNEY-CLIENT] getGameSocket: CREATE /game socket #${createCount}`);
   socket = io('/game', {
     withCredentials: true,
     transports: ['websocket', 'polling'],
     autoConnect: true,
   });
-  socket.on('connect', () => console.log(`[TOURNEY-CLIENT] /game CONNECT id=${socket?.id} (create#${createCount})`));
-  socket.on('disconnect', (reason) => console.log(`[TOURNEY-CLIENT] /game DISCONNECT reason=${reason}`));
-  socket.on('connect_error', (err) => console.log(`[TOURNEY-CLIENT] /game CONNECT_ERROR ${err?.message ?? err}`));
 
   // Resync on focus-return. A backgrounded tab gets throttled/suspended (macOS App
   // Nap, hotspot jitter): its socket may have dropped while the user wasn't looking.

@@ -23,6 +23,7 @@ class BaseSocketEmitter<TEvents extends Record<string, (...args: any[]) => void>
         protected userkey: (userId: string) => string,
     ) {}
 
+    /* Emits an event to a single user via their socketId stored in Redis (no-op if offline). */
     async toUser<K extends keyof TEvents>(
         userId: string,
         event: K,
@@ -34,6 +35,7 @@ class BaseSocketEmitter<TEvents extends Record<string, (...args: any[]) => void>
         }
     }
 
+    /* Emits an event to every socket currently in a room. */
     toRoom<K extends keyof TEvents>(
         roomId: string,
         event: K,
@@ -53,6 +55,7 @@ export class GameEmitter extends BaseSocketEmitter<ServerToClientEvents> {
     // pointer that a second tab / reconnect would steal. Multi-tab safe and immune
     // to pointer churn — so a targeted event (matched / next_match_ready / …) is no
     // longer silently lost when the pointer is stale.
+    /* Overrides toUser to target the per-user room, reaching all of a user's tabs (multi-tab safe). */
     async toUser<K extends keyof ServerToClientEvents>(
         userId: string,
         event: K,

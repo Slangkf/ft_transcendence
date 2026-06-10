@@ -139,7 +139,6 @@
       }
       info = `Waiting for ${lobbySize} players...`;
     } catch (err) {
-      console.error('joinTournament error:', err);
       error = 'Network error or backend unreachable.';
       waiting = false;
     }

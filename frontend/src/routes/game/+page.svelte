@@ -193,7 +193,6 @@
       startAIThinking();
       startTimer();
     } catch (err) {
-      console.error('startGame error:', err);
       error = 'Network error or inaccessible backend.';
     } finally {
       loading = false;
@@ -319,7 +318,6 @@
         });
       }
     } catch (err) {
-      console.error('submitAnswer error:', err);
       error = 'Network error during response.';
       revealing = false;
       hasSubmittedCurrent = false;

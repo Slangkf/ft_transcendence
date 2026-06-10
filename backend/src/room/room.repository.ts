@@ -8,12 +8,14 @@ export class RoomRepository{
         return RedisKeys.game.room(roomId);
     }
 
+    /* Reads a room from Redis by id, or null if absent. */
     async getroom(roomId: string): Promise<Room | null>{
         const data = await Redis.get(this.getKey(roomId));
         if (!data) return null;
-    
+
         return JSON.parse(data);
     }
+    /* Writes a room to Redis with the room TTL (initial create). */
     async save(room: Room): Promise<void>{
         await Redis.set(
             this.getKey(room.roomId),
@@ -22,6 +24,7 @@ export class RoomRepository{
         )
     }
 
+    /* Overwrites an existing room in Redis (refreshing the room TTL). */
     async update(room: Room): Promise<void>{
         await Redis.set(
             this.getKey(room.roomId),
@@ -29,6 +32,7 @@ export class RoomRepository{
             {EX: ROOM_TTL}
         )
     }
+    /* Deletes a room from Redis by id. */
     async delete(roomId: string): Promise<void> {
         await Redis.del(this.getKey(roomId));
     }
@@ -90,6 +94,7 @@ export class RoomRepository{
         });
         return result ? JSON.parse(result as string) : null;
     }
+    /* Scans every room key in Redis to find the one containing this player, or null. */
     async getRoomByPlayerId(playerId: string): Promise<Room | null>{
         const pattern = this.getKey('*');
 

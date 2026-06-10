@@ -24,6 +24,10 @@ export class BlockchainService {
     private contract: ethers.Contract | null = null;
     private explorerBase = "https://testnet.snowtrace.io";
 
+    /*
+     * Wires the contract from env (RPC + private key + address).
+     * Stays disabled (no-op mode) if any var is missing or init fails.
+     */
     constructor() {
         const rpc = process.env.AVAX_RPC_URL;
         const pk = process.env.CHAIN_PRIVATE_KEY;
@@ -44,6 +48,7 @@ export class BlockchainService {
         }
     }
 
+    /* True when the contract was successfully wired (chain calls are live). */
     isEnabled(): boolean {
         return this.contract !== null;
     }
@@ -53,6 +58,7 @@ export class BlockchainService {
         return ethers.keccak256(ethers.toUtf8Bytes(tournamentId));
     }
 
+    /* Builds the Snowtrace explorer URL for a transaction hash. */
     explorerTxUrl(txHash: string): string {
         return `${this.explorerBase}/tx/${txHash}`;
     }

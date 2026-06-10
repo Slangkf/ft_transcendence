@@ -1,9 +1,11 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
+/* Hashes an off-chain tournament UUID into the bytes32 id used on-chain. */
 const id = (uuid: string) => ethers.keccak256(ethers.toUtf8Bytes(uuid));
 
 describe("TournamentScores", () => {
+  /* Deploys a fresh TournamentScores contract and returns it with two signers. */
   async function deploy() {
     const [owner, other] = await ethers.getSigners();
     const c = await (await ethers.getContractFactory("TournamentScores")).deploy();

@@ -1,4 +1,4 @@
-// src/lib/prisma.ts (或 src/db.ts)
+// src/lib/prisma.ts (or src/db.ts)
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {

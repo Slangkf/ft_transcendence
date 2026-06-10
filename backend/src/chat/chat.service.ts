@@ -64,6 +64,10 @@ export class ChatService{
         return chatMessage;
     }
 
+    /*
+     * Returns the conversation history between two users (most recent first).
+     * Requires them to be friends, otherwise throws 403.
+     */
     async getHistory(userId: number, withUserId: number, limit= 50, before?: Date){
         const areFriends = await this.friendservice.areFriends(userId, withUserId);
         if (!areFriends){
@@ -72,10 +76,12 @@ export class ChatService{
         return this.chatrepo.getHistory(userId, withUserId, limit, before);
     }
 
+    /* Marks every message from senderId to userId as read. */
     async markAsRead(userId: number, senderId: number){
         return await this.chatrepo.markAsRead(senderId, userId);
     }
 
+    /* Returns the number of unread messages grouped by sender for a user. */
     async getUnreadCountPerSender(userId: number): Promise<{ senderId: number; count: number }[]> {
         return this.chatrepo.getUnreadCountPerSender(userId);
     }

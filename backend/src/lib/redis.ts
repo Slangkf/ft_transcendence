@@ -9,6 +9,7 @@ export const Redis = createClient({
 Redis.on('error', console.error);
 let isConnected = false;
 
+/* Connects the shared Redis client once (idempotent across calls). */
 export async function initRedis() {
   if (!isConnected) {
     await Redis.connect();

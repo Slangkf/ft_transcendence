@@ -41,10 +41,12 @@ export class QuestionService{
             .map(question => this.toGameQuestion(question));
     }
 
+    /* Returns the distinct list of quiz categories. */
     async getCategories(): Promise<string[]> {
         return this.repo.get_all_Categories();
     }
 
+    /* Returns a specific quiz's questions (shuffled, game-ready), or null if empty/unknown. */
     async fetchQuizQuestions(quizId: number): Promise<GameQuestion[] | null>
     {
         const quiz = await this.repo.get_Quiz_withquestions(quizId);

@@ -33,6 +33,7 @@ export class QuestionTimerService {
         public readonly timeoutMs: number = 30_000,
     ) {}
 
+    /* Registers the callback run after a question is force-advanced on timeout. */
     setAdvanceCallback(cb: ForceAdvanceCallback) {
         this.callback = cb;
     }
@@ -59,6 +60,7 @@ export class QuestionTimerService {
         this.timers.set(gameId, { timer, qIndex });
     }
 
+    /* Cancels the armed deadline for a game, if any (no-op otherwise). */
     cancel(gameId: string): void {
         const existing = this.timers.get(gameId);
         if (existing) {
@@ -67,6 +69,11 @@ export class QuestionTimerService {
         }
     }
 
+    /*
+     * Deadline handler: force-closes the timed-out question (still on
+     * expectedQIndex), then invokes the callback with the corrected answer
+     * and timedOut=true so the caller can broadcast the new state.
+     */
     private async fire(gameId: string, expectedQIndex: number): Promise<void> {
         this.timers.delete(gameId);
         try {

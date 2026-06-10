@@ -75,7 +75,6 @@
 			showToast("Your avatar has been successfully changed");
 		}
 		catch (error){
-			console.error('Exception thrown in the avatar sending function: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
@@ -125,7 +124,6 @@
 			showToast("Your username has been successfully changed");
 		}
 		catch (error){
-			console.error('Error handleUsernameSubmission: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}
@@ -179,7 +177,6 @@
 			showToast("Your password has been successfully changed. Please log in again.");
 		}
 		catch (error){
-			console.error('Error handlePasswordSubmission: ', error);
 			showToast("Internal error, please try later");
 		}
 	}

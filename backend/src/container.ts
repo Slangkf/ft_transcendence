@@ -105,6 +105,7 @@ export class Container{
         
     ){}
 
+    /* Returns the singleton Container instance, creating it on first call. */
     public static getInstance(): Container{
         if (!Container.instance){
             Container.instance = new Container();
@@ -112,6 +113,12 @@ export class Container{
         return Container.instance; 
     }
 
+    /*
+     * Wires the whole dependency graph in order: repositories, services,
+     * emitters, timers, facade/game/tournament services, controllers, routers
+     * and socket handlers — then cross-wires callbacks and re-arms pending
+     * tournament deadlines after a restart.
+     */
     public async initialize(io: any, gameNs: Namespace, friendNs: Namespace, chatNs: Namespace, redis: typeof Redis){
         //repo
         this.questionRepo = new QuestionRepository();

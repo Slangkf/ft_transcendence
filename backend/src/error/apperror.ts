@@ -58,6 +58,10 @@ export enum ErrorCode {
     BAD_REQUEST = "BAD_REQUEST", //400
 }
 
+/*
+ * Application error carrying an ErrorCode, an HTTP statusCode (default 400)
+ * and optional details, so controllers can map it to a consistent response.
+ */
 export class AppError extends Error {
     constructor(
         public message: string,

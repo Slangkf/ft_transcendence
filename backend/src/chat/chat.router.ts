@@ -5,6 +5,10 @@ import { valideRequest } from "../middleware/zod_check";
 import { getHistorySchema } from "@shared/chat.schema";
 
 
+/*
+ * Builds the /chat router (behind verifyToken): conversation history with a
+ * user and the caller's unread-message count.
+ */
 export function createChatRouter(controller: ChatController): Router{
     const router = Router();
 

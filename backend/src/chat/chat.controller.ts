@@ -8,6 +8,7 @@ export class ChatController{
         private chatservice: ChatService
     ){}
 
+    /* GET /chat/history/:withUserId handler. Returns the conversation with another user. */
     getHistory = async(req: Request, res: Response) => {
         const userId = req.user!.id;
         const {withUserId, limit, before} = req.validatedBody;
@@ -31,9 +32,10 @@ export class ChatController{
         }
     }
 
+    /* GET /chat/unread handler. Returns the caller's unread message count per sender. */
     getUnreadCount = async(req: Request, res: Response) => {
         const userId = req.user!.id;
-    
+
         try{
             const unread = await this.chatservice.getUnreadCountPerSender(Number(userId));
             return res.status(200).json(

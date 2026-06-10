@@ -33,6 +33,11 @@ export const avatarUpload = multer({
     }
 });
 
+/*
+ * Middleware accepting a single 'avatar' file upload.
+ * Replies 400 on a multer validation error (too big / wrong type),
+ * 500 on any other error, and calls next() on success.
+ */
 export const handleAvatarUpload = (req: Request, res: Response, next: NextFunction) => {
     avatarUpload.single('avatar')(req, res, (error) => {
         if (error instanceof multer.MulterError) {

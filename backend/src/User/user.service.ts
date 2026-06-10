@@ -14,6 +14,7 @@ export class UserService{
     constructor(private userrepository: UserRepository)
     {}
 
+    /* Returns the user's public profile by id (password stripped); 404 if unknown. */
     async get_profile(input: number): Promise<UserOutput>{
         const user = await this.userrepository.find_by_id(input);
         if (!user){
@@ -27,6 +28,7 @@ export class UserService{
         return profil_of_user
     }
 
+    /* Returns the user's public profile by username (password stripped); 404 if unknown. */
     async get_profile_by_username(username: string): Promise<UserOutput>{
         const user = await this.userrepository.find_by_username(username);
         if (!user){
@@ -40,6 +42,12 @@ export class UserService{
         return profil_of_user
     }
 
+    /*
+     * Changes a user's password.
+     * - 404 if unknown, 401 if the old password is wrong.
+     * - 400 if the new password equals the old one.
+     * - Otherwise hashes and persists the new password.
+     */
     async change_password(userid: number, input: ChangePdInput): Promise<Boolean>{
         // verifie with the password will realise by middleware in level controller
         // 1. verifie if the old password from input is the same in database
@@ -78,6 +86,11 @@ export class UserService{
         return true;
     }
 
+    /*
+     * Changes a user's username.
+     * - 404 if unknown, 400 if identical to the current one, 409 if already taken.
+     * - Persists the new username and returns the refreshed profile.
+     */
     async change_username(userid: number, input: ChangeUsernameInput): Promise<UserOutput> {
         const user = await this.userrepository.find_by_id(userid);
         if (!user) {
@@ -109,6 +122,12 @@ export class UserService{
         return await this.get_profile(userid);
     }
 
+    /*
+     * Sets a new avatar from an uploaded file.
+     * - 400 if no file, 404 if unknown user.
+     * - Persists the new URL then deletes the previous file; on failure rolls
+     *   back by deleting the freshly uploaded file.
+     */
     async update_avatar(userid: number, file?: Express.Multer.File): Promise<UserOutput>{
         if (!file) {
             throw new AppError('avatar file is required',
@@ -139,6 +158,11 @@ export class UserService{
         }
     }
 
+    /*
+     * Best-effort deletion of an avatar file from disk.
+     * - Skips the default avatar and any path outside /avatars/.
+     * - Ignores a missing file (ENOENT); logs other errors without throwing.
+     */
     private async delete_avatar_file(avatarUrl?: string | null): Promise<void>{
         if (!avatarUrl || avatarUrl === '/avatars/default.jpg'){
             return;

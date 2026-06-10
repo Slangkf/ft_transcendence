@@ -28,6 +28,7 @@ export class GameService {
         private readonly aiservice: AIService
     ) {}
 
+    /* Returns the list of available quiz categories. */
     async listCategories(): Promise<string[]> {
         return this.questionService.getCategories();
     }
@@ -107,6 +108,7 @@ export class GameService {
         return result;
     }
 
+    /* Sets a player's ready flag in a room (delegates to the multiplayer facade). */
     async setReady(roomId: string, userId: string, isReady: boolean): Promise<SetReadyResult> {
         return this.multiplayer.setPlayerReady(roomId, userId, isReady);
     }
@@ -138,6 +140,7 @@ export class GameService {
         }
     }
 
+    /* Reads the current runtime game state from Redis, or null if absent. */
     async getGameState(gameId: string): Promise<GameState | null> {
         return await this.gameRepository.findById(gameId);
     }

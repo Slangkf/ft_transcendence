@@ -2,45 +2,36 @@
 import { Redis, RedisKeys } from '../lib/redis';
 import { GameState } from './game.types';
 
-/**
+/*
  * RedisGameRepository
- * 负责高频、临时的内存游戏状态数据读写。
- * 🌟 注意：Redis 驱动没有 .create() 和 .delete() 方法，
- * 写入/修改必须使用 .set()，删除必须使用 .del()。
+ * Handles the high-frequency, transient in-memory game state stored in Redis.
+ * Note: the Redis driver has no .create()/.delete() — use .set() to write and
+ * .del() to remove.
  */
 export class RedisGameRepository {
-    
-    /**
-     * 统一生成 Redis 中的游戏状态 Key 字符串
-     */
+
+    /* Builds the Redis key string for a game's state. */
     private key(gameId: string): string {
         return RedisKeys.game.state(gameId);
     }
 
-    /**
-     * 创建（或覆盖）游戏状态
-     * 🌟 修复：将原本不存在的 Redis.create 改为标准的 Redis.set
-     */
+    /* Creates (or overwrites) the game state in Redis with a 1h TTL. */
     public async create(game: GameState): Promise<void> {
         await Redis.set(
             this.key(game.gameId),
             JSON.stringify(game),
-            { EX: 3600 } // 1小时强行过期的内存垃圾回收保护垫
+            { EX: 3600 } // 1h hard expiry as an in-memory garbage-collection safety net
         );
     }
 
-    /**
-     * 读取分布式缓存中的完整游戏快照
-     */
+    /* Reads the full game state snapshot from Redis, or null if absent. */
     public async findById(gameId: string): Promise<GameState | null> {
-        // 标准的 Redis GET 命令
+        // standard Redis GET command
         const data = await Redis.get(this.key(gameId));
         return data ? JSON.parse(data) : null;
     }
 
-    /**
-     * 覆盖更新游戏状态
-     */
+    /* Overwrites the stored game state (refreshing the 1h TTL). */
     public async update(game: GameState): Promise<void> {
         await Redis.set(
             this.key(game.gameId),
@@ -49,16 +40,14 @@ export class RedisGameRepository {
         );
     }
 
-    /**
-     * 销毁缓存生命周期
-     * 🌟 修复：将原本不存在的 Redis.delete 改为标准的 Redis.del
-     */
+    /* Deletes the game state from Redis. */
     public async delete(gameId: string): Promise<void> {
         await Redis.del(this.key(gameId));
     }
 
-    /**
-     * 方案 3 的原子 Lua 答题脚本：human 和 AI 统一作为 tasks 处理。
+    /*
+     * Atomic Lua answer script (Strategy 3): human and AI submissions are
+     * handled uniformly as "tasks" inside one atomic Redis transaction.
      */
     public async submitanswerAtomic(
         gameId: string,

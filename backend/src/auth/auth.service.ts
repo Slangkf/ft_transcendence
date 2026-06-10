@@ -16,6 +16,12 @@ export  class AuthService{
     constructor( private userrepository: UserRepository)
     {}
     
+    /*
+     * Registers a new user.
+     * - Rejects if the email or username is already taken (409 AppError).
+     * - Creates the user, then signs a 24h JWT (with a unique jti).
+     * - Returns the token and the created user.
+     */
     async register(input: RegisterInput):Promise<AuthResult>{
     //1. check mail or username existe
     //2. create with repository 
@@ -54,6 +60,11 @@ export  class AuthService{
         user: newuser,}
     }
 
+    /*
+     * Authenticates a user by email + password.
+     * - Throws on unknown email or wrong password (401 AppError).
+     * - Sets the user ONLINE, signs a 24h JWT, and returns it with the user.
+     */
     async login(input: LoginInput): Promise<AuthResult>{
         //1. find the user bye mail or username
         const user = await this.userrepository.find_by_email(input.email);

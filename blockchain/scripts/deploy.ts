@@ -1,5 +1,11 @@
 import { ethers, network } from "hardhat";
 
+/*
+ * Deploys the TournamentScores contract to the selected Hardhat network.
+ * - Logs the network, deployer address and balance.
+ * - Deploys the contract and prints its address (+ the CHAIN_CONTRACT_ADDRESS
+ *   env line to paste into the backend, and the explorer URL on fuji).
+ */
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Network : ${network.name}`);

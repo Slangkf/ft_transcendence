@@ -16,11 +16,13 @@ export class MatchRepository{
         return RedisKeys.matchmaking.player(userId);
     }
 
+    /* Returns the full waiting queue for a mode (parsed players, in order). */
     async getqueue(mode:string): Promise<QueuePlayer[]>{
         const data = await Redis.lRange(this.queuekey(mode), 0, -1);
         return data.map(item => JSON.parse(item))
     }
 
+    /* Appends a player to the tail of a mode's waiting queue. */
     async enqueue(mode:string, player: QueuePlayer): Promise<void>{
         await Redis.rPush(
             this.queuekey(mode),
@@ -29,6 +31,7 @@ export class MatchRepository{
         
     }
 
+    /* Removes the given user ids from a mode's queue (rewrites the list). */
     async   dequeue(mode: string, userIds: string[]): Promise<void>{
         const key = this.queuekey(mode);
         const queue = await this.getqueue(mode);
@@ -42,6 +45,7 @@ export class MatchRepository{
             )
         }
     }
+    /* Stores a match and indexes it by each player's id (both with a 1h TTL). */
     async saveMatch(match: MatchResult): Promise<void>{
         await Redis.set(
             this.matchkey(match.matchId),
@@ -58,6 +62,7 @@ export class MatchRepository{
         }
     }
 
+    /* Resolves the match a player currently belongs to, or null. */
     async getMatchByPlayer(userId: string): Promise <MatchResult | null>{
         const matchId = await Redis.get(this.playerkey(userId));
         if (!matchId)
@@ -66,6 +71,7 @@ export class MatchRepository{
         return this.getMatch(matchId);
     }
 
+    /* Reads a match by its id, or null if absent/expired. */
     async getMatch(matchId: string): Promise<MatchResult | null>{
         const data = await Redis.get(this.matchkey(matchId));
         if (!data) 
@@ -73,6 +79,7 @@ export class MatchRepository{
         return JSON.parse(data);
     }
 
+    /* Deletes a match and the per-player index keys pointing to it. */
     async deleteMatch(matchId: string, playerIds: string[]): Promise<void>{
         await Redis.del(this.matchkey(matchId));
 
@@ -81,6 +88,10 @@ export class MatchRepository{
         }
     }
 
+    /*
+     * Removes a user from whichever mode queue they are in, then drops their
+     * player key. Scans real queue keys (modes are UPPERCASE) rather than guessing.
+     */
     async removeFromQueue(userId: string): Promise<void>{
         // Scan the ACTUAL queue keys instead of guessing mode names. The previous
         // version hard-coded lowercase modes ('tournament', 'multiplayer', …), but the

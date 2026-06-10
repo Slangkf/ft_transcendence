@@ -10,6 +10,10 @@ import {StartGameReq,
 
 
 
+/*
+ * Builds the /game router (behind verifyToken): list categories, start a game,
+ * set ready in a room, and submit an answer.
+ */
 export function createGameRouter(gameService: GameService): Router{
 
     const router = Router();

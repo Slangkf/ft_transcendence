@@ -8,6 +8,7 @@ export class FriendshipController {
 
     constructor(private friendshipService: FriendshipService) {}
 
+    /* POST /request handler. Sends a friend request to the target user. */
     SendFriendRequest = async (req: Request, res: Response) => {
         try {
             const input: SendFriendRequestInput = req.body;
@@ -19,6 +20,7 @@ export class FriendshipController {
         }
     };
 
+    /* PUT /request/:friendshipId/accept handler. Accepts a received friend request. */
     AcceptFriendRequest = async (req: Request, res: Response) => {
         try {
 
@@ -31,6 +33,7 @@ export class FriendshipController {
         }
     };
 
+    /* DELETE /request/:friendshipId/decline handler. Declines a received friend request. */
     DeclineFriendRequest = async (req: Request, res: Response) => {
         try {
            const friendshipId = parseInt(req.params.friendshipId as string);
@@ -42,6 +45,7 @@ export class FriendshipController {
         }
     };
 
+    /* DELETE /friend/:friendId handler. Removes an existing friendship. */
     RemoveFriend = async (req: Request, res: Response) => {
         try {
             const friendId = parseInt(req.params.friendId as string);
@@ -53,6 +57,7 @@ export class FriendshipController {
         }
     };
 
+    /* GET /friends handler. Returns the caller's friend list. */
     GetFriends = async (req: Request, res: Response) => {
         try {
             const result = await this.friendshipService.get_friends(Number(req.user!.id));
@@ -63,6 +68,7 @@ export class FriendshipController {
         }
     };
 
+	/* GET /friends/:username handler. Returns another user's friend list; 400 if no username. */
 	GetFriendsForFriend = async (req: Request, res: Response) => {
         try {
             const username = Array.isArray(req.params.username) ? req.params.username[0] : req.params.username;
@@ -81,6 +87,7 @@ export class FriendshipController {
         }
     };
 
+    /* GET /requests/pending handler. Returns friend requests the caller received. */
     GetPendingRequests = async (req: Request, res: Response) => {
         try {
             const result = await this.friendshipService.get_pending_requests(Number(req.user!.id));
@@ -91,6 +98,7 @@ export class FriendshipController {
         }
     };
 
+    /* GET /requests/sent handler. Returns friend requests the caller sent. */
     GetSentRequests = async (req: Request, res: Response) => {
         try {
             const result = await this.friendshipService.get_sent_requests(Number(req.user!.id));
@@ -101,6 +109,7 @@ export class FriendshipController {
         }
     };
 
+    /* PUT /status handler. Updates the caller's ONLINE/OFFLINE status. */
     UpdateOnlineStatus = async (req: Request, res: Response) => {
         try {
             const input: UpdateStatusInput = req.body;
@@ -112,6 +121,7 @@ export class FriendshipController {
         }
     };
 
+    /* GET /status/:userId handler. Returns a given user's presence status. */
     GetUserStatus = async (req: Request, res: Response) => {
         try {
             const userId = parseInt(req.params.userId as string);
@@ -123,6 +133,7 @@ export class FriendshipController {
         }
     };
 
+    /* Maps AppError to its status/code, otherwise replies 500 with defaultMessage. */
     private handleError(res: Response, error: any, defaultMessage: string) {
         console.error(error);
         if (error instanceof AppError) {

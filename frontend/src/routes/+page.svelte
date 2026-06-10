@@ -70,7 +70,6 @@
 			window.location.href = '/modes/?register=true';
 		}
 		catch (error){
-			console.error('Register page error: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}

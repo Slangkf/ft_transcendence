@@ -51,6 +51,7 @@ export class ChatSocketHandler{
         socket.emit('unread_count', {perSender: unread});
     }
 
+    /* 'send_message' handler: persists/delivers a private message and echoes it back to the sender. */
     private async onSendMessage(socket: chatSocket, userId: string, data:{receiverId: string; content: string}): Promise<void>{
         try{
             const message = await this.chatservice.sendPrivateMessage(Number(userId), Number(data.receiverId), data.content);
@@ -66,6 +67,7 @@ export class ChatSocketHandler{
         }
     }
 
+    /* 'get_history' handler: fetches the conversation with another user and emits it back. */
     private async onGetHistory(socket: chatSocket, userId: string, data:{withUserId: string; limit?: number; before?: Date}): Promise<void>{
         try{
             const message = await this.chatservice.getHistory(Number(userId), Number(data.withUserId), data.limit, data.before);
@@ -75,6 +77,7 @@ export class ChatSocketHandler{
         }
     }
 
+    /* 'mark_read' handler: marks a sender's messages read and emits the refreshed unread count. */
     private async onMarkRead(socket: chatSocket, userId: string, data: {senderId: string}): Promise<void>{
         try{
             await this.chatservice.markAsRead(Number(userId), Number(data.senderId));

@@ -11,6 +11,10 @@ import {Get_Profil_by_Username,
 } from "@shared/user.schema";
 
 
+/*
+ * Builds the /user router (all routes behind verifyToken): read profiles
+ * (me, by id, by username) and update own password, username and avatar.
+ */
 export function createUserRouter(userService: UserService): Router{
     const router = Router();
     const usercontroller = new UserController(userService);

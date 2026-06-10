@@ -6,6 +6,12 @@ export class PrismaGameRepository {
         private prisma: PrismaClient
     ){}
 
+    /*
+     * Persists a finished match in one transaction.
+     * - Stores the MatchResult and per-human-player rows (AI players skipped).
+     * - Bumps each human's played count and score, and wins when they won
+     *   (SOLO win = >= SOLO_WIN_THRESHOLD correct; else finishing first).
+     */
     async create(result: MatchResult): Promise<void> {
         await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const winnerIdNum = parseInt(result.winnerId ?? "");
@@ -55,6 +61,7 @@ export class PrismaGameRepository {
         });
     }
 
+    /* Returns the user's 20 most recent matches, with co-players and winner info. */
     async findByUserId(userId: number) {
         return this.prisma.matchResult.findMany({
             where: {
@@ -73,6 +80,7 @@ export class PrismaGameRepository {
         })
     }
 
+    /* Returns the top 10 users ranked by total score (mode arg currently unused). */
     async getLeaderboard(mode?: string) {
         return this.prisma.user.findMany({
             select: {

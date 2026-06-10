@@ -5,6 +5,10 @@ import { valideRequest } from "../middleware/zod_check";
 import { Send_Friend_Request_Input, Update_Status_Input, GetFriends_param } from '@shared/friendship.schema';
 
 
+/*
+ * Builds the /friendship router (behind verifyToken): send/accept/decline
+ * requests, remove a friend, list friends, pending/sent requests, and status.
+ */
 export function createFriendshipRouter(
     friendshipController: FriendshipController
 ){
