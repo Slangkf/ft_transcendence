@@ -7,7 +7,7 @@ import { valideRequest } from 'src/middleware/zod_check';
 import {Get_Profil_by_Username,
     Change_Username_Input,
     Get_Profil_by_Id,
-    Change_pd_request
+    Change_Pd_Input
 } from "@shared/user.schema";
 
 
@@ -23,7 +23,7 @@ export function createUserRouter(userService: UserService): Router{
     router.get('/me', usercontroller.GetProfil)
     router.get('/:userId', valideRequest(Get_Profil_by_Id), usercontroller.GetProfilById)
     router.get('/username/:username', valideRequest(Get_Profil_by_Username), usercontroller.GetProfilByUsername)
-    router.post('/me/changepassword', valideRequest(Change_pd_request), usercontroller.ChangePassword)
+    router.post('/me/changepassword', valideRequest(Change_Pd_Input), usercontroller.ChangePassword)
     router.post('/me/changeusername', valideRequest(Change_Username_Input), usercontroller.ChangeUsername)
     router.post('/me/avatar', handleAvatarUpload, usercontroller.UpdateAvatar)
 
