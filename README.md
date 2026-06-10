@@ -195,6 +195,19 @@ PostgreSQL was chosen because it is a reliable and efficient solution, while als
 
 Prisma was chosen for its simplicity and schema-based approach to defining data models. Its single schema file centralizes database structure and relationships, making the project easier to understand and maintain.
 
+### Other technologies
+- TypeScript for end-to-end type safety across the frontend and backend
+- Redis for caching and temporary storage of real-time data such as active sessions and game states.
+- Avalanche blockchain integration using Solidity smart contracts for decentralized features and blockchain-based interactions.
+
+**Why TypeScript?**
+
+TypeScript was used throughout the project to improve code reliability, maintainability, and developer productivity. Shared type definitions between the frontend and backend help reduce inconsistencies and catch errors at compile time.
+
+**Why Redis?**
+
+Redis provides fast in-memory data storage, making it ideal for caching frequently accessed data. It improves the responsiveness of the web application while reducing the load on the main database.
+
 **Blockchain : deploying your OWN contract from scratch (optional)**
   
   If you want a fresh contract with no history:
@@ -212,20 +225,6 @@ Prisma was chosen for its simplicity and schema-based approach to defining data 
   CHAIN_PRIVATE_KEY=0x<same_deployer_key>
   5. Restart the backend.
 ```
-
-### Other technologies
-- TypeScript for end-to-end type safety across the frontend and backend
-- Redis for caching and temporary storage of real-time data such as active sessions and game states.
-- Avalanche blockchain integration using Solidity smart contracts for decentralized features and blockchain-based interactions.
-
-**Why TypeScript?**
-
-TypeScript was used throughout the project to improve code reliability, maintainability, and developer productivity. Shared type definitions between the frontend and backend help reduce inconsistencies and catch errors at compile time.
-
-**Why Redis?**
-
-Redis provides fast in-memory data storage, making it ideal for caching frequently accessed data. It improves the responsiveness of the web application while reducing the load on the main database.
-
 
 # Database Schema
 
