@@ -8,6 +8,7 @@ export class UserController{
     constructor(private userservice: UserService)
     {}
 
+    /* GET /me handler. Returns the authenticated user's own profile. */
     GetProfil = async(req: Request, res: Response)=>{
         try{
             const result = await this.userservice.get_profile(Number(req.user!.id));
@@ -24,6 +25,7 @@ export class UserController{
         }
     }
     
+    /* GET /:userId handler. Returns the profile of the requested user id. */
     GetProfilById = async(req: Request, res: Response)=>{
         try{
             const {userId} = req.validatedBody;
@@ -42,6 +44,7 @@ export class UserController{
         }
     }
 
+    /* GET /username/:username handler. Returns the profile of the named user. */
     GetProfilByUsername = async(req: Request, res: Response)=>{
         try{
             const {username} = req.validatedBody;
@@ -61,6 +64,10 @@ export class UserController{
         }
     }
 
+    /*
+     * POST /me/changepassword handler. Changes the password, clears the
+     * auth_token cookie and asks the client to re-login on success.
+     */
     ChangePassword = async(req: Request, res: Response) => {
         try{
             const { oldpassword, newpassword, confirmpd } = req.validatedBody; // ← pas .input
@@ -90,9 +97,10 @@ export class UserController{
         }
     }
 
+    /* POST /me/changeusername handler. Renames the user and returns the updated profile. */
     ChangeUsername = async (req: Request, res: Response) => {
         try {
-            const {username} = req.validatedBody; 
+            const {username} = req.validatedBody;
             const result = await this.userservice.change_username(Number(req.user!.id), {username});
             res.json(result);
         }catch(error) {
@@ -108,6 +116,7 @@ export class UserController{
         }
     }
 
+    /* POST /me/avatar handler. Stores the uploaded avatar and returns the updated profile. */
     UpdateAvatar = async(req: Request, res: Response) => {
         try{
             const result = await this.userservice.update_avatar(Number(req.user!.id), req.file);

@@ -54,7 +54,6 @@
 			window.location.href = '/modes/?login=true';
 		}
 		catch (error){
-			console.error('Login page error: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}

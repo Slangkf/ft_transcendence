@@ -49,7 +49,7 @@ export class GameMapper {
                 score: p.score,
                 status: p.status,
                 isAI: p.isAI ?? false,
-                totalTime: p.Totaltime // 确保与类型定义的字段大小写对齐
+                totalTime: p.Totaltime // keep casing aligned with the type definition
             };
         }
 

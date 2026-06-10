@@ -47,8 +47,9 @@
 		});
 		if (!validation.success) {
 			for (const issue of validation.error.issues) { 
+				console.log(validation.error.issues);
 				const field = issue.path[0] as keyof RegisterInput;
-				errors = { ...errors, [field]: issue.message };
+				if (!errors[field]) errors = { ...errors, [field]: issue.message };
 			}
 			return;
 		}
@@ -70,7 +71,6 @@
 			window.location.href = '/modes/?register=true';
 		}
 		catch (error){
-			console.error('Register page error: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}

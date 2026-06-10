@@ -139,7 +139,6 @@ async function toggleReady() {
       }
       myReady = next;
     } catch (err) {
-      console.error('toggleReady error:', err);
       error = 'Network error.';
     } finally {
       readyBusy = false;
@@ -158,7 +157,7 @@ async function toggleReady() {
     try {
       await ensureGameSocketConnected();
     } catch {}
-    const sock = getGameSocket();
+    getGameSocket();
     attachListeners();
     try { inTournament = !!sessionStorage.getItem('current_tournament_id'); } catch {}
     // We've reached a room, so the "pending room" hint that routed us here has

@@ -9,6 +9,11 @@ export class GameController
         private gameService: GameService
     ){}
 
+    /*
+     * POST /:mode/start handler. Maps the mode and starts a game.
+     * - Solo/AI: returns the started game (200).
+     * - Multiplayer: 200 if matched immediately, else 202 while waiting.
+     */
         start = async(req: Request, res: Response)=>
     {
         try{
@@ -54,6 +59,7 @@ export class GameController
         }
     }
 
+    /* GET /categories handler. Returns the list of available quiz categories. */
     categories = async(req: Request, res: Response) => {
         try {
             const categories = await this.gameService.listCategories();
@@ -67,6 +73,10 @@ export class GameController
         }
     }
 
+    /*
+     * POST /:mode/ready/:roomId handler. Sets the caller's ready flag; returns
+     * the started game once all are ready, otherwise a "waiting" response.
+     */
     setready = async(req: Request, res: Response) => {
         const {roomId, isReady} = req.validatedBody;
         const userId = String(req.user!.id);
@@ -98,6 +108,10 @@ export class GameController
         }
     }
 
+    /*
+     * POST /:mode/:gameId/answer handler. Validates the answer index, submits
+     * it, finalizes the game when it just finished, and returns the result.
+     */
     answer = async (req: Request, res: Response)=> {
         const userId = String(req.user!.id);
 

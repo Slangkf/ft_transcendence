@@ -60,6 +60,11 @@ export class GameSocketHandler{
         return `user:${userId}`;
     }
 
+    /*
+     * Handles a new /game socket: joins the per-user room, cancels any pending
+     * disconnect timer, stores the socketId, ensures a session exists, replays
+     * the current state (handleReconnect), and binds the game event listeners.
+     */
     async onConnection(socket: TypedSocket): Promise<void>{
         const userId = socket.data.userId;
 
@@ -115,6 +120,12 @@ export class GameSocketHandler{
         });
     }
 
+    /*
+     * Replays the authoritative state for a (re)connecting socket based on its
+     * session status (queue / matched / in_room / in_game / in_tournament),
+     * rejoining the relevant rooms and emitting the matching session_reconnect
+     * payload. Falls back to idle when the referenced room/game/bracket is gone.
+     */
     private async handleReconnect(socket: TypedSocket, userId: string): Promise<void>{
         const session = await this.sessionService.get(userId);
         if (!session) {
@@ -243,6 +254,12 @@ export class GameSocketHandler{
         }
     }
 
+    /*
+     * Handles a /game socket disconnect. No-op if another socket remains in the
+     * user room. Otherwise arms a 60s reconnect window, then cleans up: tournament
+     * players are kept intact (no forfeit), plain multiplayer leaves the queue/room
+     * and goes idle. Fully guarded so one cleanup error can't crash the server.
+     */
     private async onDisconnect(socket: TypedSocket, userId: string): Promise<void>{
         // Still online? Answered by the per-user room, not a volatile socketId. By the
         // time 'disconnect' fires the socket has already left its rooms, so if ANY
@@ -413,10 +430,14 @@ export class GameSocketHandler{
             finalScore: null,
         });
         // game continues — arm the deadline for the (possibly new) current question
-        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
-        // await this.questionTimer.schedule(gameId);
+        await this.questionTimer.schedule(gameId);
     }
 
+    /*
+     * 'submit_answer' handler: submits the answer (passing questionId so stale
+     * retries are ignored), acks the client, then broadcasts the post-answer
+     * state to the room via handlePostAnswer.
+     */
     private async onSubmitAnswer(socket: TypedSocket, userId: string, data: Parameters<ClientToServerEvents['submit_answer']>[0], ack?: (response: any) => void): Promise<void> {
         try {
             const { gameId, selectedAnswerIndex } = data;

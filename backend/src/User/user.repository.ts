@@ -3,6 +3,7 @@ import {prisma} from '../lib/prisma';
 import bcrypt from 'bcrypt';
 
 export class UserRepository{
+    // maps a DB user row to the public UserOutput shape (drops password/role)
     private toUserOutput(user: Pick<UserDB, 'id' | 'username' | 'email' | 'url' | 'createdAt' | 'score' | 'wins' | 'played' | 'friendsNb' | 'status' | 'role'>): UserOutput {
         return {
             id: user.id,
@@ -90,6 +91,7 @@ export class UserRepository{
         return this.toUserOutput(updatedUser);
     }
 
+    // increments the cached friend count of a user by 1
     async increment_friends_count(userId: number): Promise<void> {
         await prisma.user.update({
             where: { id: userId },
@@ -101,6 +103,7 @@ export class UserRepository{
         });
     }
 
+    // decrements the cached friend count of a user by 1
     async decrement_friends_count(userId: number): Promise<void> {
         await prisma.user.update({
             where: { id: userId },

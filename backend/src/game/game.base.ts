@@ -25,6 +25,7 @@ export class GameBaseService
         protected readonly questionService: QuestionService,
     ){}
 
+    /* Builds a fresh Player object (zeroed score/answers, status 'playing', not AI). */
     public initPlayers(userId: string, nickname: string): Player {
         const player: Player = {
             id: userId,

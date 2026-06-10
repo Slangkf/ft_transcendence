@@ -7,10 +7,14 @@ import { valideRequest } from 'src/middleware/zod_check';
 import {Get_Profil_by_Username,
     Change_Username_Input,
     Get_Profil_by_Id,
-    Change_pd_request
+    Change_Pd_Input
 } from "@shared/user.schema";
 
 
+/*
+ * Builds the /user router (all routes behind verifyToken): read profiles
+ * (me, by id, by username) and update own password, username and avatar.
+ */
 export function createUserRouter(userService: UserService): Router{
     const router = Router();
     const usercontroller = new UserController(userService);
@@ -19,7 +23,7 @@ export function createUserRouter(userService: UserService): Router{
     router.get('/me', usercontroller.GetProfil)
     router.get('/:userId', valideRequest(Get_Profil_by_Id), usercontroller.GetProfilById)
     router.get('/username/:username', valideRequest(Get_Profil_by_Username), usercontroller.GetProfilByUsername)
-    router.post('/me/changepassword', valideRequest(Change_pd_request), usercontroller.ChangePassword)
+    router.post('/me/changepassword', valideRequest(Change_Pd_Input), usercontroller.ChangePassword)
     router.post('/me/changeusername', valideRequest(Change_Username_Input), usercontroller.ChangeUsername)
     router.post('/me/avatar', handleAvatarUpload, usercontroller.UpdateAvatar)
 

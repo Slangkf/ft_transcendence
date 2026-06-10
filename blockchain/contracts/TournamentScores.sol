@@ -33,6 +33,7 @@ contract TournamentScores {
         _;
     }
 
+    /// @notice Sets the deploying account as the contract owner.
     constructor() {
         owner = msg.sender;
     }

@@ -29,6 +29,12 @@ const PORT = 3000;
 
 
 // ====== INIT FUNCTION ======
+/*
+ * Boots the backend: connects Redis, configures Express (cookies, JSON, CORS,
+ * static avatars), creates the HTTP + Socket.IO server, initializes the DI
+ * container, binds socket namespaces and REST routes, then listens on PORT.
+ * Exits the process on a startup failure.
+ */
 const start = async () => {
   try {
     // 1. Pre-middleware Health Check

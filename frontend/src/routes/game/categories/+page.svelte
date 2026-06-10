@@ -40,7 +40,6 @@
       }
       categories = result.data;
     } catch (err) {
-      console.error('categories error:', err);
       error = 'Network error or inaccessible server.';
     } finally {
       loading = false;

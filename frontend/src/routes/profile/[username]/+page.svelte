@@ -32,7 +32,6 @@
 			showToast("Your invitation has been sent.");
 		}
 		catch(error){
-			console.error('Exception thrown in the friend requesting function: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
 	}

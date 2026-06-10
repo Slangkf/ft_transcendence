@@ -68,14 +68,6 @@
   // socket events were lost still discovers their 'ready' room and gets redirected.
   let bracketPoll: ReturnType<typeof setInterval> | null = null;
 
-  // Compact one-line snapshot of the bracket for the [JUMP-CLI] logs.
-  function snapBracket(b: PublicBracketView | null): string {
-    if (!b) return 'null';
-    const fmt = (m: BracketMatch) =>
-      `R${m.round}.${m.slot}{${m.p1 ?? '-'}vs${m.p2 ?? '-'} ${m.status}${m.winnerId ? ' win=' + m.winnerId : ''}${m.roomId ? ' room=' + m.roomId.slice(0, 8) : ''}${m.gameId ? ' game=' + m.gameId.slice(0, 8) : ''}}`;
-    return `status=${b.status} ${b.matches.map(fmt).join('  ')}`;
-  }
-
   function scheduleRedirect(roomId: string, opponent?: string, delayMs: number = REDIRECT_DELAY_MS) {
     if (redirectRoomId) {
       return; // already scheduled
@@ -214,7 +206,6 @@
     if (!r) {
       return;
     }
-    const isFinalDbg = !!bracket?.matches.find(m => m.round === 2 && m.roomId === r.roomId);
     try {
       sessionStorage.setItem('mp_room_players', JSON.stringify(r.players));
       if (bracket) sessionStorage.setItem('current_tournament_id', bracket.tournamentId);
@@ -268,7 +259,6 @@
     });
 
     socket.on('bracket_update', (payload: { tournamentId: string; bracket: PublicBracketView }) => {
-      const prevRole = myRole;
       bracket = payload.bracket;
       maybeRedirectFromBracket();
     });
@@ -328,7 +318,6 @@
 			error = json?.message ?? 'Tournament not found';
 		}
 	} catch (e) {
-		console.error(e);
 		error = 'Network error';
 	}
   }

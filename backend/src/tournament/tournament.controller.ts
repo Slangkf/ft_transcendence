@@ -6,6 +6,7 @@ import { TournamentService } from "./tournament.service";
 export class TournamentController {
     constructor(private tournamentService: TournamentService) {}
 
+    /* POST /join handler. Queues the caller; 200 if a tournament started, else 202 waiting. */
     join = async (req: Request, res: Response) => {
         try {
             const userId = String(req.user!.id);
@@ -24,6 +25,7 @@ export class TournamentController {
         }
     }
 
+    /* POST /leave handler. Removes the caller from their tournament (forfeit if needed). */
     leave = async (req: Request, res: Response) => {
         try {
             const userId = String(req.user!.id);
@@ -35,6 +37,7 @@ export class TournamentController {
         }
     }
 
+    /* GET /my/room handler. Returns the caller's current ready match room id, if any. */
     myRoom = async (req: Request, res: Response) => {
         try {
             const userId = String(req.user!.id);
@@ -55,6 +58,7 @@ export class TournamentController {
         }
     }
 
+    /* GET /:tournamentId/onchain handler. Returns the tournament's on-chain scores; 404 if none. */
     onchain = async (req: Request, res: Response) => {
         try {
             const id = req.params.tournamentId as string;
@@ -69,6 +73,7 @@ export class TournamentController {
         }
     }
 
+    /* GET /:tournamentId handler. Returns the public bracket view; 404 if unknown. */
     bracket = async (req: Request, res: Response) => {
         try {
             const id = req.params.tournamentId as string;

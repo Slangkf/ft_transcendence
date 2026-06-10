@@ -153,6 +153,10 @@ export class RoomService{
         return room;
     }
 
+    /*
+     * Atomically sets a player's ready flag and reports whether all are ready.
+     * Throws if the room or player no longer exists.
+     */
     async setPlayerReady(roomId: string, playerId: string, isReady: boolean): Promise<{ allReady: boolean; room: Room; changed: boolean }>{
         // Atomic flip: two players in the same room ready up almost simultaneously,
         // and a read-modify-write would lose one of the flags (last-writer-wins),
@@ -169,22 +173,27 @@ export class RoomService{
         return { allReady: !!res.allReady, room: res.room!, changed: !!res.changed };
     }
 
+    /* Deletes a room from Redis by id. */
     async deleteRoom(roomId: string): Promise<void>{
         //redis delete the information of the room
         await this.roomrepository.delete(roomId);
     }
+    /* Reads a room by id, or null if it no longer exists. */
     async getRoom(roomId: string): Promise<Room | null>{
         return await this.roomrepository.getroom(roomId);
     }
+    /* Persists the given room object as-is (full overwrite). */
     async save(room: Room): Promise<void>{
         return await this.roomrepository.update(room); //????
     }
 
+    /* Sets the room status (e.g. waiting -> active) and persists it. */
     async updateStatus(room: Room, status: RoomStatus): Promise<void>{
         room.status = status;
         return await this.roomrepository.update(room);
     }
-    
+
+    /* Finds the room a given player currently belongs to, or null. */
     async getRoomByPlayerId(playerId: string): Promise<Room | null>{
         return await this.roomrepository.getRoomByPlayerId(playerId);
     }

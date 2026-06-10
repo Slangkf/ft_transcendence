@@ -442,6 +442,12 @@ export class TournamentService {
         }
     }
 
+    /*
+     * Ends the tournament: computes the final 1st-4th ranking (with stats
+     * tie-breaks and collapsed-bracket fallbacks), marks it finished, emits
+     * tournament_finished, frees every player's session, and records the
+     * result on-chain (fire-and-forget).
+     */
     private async finish(state: TournamentState): Promise<void> {
         const final = state.matches.find(m => m.round === 2)!;
         const r1 = state.matches.filter(m => m.round === 1);
@@ -602,12 +608,14 @@ export class TournamentService {
         await this.broadcastLobby();
     }
 
+    /* Returns the public (client-safe) bracket view of a tournament, or null. */
     async getPublic(tournamentId: string): Promise<PublicBracketView | null> {
         const state = await this.repo.get(tournamentId);
         if (!state) return null;
         return this.toPublic(state);
     }
 
+    /* Returns the full tournament state the given user currently belongs to, or null. */
     async getByUser(userId: string): Promise<TournamentState | null> {
         return this.repo.getByUser(userId);
     }
@@ -640,8 +648,7 @@ export class TournamentService {
                         // so the game would never auto-advance (a player who stops
                         // answering would freeze the match forever). Re-arm the question
                         // timer from the persisted game state so play resumes cleanly.
-                        // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
-                        // void this.questionTimer.schedule(bm.gameId);
+                        void this.questionTimer.schedule(bm.gameId);
                         rearmed++;
                     }
                 }
@@ -669,6 +676,7 @@ export class TournamentService {
         return `t=${state.tournamentId.slice(0, 8)} status=${state.status} withdrawn=[${state.withdrawn.join(',')}] ${state.matches.map(fmt).join('  ')}`;
     }
 
+    /* Projects the internal state into the client-facing bracket view (drops server-only fields). */
     private toPublic(state: TournamentState): PublicBracketView {
         return {
             tournamentId: state.tournamentId,

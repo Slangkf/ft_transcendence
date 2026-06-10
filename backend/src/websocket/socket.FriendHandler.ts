@@ -25,6 +25,11 @@ export class FriendSocketHandler{
         private userRepository: UserRepository,
     ){}
 
+    /*
+     * Handles a new friendship-socket connection: binds the disconnect listener,
+     * maps the user to this socket in Redis, and broadcasts 'online' to friends —
+     * unless it's a quick reconnect within the grace window (then stays silent).
+     */
     async onConnection(socket: friendSocket): Promise<void>{
         const userId = socket.data.userId;
 

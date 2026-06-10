@@ -118,7 +118,6 @@
       // status === 'waiting' — keep socket open
       info = `Waiting for ${size} players...`;
     } catch (err) {
-      console.error('joinQueue error:', err);
       error = 'Network error or backend unreachable.';
       waiting = false;
     }

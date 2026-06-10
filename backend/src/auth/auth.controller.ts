@@ -20,6 +20,10 @@ export class AuthController{
         //maxAge:  1 * 60 * 60 * 1000
     };
 
+    /*
+     * POST /register handler. Registers the user, sets the auth_token cookie,
+     * and returns the created user (201). Maps AppError to its status/code.
+     */
     register = async(req: Request, res: Response) =>{
         try{
             const {username, email, password } = req.validatedBody;
@@ -40,6 +44,10 @@ export class AuthController{
         }
     }
 
+    /*
+     * POST /login handler. Authenticates the user, sets the auth_token cookie,
+     * and returns the user. Maps AppError to its status/code.
+     */
     login = async(req: Request, res: Response) =>{
         try{
             const {email, password} = req.validatedBody;
@@ -59,6 +67,11 @@ export class AuthController{
         }
     }
     
+    /*
+     * POST /logout handler. Sets the user OFFLINE, blacklists the JWT's jti in
+     * Redis until its expiry, and clears the auth_token cookie. Token errors are
+     * swallowed so logout always succeeds.
+     */
     logout = async(req: Request, res: Response) => {
         const token = req.cookies?.auth_token;
 

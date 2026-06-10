@@ -56,7 +56,6 @@
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				console.error('fetch error in the layout logout section');
 				return;
 			}
 			socket?.disconnect();
@@ -64,7 +63,6 @@
 			window.location.href='/?logout=true';
 		}
 		catch (error){
-			console.error('Exception thrown in the handleLogout function: ', error);
 			showToast("Sorry, an internal error has occurred. Please try again later.");
 		}
   	}

@@ -13,6 +13,7 @@ const AI_SKILLS: Record<string, number> = {
 export class AIService {
     constructor() {}
 
+    /* Legacy SoloService hook kept for compatibility; AI now answers atomically in LocalMultiPlayer. */
     public async generateAIAnswer(_gameState: BaseGameState, _aiId: string): Promise<void> {
         // Legacy SoloService hook kept for compatibility; AI mode answers atomically in LocalMultiPlayer.
     }

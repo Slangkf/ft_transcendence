@@ -183,30 +183,36 @@ export class FriendshipService {
         await this.chatEmitter.toUser(String(friendId), 'unread_count', { perSender: removedUnread });
     }
 
+    /* Returns the accepted friendships of a user (their friend list). */
     async get_friends(userId: number): Promise<FriendshipOutput[]> {
         return await this.friendshipRepository.get_accepted_friendships(userId);
     }
 
+	/* Returns the accepted friendships of the user identified by username; 404 if unknown. */
 	async get_friends_for_friend(username: string): Promise<FriendshipOutput[]> {
-        const user = await this.userRepository.find_by_username(username); 
+        const user = await this.userRepository.find_by_username(username);
         if (!user) {
             throw new AppError("User not found", ErrorCode.USER_NOT_FOUND, 404);
         }
         return await this.friendshipRepository.get_accepted_friendships(user.id);
     }
 
+    /* Returns the friend requests this user has received and not yet answered. */
     async get_pending_requests(userId: number): Promise<FriendshipOutput[]> {
         return await this.friendshipRepository.get_pending_requests(userId);
     }
 
+    /* Returns the still-pending friend requests this user has sent out. */
     async get_sent_requests(userId: number): Promise<FriendshipOutput[]> {
         return await this.friendshipRepository.get_sent_requests(userId);
     }
 
+    /* Updates a user's ONLINE/OFFLINE presence status. */
     async update_online_status(userId: number, status: 'ONLINE' | 'OFFLINE'): Promise<void> {
         await this.userRepository.update_status(userId, status);
     }
 
+    /* Returns a user's presence status (defaults to OFFLINE); 404 if unknown. */
     async get_user_status(userId: number): Promise<{ status: string }> {
         const user = await this.userRepository.find_by_id(userId);
         if (!user) {

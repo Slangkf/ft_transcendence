@@ -32,6 +32,7 @@ export class MultiPlayerFacade {
         private readyTimer: ReadyTimerService,
     ){}
 
+    /* Injects the TournamentService late, breaking the circular dependency between the two. */
     setTournamentService(ts: TournamentService) {
         this.tournamentService = ts;
     }
@@ -111,8 +112,7 @@ export class MultiPlayerFacade {
                 totalQuestions: response.state.totalQuestions,
             })
             // arm the per-question deadline for the first question
-            // [TEST timedOut OFF] désactivé pour diagnostic — réactiver pour remettre le timeout par question
-            // await this.questionTimer.schedule(response.gameId);
+            await this.questionTimer.schedule(response.gameId);
             return {
                 allReady: true,
                 gameresponse: response,
@@ -302,6 +302,10 @@ export class MultiPlayerFacade {
         await this.roomService.deleteRoom(roomId);
     }
 
+    /*
+     * Flips a player's ready flag, broadcasts player_ready when it changed,
+     * and starts the game (handleAllReady) once everyone is ready.
+     */
     async setPlayerReady(roomId: string, userId: string, isReady: boolean): Promise<SetReadyResult> {
         const result = await this.roomService.setPlayerReady(roomId, userId, isReady);
 
@@ -318,11 +322,16 @@ export class MultiPlayerFacade {
         return await this.handleAllReady(roomId);
     }
 
+    /* Delegates an answer submission to the underlying LocalMultiPlayer engine. */
     async submitAnswer(gameId: string, selectedAnswerIndex: number, userId: string, expectedQuestionId?: number): Promise<{state: BaseGameState,
             lastAnswer: { playerId: string; isCorrect: boolean; correctAnswerIndex: number; correctText: string };}> {
         return await this.multiService.submitAnswer(gameId, selectedAnswerIndex, userId, expectedQuestionId);
     }
 
+    /*
+     * Resolves where a reconnecting user belongs from their session:
+     * an active game, room, or match — defaulting to the matchmaking queue.
+     */
     async handleReconnect(userId: string) {
 
         const session = await this.sessionService.get(userId);
@@ -352,6 +361,10 @@ export class MultiPlayerFacade {
         await this.roomService.deleteRoom(roomId);
     }
 
+    /*
+     * Tears down a (non-tournament) room and resets each listed player:
+     * removes them from the queue and resets their session to idle.
+     */
     async cleanupRoom(roomId: string, userIds: string[]): Promise<void>{
         await this.roomService.deleteRoom(roomId);
 
@@ -367,6 +380,10 @@ export class MultiPlayerFacade {
         )
     }
 
+    /*
+     * Creates a solo-vs-AI game: builds a 2-seat room (human + an ai_ player)
+     * and starts the match, returning the live MultiGameState.
+     */
     async createAIGame(userId: string, nickname: string, category?: string): Promise<MultiGameState>{
         //1. create a room for this session
         //2. init player with the ia 

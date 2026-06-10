@@ -284,8 +284,22 @@
           finalScore = state.finalScore ?? finalScore;
           if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
         }
-        // restore current question from server-provided nextQuestion
-        try { currentQuestion = state.nextQuestion ?? null; } catch { currentQuestion = null; }
+        // Restore the current question from the server. If the server has moved on to
+        // a DIFFERENT question than the one we were showing, this is a fresh question:
+        // wipe any leftover answer state, otherwise the new question appears already
+        // answered (old option highlighted, buttons disabled) — an "automatic answer"
+        // the user never gave, which also locks them out of answering. If it's the SAME
+        // question we already answered, keep `answered` so the buttons stay locked (no
+        // double answer). This matters because a resync (reconnect / focus-return
+        // request_sync / watchdog) can land across a question boundary.
+        let restoredQ: PublicQuestion | null = null;
+        try { restoredQ = state.nextQuestion ?? null; } catch { restoredQ = null; }
+        const sameQuestion = restoredQ?.id != null && restoredQ.id === currentQuestion?.id;
+        currentQuestion = restoredQ;
+        if (!sameQuestion) {
+          resetReveal();   // selectedIndex/correctIndex/revealing/answered/pendingAnswer
+          feedback = '';
+        }
       }
     });
 
@@ -402,12 +416,12 @@
 </script>
 
 <svelte:head>
-  <title>Multiplayer Game</title>
+  <title>{inTournamentGame ? 'Tournament Game' : 'Multiplayer Game'}</title>
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 py-6 leading-relaxed font-serif text-blue-200 bg-white/15 backdrop-blur-xs rounded">
   <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-pink-200 text-center mb-2">
-    Multiplayer Quiz
+    {inTournamentGame ? 'Tournament Quiz' : 'Multiplayer Quiz'}
   </h1>
   <p class="text-center text-blue-100/80 text-sm mb-4">
     Time: <span class="font-mono text-pink-200">{formatTime(elapsedMs)}</span>
