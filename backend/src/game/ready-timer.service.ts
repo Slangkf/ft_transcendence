@@ -17,7 +17,10 @@ export class ReadyTimerService {
     private timers = new Map<string, NodeJS.Timeout>();
     private callback?: (roomId: string) => Promise<void>;
 
-    constructor(public readonly timeoutMs: number = 45_000) {}
+    // Défaut aligné sur la valeur réellement injectée (container.ts) ET sur le
+    // compteur "Ready" du front (READY_SECONDS = 60). Évite qu'un oubli d'argument
+    // fasse retomber le serveur à 45 s pendant que le client compte encore 60 s.
+    constructor(public readonly timeoutMs: number = 60_000) {}
 
     setTimeoutCallback(cb: (roomId: string) => Promise<void>) {
         this.callback = cb;
