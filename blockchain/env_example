@@ -1,0 +1,6 @@
+# Avalanche Fuji testnet RPC (default works; override only if you use a private RPC)
+AVAX_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc
+
+# Private key of the DEDICATED testnet wallet used to deploy the contract.
+# ⚠️ Use a throwaway key with only test AVAX on it — NEVER a wallet holding real funds.
+DEPLOYER_PRIVATE_KEY=
