@@ -28,7 +28,7 @@ Our team chose to develop 42Brain: an online multiplayer quiz application that a
 	- `ADMIN_EMAIL`: your Prisma admin email address.
 	- `ADMIN_PASSWORD`: your Prisma admin password.
 	- `JWT_SECRET`: your JWT secret key.
-	- `CHAIN_PRIVATE_KEY` : your private key of your wallet.
+	- `CHAIN_PRIVATE_KEY` : your wallet private key.
 
 
 #### Note:
@@ -212,23 +212,23 @@ TypeScript was used throughout the project to improve code reliability, maintain
 
 Redis provides fast in-memory data storage, making it ideal for caching frequently accessed data. It improves the responsiveness of the web application while reducing the load on the main database.
 
-**Blockchain : deploying your OWN contract from scratch (optional)**
+**Blockchain : deploying your own contract from scratch (optional)**
   
   If you want a fresh contract with no history:
   
   1. Add your deployer wallet's private key to `blockchain/.env`:
-     DEPLOYER_PRIVATE_KEY=0x...
+     DEPLOYER_PRIVATE_KEY=0x...  
   2. Make sure the wallet has testnet AVAX (faucet:
-  https://faucet.avax.network/)
+  https://faucet.avax.network/)  
   3. Deploy:
   ```bash
   cd blockchain && npm install
   npx hardhat run scripts/deploy.ts --network fuji
-  4. Copy the printed address into the root .env:
-  CHAIN_CONTRACT_ADDRESS=0x<new_address>
-  CHAIN_PRIVATE_KEY=0x<same_deployer_key>
+```  
+  4. Copy the printed address into the root .env:  
+ 	 CHAIN_CONTRACT_ADDRESS=0x<new_address>  
+ 	 CHAIN_PRIVATE_KEY=0x<same_deployer_key>  
   5. Restart the backend.
-```
 
 # Database Schema
 
