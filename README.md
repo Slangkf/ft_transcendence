@@ -1,5 +1,9 @@
 *This project has been created as part of the 42 curriculum by jmen, alandel, ikayiban, and tclouet.*
 
+![](./shared/note.png)
+
+![](./shared/feedbacks.png)
+
 # Description
 
 *This section presents the project, its goals and a brief overview*
