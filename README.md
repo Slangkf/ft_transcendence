@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by jmen, alandel, ikayiban, and tclouet.*
+*This project has been created in June 2026 as part of the 42 curriculum by jmen, alandel, ikayiban, and tclouet.*
 
 ![](./shared/note.png)
 
